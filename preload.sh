@@ -102,7 +102,9 @@ done
 
 echo "Pulling image..."
 IMAGE_ID=$(jq -r '.[0].imageId' "/mnt/$APP_ID/apps.json")
-docker -H "unix:///tmp/docker-$APP_ID/docker.sock" pull "$IMAGE_ID"
+docker exec "$DIND_CID" docker pull "$IMAGE_ID"
 
 echo "Docker images loaded:"
-docker -H "unix:///tmp/docker-$APP_ID/docker.sock" images --all
+docker exec "$DIND_CID" docker images --all
+
+echo "Done."
