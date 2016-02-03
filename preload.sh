@@ -10,6 +10,7 @@ hash docker 2>/dev/null || { echo >&2 "docker is required but it's not installed
 hash losetup 2>/dev/null || { echo >&2 "losetup is required but it's not installed.  Aborting."; exit 1; }
 hash partprobe 2>/dev/null || { echo >&2 "partprobe is required but it's not installed.  Aborting."; exit 1; }
 hash bash 2>/dev/null || { echo >&2 "bash is required but it's not installed.  Aborting."; exit 1; }
+hash btrfs 2>/dev/null || { echo >&2 "btrfs utilities (btrfs-tools) are required but are not installed. Aborting."; exit 1; }
 
 test "$API_TOKEN" -o "$API_KEY" || { echo >&2 "API_TOKEN or API_KEY must be set"; exit 1; }
 test "$API_HOST" || { echo >&2 "API_HOST must be set"; exit 1; }
