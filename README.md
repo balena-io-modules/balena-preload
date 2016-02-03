@@ -36,6 +36,6 @@ Download a OS image from the Resin dashboard and then:
   export REGISTRY_HOST=registry.resin.io
   export API_TOKEN=lotsofjibberjabberextractedfromtheresindashboard
   export API_HOST=https://api.resin.io
-  sudo -e ./preload.sh # The -e ensures that the env variables are exported through sudo
+  sudo -E ./preload.sh # The -e ensures that the env variables are exported through sudo
 ```
 After running this, the `resin-testapplication-0.1.0-1.0.1-b5327808f40f.img` file will include the latest app container for the app with ID `3759`.
