@@ -42,7 +42,7 @@ fi ) | jq --arg registryHost "$REGISTRY_HOST" '.d[0] |
         (.git_repository | split("/") | .[1] | rtrimstr(".git")) as $repoName |
         ($repoName + "/" + .commit) as $imageRepo |
         ($registryHost + "/" + $imageRepo) as $imageId |
-        (.environment_variable | map({(.name): .value}) | add) as $env |
+	((.environment_variable // []) | map({(.name): .value}) | add) as $env |
         [ { appId: .id, commit, imageRepo: $imageRepo, imageId: $imageId, env: $env } ]' > "$TMP_APPS_JSON"
 
 IMAGE_REPO=$(jq -r '.[0].imageRepo' "$TMP_APPS_JSON")
