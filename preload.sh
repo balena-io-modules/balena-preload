@@ -20,12 +20,16 @@ test "$IMAGE" || { echo >&2 "IMAGE must be set"; exit 1; }
 test -e "$IMAGE" || { echo >&2 "IMAGE file does not exist"; exit 1; }
 
 function cleanup {
-        rm $TMP_APPS_JSON || True
-        test "$DIND_CID" && docker rm -vf "$DIND_CID"
+        rm $TMP_APPS_JSON || true
+	test "$DOCKER_PID" && kill $(cat $DOCKER_PID)
+	echo "Waiting for Docker to stop..."
+	while [ -e "$DOCKER_PID" ]; do
+		sleep 1
+	done
         test -d "/tmp/docker-$APP_ID" && rm -rf "/tmp/docker-$APP_ID"
+        test "$LOOP_DEV" && losetup -d "$LOOP_DEV"
         test "`mount | grep \"/mnt/$APP_ID\"`" && umount "/mnt/$APP_ID"
         test -d "/mnt/$APP_ID" && rmdir "/mnt/$APP_ID"
-        test "$LOOP_DEV" && losetup -d "$LOOP_DEV"
 }
 
 trap cleanup EXIT
@@ -67,11 +71,11 @@ dd if=/dev/zero bs=1MB count="$IMG_ADD_SPACE" >> "$IMAGE"
 # Resize partition
 
 # Calculate new partition end by getting current partition end and adding the additional spzce.
-PART_END=$(sudo parted -m "$IMAGE" p | tail -n 1 | awk -F ':' '{print $3 + '$IMG_ADD_SPACE'}')
+PART_END=$(parted -s -m "$IMAGE" p | tail -n 1 | awk -F ':' '{print $3 + '$IMG_ADD_SPACE'}')
 
 # Resize partition table
 # Both extended and logical partition must be increased
-parted "$IMAGE" resizepart 4 "${PART_END}MB" resizepart 6 "${PART_END}MB"
+parted -s "$IMAGE" resizepart 4 "${PART_END}MB" resizepart 6 "${PART_END}MB"
 
 # mount partition
 
@@ -84,28 +88,29 @@ mkdir -p "/mnt/$APP_ID"
 mount "${LOOP_DEV}p6" "/mnt/$APP_ID"
 
 # Resize partition's filesystem
-# btrfs resize does not work reliably, fallback to hoping there is enough space
-# TODO: find out why btrfs does not allow resizing sometimes
-btrfs filesystem resize "+${CONTAINER_SIZE}m" "/mnt/$APP_ID" || true
+btrfs filesystem resize max "/mnt/$APP_ID"
 
 # write apps.json
 # keep only the fields we need from TMP_APPS_JSON
 jq '.[0] | [ { appId, commit, imageId, env } ]' $TMP_APPS_JSON > "/mnt/$APP_ID/apps.json"
 
-# pull docker
+mkdir -p "/tmp/docker-$APP_ID"
+DOCKER_PID="/tmp/docker-$APP_ID/docker.pid"
+DOCKER_SOCK="/tmp/docker-$APP_ID/docker.sock"
 
-DIND_CID=$(docker run --privileged -d -v "/tmp/docker-$APP_ID":/var/run -v "/mnt/$APP_ID/rce":/var/lib/docker blueimp/dind:1.6 superd)
+# start docker daemon that uses rce partition for storage
+docker daemon -s btrfs -g "/mnt/$APP_ID/rce" -p "$DOCKER_PID"  -H "unix://$DOCKER_SOCK" &
 
 echo "Waiting for Docker to start..."
-while [ ! -e "/tmp/docker-$APP_ID/docker.sock" ]; do
+while [ ! -e "$DOCKER_SOCK" ]; do
         sleep 1
 done
 
 echo "Pulling image..."
 IMAGE_ID=$(jq -r '.[0].imageId' "/mnt/$APP_ID/apps.json")
-docker exec "$DIND_CID" docker pull "$IMAGE_ID"
+docker -H "unix://$DOCKER_SOCK" pull "$IMAGE_ID"
 
 echo "Docker images loaded:"
-docker exec "$DIND_CID" docker images --all
+docker -H "unix://$DOCKER_SOCK" images --all
 
 echo "Done."
