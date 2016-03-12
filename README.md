@@ -27,15 +27,12 @@ This script requires the following environment variables to be set:
 
 ## Example
 
-Download a OS image from the Resin dashboard and then:
+Download a OS image from the Resin dashboard and then run with docker:
 
 ```bash
-  # The last 1.0.1 here specifies the supervisor version
-  export IMAGE=/home/user/resin-testapplication-0.1.0-1.0.1-b5327808f40f.img
-  export APP_ID=3759
-  export REGISTRY_HOST=registry.resin.io
-  export API_TOKEN=lotsofjibberjabberextractedfromtheresindashboard
-  export API_HOST=https://api.resin.io
-  sudo -E ./preload.sh # The -e ensures that the env variables are exported through sudo
+  export API_TOKEN=... # copy from dashboard preferences
+  export APP_ID=... # id of your application (you can see it on dashboard URL when you visit your app page)
+  export PATH_TO_IMAGE=/path/to/resin.img
+  docker run -it -v /var/run/docker.sock:/var/run/docker.sock -e API_TOKEN=$API_TOKEN -e API_HOST=https://api.resin.io -e REGISTRY_HOST=registry.resin.io -e APP_ID=$APP_ID -e IMAGE=/img/resin.img -v $PATH_TO_IMAGE:/img/resin.img --privileged resin/resin-preload
 ```
-After running this, the `resin-testapplication-0.1.0-1.0.1-b5327808f40f.img` file will include the latest app container for the app with ID `3759`.
+After running this, the `/path/to/resin.img` file will include the latest app container for your application.
