@@ -85,7 +85,7 @@ losetup "$LOOP_DEV" "$IMAGE"
 partprobe "$LOOP_DEV"
 
 mkdir -p "/mnt/$APP_ID"
-mount "${LOOP_DEV}p6" "/mnt/$APP_ID"
+mount -t btrfs -o nospace_cache "${LOOP_DEV}p6" "/mnt/$APP_ID"
 
 # Resize partition's filesystem
 btrfs filesystem resize max "/mnt/$APP_ID"
