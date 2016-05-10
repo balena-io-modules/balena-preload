@@ -85,6 +85,9 @@ losetup "$LOOP_DEV" "$IMAGE"
 partprobe "$LOOP_DEV"
 
 mkdir -p "/mnt/$APP_ID"
+# amke sure directory exists before mounting to it
+sync
+sleep 2
 mount -t btrfs -o nospace_cache "${LOOP_DEV}p6" "/mnt/$APP_ID"
 
 # Resize partition's filesystem
