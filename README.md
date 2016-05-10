@@ -4,17 +4,11 @@ Script for preloading resin device images with a user application container.
 
 Using this will allow images with supervisor version above 1.0.0 to run the user application without connectivity, and without the need to download the container.
 
-## System requirements
-Tested on Ubuntu 14.04.
+## Building from source
 
-Requires the following executables:
-  * curl
-  * jq
-  * docker
-  * losetup
-  * partprobe
-  * bash
-  * btrfs
+```bash
+  docker build -t resin/resin-preload .
+```
 
 ## Usage
 
