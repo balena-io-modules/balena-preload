@@ -16,7 +16,8 @@ test "$API_TOKEN" -o "$API_KEY" || { echo >&2 "API_TOKEN or API_KEY must be set"
 test "$API_HOST" || { echo >&2 "API_HOST must be set"; exit 1; }
 test "$REGISTRY_HOST" || { echo >&2 "REGISTRY_HOST must be set"; exit 1; }
 test "$APP_ID" || { echo >&2 "APP_ID must be set"; exit 1; }
-test "$IMAGE" || { echo >&2 "IMAGE must be set"; exit 1; }
+
+IMAGE=${IMAGE:-"/img/resin.img"}
 test -e "$IMAGE" || { echo >&2 "IMAGE file does not exist"; exit 1; }
 
 function cleanup {
