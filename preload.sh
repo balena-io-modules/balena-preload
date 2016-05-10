@@ -55,11 +55,11 @@ IMAGE_REPO=$(jq -r '.[0].imageRepo' "$TMP_APPS_JSON")
 
 IMAGE_ID=$(curl -s "$REGISTRY_HOST/v1/repositories/$IMAGE_REPO/tags/latest" | jq -r '.')
 
-CONTAINER_SIZE=$(curl -s "$REGISTRY_HOST/v1/images/$IMAGE_ID/ancestry" |
-jq '.[]' |
-awk '{print "'$REGISTRY_HOST'/v1/images/" $1 "/json"}' |
-xargs -r -n 1 curl -I -s | grep 'X-Docker-Size'
-| awk '{s+=$2} END {print int(s / 1000000)}')
+CONTAINER_SIZE=$(curl -s "$REGISTRY_HOST/v1/images/$IMAGE_ID/ancestry" | \
+jq '.[]' | awk '{print "'$REGISTRY_HOST'/v1/images/" $1 "/json"}' | \
+xargs -r -n 1 curl -I -s | \
+grep 'X-Docker-Size' | \
+awk '{s+=$2} END {print int(s / 1000000)}')
 
 # Size will be increased by 110% of container size
 IMG_ADD_SPACE=$(expr $CONTAINER_SIZE \* 110 / 100)
