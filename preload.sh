@@ -67,7 +67,7 @@ IMG_ADD_SPACE=$(expr $CONTAINER_SIZE \* 110 / 100)
 
 # Add zero bytes to image to be able to resize partitions
 
-dd if=/dev/zero bs=1MB count="$IMG_ADD_SPACE" >> "$IMAGE"
+dd if=/dev/zero bs=1M count="$IMG_ADD_SPACE" >> "$IMAGE"
 
 # Resize partition
 
@@ -103,7 +103,7 @@ DOCKER_PID="/tmp/docker-$APP_ID/docker.pid"
 DOCKER_SOCK="/tmp/docker-$APP_ID/docker.sock"
 
 # start docker daemon that uses rce partition for storage
-docker daemon -s btrfs -g "/mnt/$APP_ID/rce" -p "$DOCKER_PID"  -H "unix://$DOCKER_SOCK" &
+docker -d -s btrfs -g "/mnt/$APP_ID/rce" -p "$DOCKER_PID"  -H "unix://$DOCKER_SOCK" &
 
 echo "Waiting for Docker to start..."
 while [ ! -e "$DOCKER_SOCK" ]; do
