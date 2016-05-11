@@ -2,23 +2,15 @@
 
 set -e
 set -o pipefail
-set -x
-
-hash curl 2>/dev/null || { echo >&2 "curl is required but it's not installed.  Aborting."; exit 1; }
-hash jq 2>/dev/null || { echo >&2 "jq is required but it's not installed.  Aborting."; exit 1; }
-hash docker 2>/dev/null || { echo >&2 "docker is required but it's not installed.  Aborting."; exit 1; }
-hash losetup 2>/dev/null || { echo >&2 "losetup is required but it's not installed.  Aborting."; exit 1; }
-hash partprobe 2>/dev/null || { echo >&2 "partprobe is required but it's not installed.  Aborting."; exit 1; }
-hash bash 2>/dev/null || { echo >&2 "bash is required but it's not installed.  Aborting."; exit 1; }
-hash btrfs 2>/dev/null || { echo >&2 "btrfs utilities (btrfs-tools) are required but are not installed. Aborting."; exit 1; }
 
 test "$API_TOKEN" -o "$API_KEY" || { echo >&2 "API_TOKEN or API_KEY must be set"; exit 1; }
-test "$API_HOST" || { echo >&2 "API_HOST must be set"; exit 1; }
-test "$REGISTRY_HOST" || { echo >&2 "REGISTRY_HOST must be set"; exit 1; }
 test "$APP_ID" || { echo >&2 "APP_ID must be set"; exit 1; }
 
 IMAGE=${IMAGE:-"/img/resin.img"}
 test -e "$IMAGE" || { echo >&2 "IMAGE file does not exist"; exit 1; }
+
+API_HOST=${API_HOST:-"https://api.resin.io"}
+REGISTRY_HOST=${REGISTRY_HOST:-"registry.resin.io"}
 
 function cleanup {
         rm $TMP_APPS_JSON || true
