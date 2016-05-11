@@ -62,7 +62,7 @@ grep 'X-Docker-Size' | \
 awk '{s+=$2} END {print int(s / 1000000)}')
 
 # Size will be increased by 110% of container size
-IMG_ADD_SPACE=$(expr $CONTAINER_SIZE \* 110 / 100)
+IMG_ADD_SPACE=$(expr $CONTAINER_SIZE / 100 + 300)
 
 # Add zero bytes to image to be able to resize partitions
 
