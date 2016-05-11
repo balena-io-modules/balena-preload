@@ -28,7 +28,6 @@ function cleanup {
 		sleep 1
 	done
         test -d "/tmp/docker-$APP_ID" && rm -rf "/tmp/docker-$APP_ID"
-        test "$LOOP_DEV" && losetup -d "$LOOP_DEV"
         test "`mount | grep \"/mnt/$APP_ID\"`" && umount "/mnt/$APP_ID"
         test -d "/mnt/$APP_ID" && rmdir "/mnt/$APP_ID"
 }
@@ -80,16 +79,13 @@ parted -s "$IMAGE" resizepart 4 "${PART_END}MB" resizepart 6 "${PART_END}MB"
 
 # mount partition
 
-LOOP_DEV=$(losetup -f)
-
-losetup "$LOOP_DEV" "$IMAGE"
-partprobe "$LOOP_DEV"
+PART_START=$(parted -s -m "$IMAGE" unit B p | tail -n 1 | sed 's/[^:]:\([^B]*\).*/\1/')
 
 mkdir -p "/mnt/$APP_ID"
-# amke sure directory exists before mounting to it
+# make sure directory exists before mounting to it
 sync
 sleep 2
-mount -t btrfs -o nospace_cache "${LOOP_DEV}p6" "/mnt/$APP_ID"
+mount -t btrfs -o "nospace_cache,loop,rw,offset=${PART_START}" "$IMAGE" "/mnt/$APP_ID"
 
 # Resize partition's filesystem
 btrfs filesystem resize max "/mnt/$APP_ID"
