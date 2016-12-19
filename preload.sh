@@ -92,6 +92,10 @@ DOCKER_SOCK="/tmp/docker-$APP_ID/docker.sock"
 
 # start docker daemon that uses rce/docker partition for storage
 if [ -d "/mnt/$APP_ID/docker" ]; then
+    # If this preload script was ran before implementing the rce/docker fix,
+    # make sure you cleanup
+    rm -rf /mnt/$APP_ID/rce
+
     DOCKER_DIR=/mnt/$APP_ID/docker
 else
     DOCKER_DIR=/mnt/$APP_ID/rce
