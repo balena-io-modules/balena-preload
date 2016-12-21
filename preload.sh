@@ -90,8 +90,17 @@ mkdir -p "/tmp/docker-$APP_ID"
 DOCKER_PID="/tmp/docker-$APP_ID/docker.pid"
 DOCKER_SOCK="/tmp/docker-$APP_ID/docker.sock"
 
-# start docker daemon that uses rce partition for storage
-docker -d -s btrfs -g "/mnt/$APP_ID/rce" -p "$DOCKER_PID"  -H "unix://$DOCKER_SOCK" &
+# start docker daemon that uses rce/docker partition for storage
+if [ -d "/mnt/$APP_ID/docker" ]; then
+    # If this preload script was ran before implementing the rce/docker fix,
+    # make sure you cleanup
+    rm -rf /mnt/$APP_ID/rce
+
+    DOCKER_DIR=/mnt/$APP_ID/docker
+else
+    DOCKER_DIR=/mnt/$APP_ID/rce
+fi
+docker -d -s btrfs -g "$DOCKER_DIR" -p "$DOCKER_PID" -H "unix://$DOCKER_SOCK" &
 
 echo "Waiting for Docker to start..."
 while [ ! -e "$DOCKER_SOCK" ]; do
