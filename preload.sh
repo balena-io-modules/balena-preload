@@ -42,6 +42,7 @@ fi ) | jq --arg registryHost "$REGISTRY_HOST" '.d[0] |
         [ { appId: .id, commit, imageRepo: $imageRepo, imageId: $imageId, env: $env } ]' > "$TMP_APPS_JSON"
 
 IMAGE_REPO=$(jq -r '.[0].imageRepo' "$TMP_APPS_JSON")
+echo "Loading the following image: " $IMAGE_REPO
 
 # Get application container size
 
@@ -52,6 +53,7 @@ jq '.[]' | awk '{print "'$REGISTRY_HOST'/v1/images/" $1 "/json"}' | \
 xargs -r -n 1 curl -I -s | \
 grep 'X-Docker-Size' | \
 awk '{s+=$2} END {print int(s / 1000000)}')
+echo "container size: " $CONTAINER_SIZE "MB"
 
 # Size will be increased by 110% of container size
 IMG_ADD_SPACE=$(expr $CONTAINER_SIZE / 100 + 300)
@@ -100,7 +102,7 @@ if [ -d "/mnt/$APP_ID/docker" ]; then
 else
     DOCKER_DIR=/mnt/$APP_ID/rce
 fi
-docker -d -s btrfs -g "$DOCKER_DIR" -p "$DOCKER_PID" -H "unix://$DOCKER_SOCK" &
+docker daemon -s btrfs -g "$DOCKER_DIR" -p "$DOCKER_PID" -H "unix://$DOCKER_SOCK" &
 
 echo "Waiting for Docker to start..."
 while [ ! -e "$DOCKER_SOCK" ]; do
