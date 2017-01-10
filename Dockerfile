@@ -1,4 +1,4 @@
-FROM docker:1.7-dind
+FROM docker:1.10-dind
 
 RUN apk update && apk add --no-cache bash curl jq parted btrfs-progs docker util-linux
 
