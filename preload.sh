@@ -42,9 +42,11 @@ function set_options() {
                 exit 0
                 ;;
             --app) APP_ID=${argv[$index]} ;;
-            --registry) REGISTRY_HOST=${argv[$index]} ;;
-            --api-key) API_KEY=${argv[$index]} ;;
+            --img) IMAGE=${argv[$index]} ;;
             --api-token) API_TOKEN=${argv[$index]} ;;
+            --api-key) API_KEY=${argv[$index]} ;;
+            --api-host) API_HOST=${argv[$index]} ;;
+            --registry) REGISTRY_HOST=${argv[$index]} ;;
         esac
     done
 }
@@ -59,6 +61,6 @@ docker run -it --privileged \
     -e APP_ID=$APP_ID \
     -e REGISTRY_HOST=$REGISTRY_HOST \
     -e API_HOST=$API_HOST \
-    -v $PATH_TO_IMAGE:/img/resin.img \
+    -v $IMAGE:/img/resin.img \
     --name $CONTAINER_NAME \
     resin/resin-preload
