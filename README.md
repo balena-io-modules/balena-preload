@@ -4,7 +4,16 @@ Script for preloading resin.io OS images (`.img`) with a user application contai
 
 Using this will allow images with supervisor version above 1.0.0 to run the user application without connectivity, and without the need to download the container.
 
->**NOTE:** This will only work on resinOS versions between 1.2 and 2.0. For versions lower than 1.2 you will need to checkout commit `5d6d4607bffc98acdf649ce5328e2079dfb9c3d9` of this repo and then follow the steps below. 
+## Known Issues
+
+### Version Compatibility
+
+This version will only work for Resin OS versions 1.2 and later.
+For versions earlier than 1.2 you will need to checkout commit `5d6d4607bffc98acdf649ce5328e2079dfb9c3d9` of this repo and then follow the steps below. 
+
+### BTRFS Support
+
+Since Docker for Mac removed support for the BTRFS storage driver (see [docker/for-mac/issues/388](https://github.com/docker/for-mac/issues/388)), preloading images prior to Resin OS 2.0 will require the older [Docker toolbox](https://docs.docker.com/toolbox/toolbox_install_mac/) setup with [VirtualBox](https://www.virtualbox.org/) to function properly.
 
 ## Building from source
 
