@@ -105,10 +105,11 @@ function get_app_data() {
     fi
     echo $response | jq --arg registryHost "$REGISTRY_HOST" '.d[0] |
         (.app_name) as $repoName |
-        ($repoName + "/" + .commit) as $imageRepo |
-        ($registryHost + "/" + $imageRepo) as $imageId |
-        ((.environment_variable // []) | map({(.name): .value}) | add) as $env |
-        [ { appId: .id, commit, imageRepo: $imageRepo, imageId: $imageId, env: $env } ]'
+        ($repoName + "/" + .commit | ascii_downcase) as $imageRepo |
+        ($registryHost + "/" + $imageRepo | ascii_downcase) as $imageId |
+        ((.environment_variable // []) | map(select((.name|startswith("RESIN_"))==false)) | map({(.name): .value}) | add) as $env |
+        ((.environment_variable // []) | map(select(.name|startswith("RESIN_"))) | map({(.name): .value}) | add) as $config
+        [ { appId: .id, commit, imageRepo: $imageRepo, imageId: $imageId, env: $env, config: $config } ]'
 }
 
 # Fetch container metadata
@@ -270,7 +271,7 @@ function expand_btrfs() {
 # Write apps.json to file $1
 # Usage: write_apps_json <path>
 function write_apps_json() {
-    echo $APPS_JSON | jq '.[0] | [ { appId, commit, imageId, env } ]' > $1
+    echo $APPS_JSON | jq '.[0] | [ { appId, commit, imageId, env, config } ]' > $1
 }
 
 # Start the docker daemon
@@ -303,7 +304,7 @@ log "Fetching application data"
 log "Using API host" $API_HOST
 log "Using Registry host" $REGISTRY_HOST
 APPS_JSON=$(get_app_data)
-IMAGE_REPO=$(echo $APPS_JSON | jq -r '.[0].imageRepo' | tr '[:upper:]' '[:lower:]')
+IMAGE_REPO=$(echo $APPS_JSON | jq -r '.[0].imageRepo')
 
 log "Fetching image data" $IMAGE_REPO
 IMAGE_ID=$(curl -s "$REGISTRY_HOST/v1/repositories/$IMAGE_REPO/tags/latest" | jq -r '.')
@@ -349,7 +350,7 @@ fi
 write_apps_json "${APPFS_MNT}/apps.json"
 
 log "Pulling image..."
-IMAGE_ID=$(jq -r '.[0].imageId' "${APPFS_MNT}/apps.json" | tr '[:upper:]' '[:lower:]')
+IMAGE_ID=$(jq -r '.[0].imageId' "${APPFS_MNT}/apps.json")
 docker -H "unix://$DOCKER_SOCK" pull "$IMAGE_ID"
 
 log "Docker images loaded:"
