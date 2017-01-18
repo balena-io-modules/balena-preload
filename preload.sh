@@ -108,7 +108,7 @@ function get_app_data() {
         ($repoName + "/" + .commit | ascii_downcase) as $imageRepo |
         ($registryHost + "/" + $imageRepo | ascii_downcase) as $imageId |
         ((.environment_variable // []) | map(select((.name|startswith("RESIN_"))==false)) | map({(.name): .value}) | add) as $env |
-        ((.environment_variable // []) | map(select(.name|startswith("RESIN_"))) | map({(.name): .value}) | add) as $config
+        ((.environment_variable // []) | map(select(.name|startswith("RESIN_"))) | map({(.name): .value}) | add) as $config |
         [ { appId: .id, commit, imageRepo: $imageRepo, imageId: $imageId, env: $env, config: $config } ]'
 }
 
