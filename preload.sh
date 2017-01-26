@@ -18,7 +18,7 @@ function usage() {
     echo ""
     echo "  --app          Application ID (required)"
     echo "  --img          Disk image to preload into (required)"
-    echo "  --api-token    API token"
+    echo "  --api-token    API token (required)"
     echo "  --api-key      API key"
     echo "  --api-host     API hostname"
     echo "  --registry     Image registry host"
@@ -45,7 +45,7 @@ function set_options() {
     local options="$@"
     local argv=($options)
     local index=0
-    
+
     for opt in $options; do
         index=$(($index + 1))
         case $opt in
