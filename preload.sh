@@ -5,7 +5,7 @@ DIRNAME=$(realpath $(dirname ${BASH_SOURCE[0]}))
 CONTAINER_NAME="resin-image-preloader"
 
 function cleanup() {
-    docker rm $CONTAINER_NAME || true
+    docker rm $CONTAINER_NAME 2> /dev/null || true
 }
 
 trap cleanup EXIT
