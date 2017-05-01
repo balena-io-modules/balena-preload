@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT=$(basename ${BASH_SOURCE[0]})
-DIRNAME=$(realpath $(dirname ${BASH_SOURCE[0]}))
+DIRNAME=$(dirname ${BASH_SOURCE[0]})
 CONTAINER_NAME="resin-image-preloader"
 
 function cleanup() {
