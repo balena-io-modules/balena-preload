@@ -1,0 +1,35 @@
+{
+  "name": "resin-preload",
+  "version": "1.0.0",
+  "description": "Preload resinOS images with a user application container",
+  "license": "Apache-2.0",
+  "author": "Resin.io Ltd (https://resin.io)",
+  "keywords": [
+    "resin",
+    "resinos",
+    "image",
+    "docker",
+    "container"
+  ],
+  "main": "lib/preload.js",
+  "dependencies": {
+    "command-join": "^2.0.0"
+  },
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "homepage": "https://github.com/resin-io/resin-preload",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/resin-io/resin-preload.git"
+  },
+  "bugs": {
+    "url": "https://github.com/resin-io/resin-preload/issues"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "resin-preload": "bin/resin-preload"
+  }
+}
