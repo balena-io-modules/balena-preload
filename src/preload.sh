@@ -5,7 +5,7 @@ set -o pipefail
 
 IMAGE=${IMAGE:-"/img/resin.img"}
 API_HOST=${API_HOST:-"https://api.resin.io"}
-REGISTRY_HOST=${REGISTRY_HOST:-"registry.resin.io"}
+REGISTRY_HOST=${REGISTRY_HOST:-"registry2.resin.io"}
 
 # Check if credentials have been set
 test "$API_TOKEN" -o "$API_KEY" || { echo >&2 "API_TOKEN or API_KEY must be set"; exit 1; }
