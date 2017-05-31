@@ -109,7 +109,7 @@ function get_app_data() {
         ($registryHost + "/" + $imageRepo | ascii_downcase) as $imageId |
         ((.environment_variable // []) | map(select((.name|startswith("RESIN_"))==false)) | map({(.name): .value}) | add) as $env |
         ((.environment_variable // []) | map(select(.name|startswith("RESIN_"))) | map({(.name): .value}) | add) as $config |
-        [ { appId: .id, commit, imageRepo: $imageRepo, imageId: $imageId, env: ($env // {}), config: ($config // {}) } ]'
+        [ { appId: .id, name: $repoName, commit, imageRepo: $imageRepo, imageId: $imageId, env: ($env // {}), config: ($config // {}) } ]'
 }
 
 # Fetch container metadata
@@ -271,7 +271,7 @@ function expand_btrfs() {
 # Write apps.json to file $1
 # Usage: write_apps_json <path>
 function write_apps_json() {
-    echo $APPS_JSON | jq '.[0] | [ { appId, commit, imageId, env, config } ]' > $1
+    echo $APPS_JSON | jq '.[0] | [ { appId, name, commit, imageId, env, config } ]' > $1
 }
 
 # Start the docker daemon
