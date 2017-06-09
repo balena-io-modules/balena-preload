@@ -271,7 +271,13 @@ function expand_btrfs() {
 # Write apps.json to file $1
 # Usage: write_apps_json <path>
 function write_apps_json() {
-    echo $APPS_JSON | jq '.[0] | [ { appId, name, commit, imageId, env, config } ]' > $1
+    # NOTE: The setpath() in here replaces the registry host in the `imageId`
+    # to stop the newer supervisors from re-downloading the app on first boot
+    local selector='.[0] |
+        setpath(["imageId"]; (["registry2.resin.io/", .imageRepo ] | add)) |
+        [ { appId, name, commit, imageId, env, config } ]'
+    # Keep only the fields we need from APPS_JSON
+    echo "$APPS_JSON" | jq "$selector" > "$1"
 }
 
 # Start the docker daemon
@@ -346,7 +352,6 @@ else
 fi
 
 # write apps.json
-# keep only the fields we need from APPS_JSON
 write_apps_json "${APPFS_MNT}/apps.json"
 
 log "Pulling image..."
