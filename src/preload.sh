@@ -103,6 +103,10 @@ function get_app_data() {
         log "Using API_KEY"
         response=$(curl "$API_HOST/v2/application($APP_ID)?\$expand=environment_variable&apikey=$API_KEY")
     fi
+    if [[ "$response" -eq "Unauthorized" ]]; then
+        log "API authorization failed"
+        exit 1
+    fi
     echo $response | jq --arg registryHost "$REGISTRY_HOST" '.d[0] |
         (.app_name) as $repoName |
         ($repoName + "/" + .commit | ascii_downcase) as $imageRepo |
