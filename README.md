@@ -152,7 +152,8 @@ run.once('exit', (code, signal) => {
 
 ### Flasher Images Unsupported
 
-Currently flasher-type images are unsupported.
+Currently flasher-type images – OS images that write the OS to
+internal storage devices (like an eMMC) on first boot – are currently unsupported.
 For details see [issue #37](https://github.com/resin-io/resin-preload-image-script/issues/37).
 
 ### Version Compatibility
