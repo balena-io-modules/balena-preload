@@ -55,6 +55,16 @@ function showError( error, details, report ) {
 
 }
 
+function exitIfError( code, signal ) {
+  if(code !== 0 || signal != null) {
+    const error = new Error(`Preloader exited with ${code == null ? 'signal' : 'code'} ${code == null ? signal : code}`)
+    error.code = code
+    error.signal = signal
+    showError( error )
+    process.exit( code || 1 )
+  }
+}
+
 process.on('uncaughtException', (error) => {
   const code = typeof error.code === 'number' ?
     (error.code || 1) : 1
@@ -106,28 +116,12 @@ console.error('\nBuilding preloader image...\n')
 
 preload.build({ stdio: 'inherit' }).once('exit', (code, signal) => {
 
-  if(code !== 0) {
-    const error = new Error(`Preloader build exited with ${code == null ? 'signal' : 'code'} ${code == null ? signal : code}`)
-    error.code = code
-    error.signal = signal
-    showError( error )
-    process.exit( code || 1 )
-  }
-
+  exitIfError( code, signal )
   console.error('\nPreloading...\n')
 
   preload.run(options, { stdio: 'inherit' }).once('exit', (code, signal) => {
-
-    if(code !== 0 || signal != null) {
-      const error = new Error(`Preloader exited with ${code == null ? 'signal' : 'code'} ${code == null ? signal : code}`)
-      error.code = code
-      error.signal = signal
-      showError( error )
-      process.exit( code || 1 )
-    }
-
+    exitIfError( code, signal )
     console.log('\n[OK] Done.')
-
   })
 
 })
