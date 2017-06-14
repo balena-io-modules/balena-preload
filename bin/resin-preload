@@ -95,7 +95,7 @@ while( argv.length ) {
 }
 
 // Show usage help if no options have been set
-if( !(options.appId || options.image || options.apiToken || options.apiKey) ) {
+if( !(options.appId && options.image && (options.apiToken || options.apiKey)) ) {
   console.error(USAGE)
   process.exit(1)
 }
