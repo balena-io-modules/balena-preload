@@ -21,6 +21,7 @@ $ npm install --global resin-preload
     - [Additional Options](#additional-options)
 - [Module usage](#module-usage)
 - [Known Issues](#known-issues)
+    - [Flasher Images Unsupported](#flasher-images-unsupported)
     - [Version Compatibility](#version-compatibility)
     - [BTRFS Support](#btrfs-support)
 
@@ -44,7 +45,7 @@ Options:
   --api-token    API token (required, or api-key)
   --api-key      API key (required, or api-token)
   --api-host     API host (default: "https://api.resin.io")
-  --registry     Image registry host (default: "registry.resin.io")
+  --registry     Image registry host (default: "registry2.resin.io")
 
   --help, -h     Display resin-preload usage
   --version, -v  Display resin-preload version
@@ -67,7 +68,7 @@ Example:
 
 ```
 
-This script requires the following options to be set:
+If using environment variables, this program requires the following options to be set:
 
   * `IMAGE`: The path to the OS image you downloaded for the `APP_ID` you want to target.
   * `APP_ID`: ID of the App that will be assigned to the device. It can be extracted from the URL in the Resin dashboard, for instance `https://dashboard.resin.io/apps/2167` means the `APP_ID` is `2167`.
@@ -103,7 +104,7 @@ The `/path/to/resin.img` file, will now have the latest version of your applicat
 
 ### Additional Options
 
-* `REGISTRY_HOST`: Docker registry from which to download the image. If unsure, use `registry.resin.io`.
+* `REGISTRY_HOST`: Docker registry from which to download the image. If unsure, leave empty.
 * Alternatively to `API_TOKEN`, you can use an `API_KEY` variable with an API key from a config.json file or the [SDK](https://github.com/resin-io/resin-sdk/blob/master/DOCUMENTATION.md#resin.models.application.getApiKey).
 * `API_HOST`: Address of the Resin API. If unsure, use `https://api.resin.io`.
 
@@ -148,6 +149,11 @@ run.once('exit', (code, signal) => {
 ```
 
 ## Known Issues
+
+### Flasher Images Unsupported
+
+Currently flasher-type images are unsupported.
+For details see [issue #37](https://github.com/resin-io/resin-preload-image-script/issues/37).
 
 ### Version Compatibility
 
