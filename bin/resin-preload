@@ -11,7 +11,7 @@ const USAGE = `
     --api-token    API token (required, or api-key)
     --api-key      API key (required, or api-token)
     --api-host     API host (default: "https://api.resin.io")
-    --registry     Image registry host (default: "registry.resin.io")
+    --registry     Image registry host (default: "registry2.resin.io")
 
     --help, -h     Display ${info.name} usage
     --version, -v  Display ${info.name} version

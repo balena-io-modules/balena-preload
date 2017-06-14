@@ -135,7 +135,7 @@ var options = {
   apiToken: 'pZCI6MTc2OCwidXNlc...', // API credentials
   apiKey: null,
   apiHost: 'https://api.resin.io', // Optional
-  registryHost: 'registry.resin.io', // Optional
+  registryHost: 'registry2.resin.io', // Optional
   containerName: 'resin-image-preloader' // Optional, Docker container name
 }
 
