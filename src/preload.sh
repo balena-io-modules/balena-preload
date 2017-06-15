@@ -5,7 +5,7 @@ set -o pipefail
 
 IMAGE=${IMAGE:-"/img/resin.img"}
 API_HOST=${API_HOST:-"https://api.resin.io"}
-REGISTRY_HOST=${REGISTRY_HOST:-"registry.resin.io"}
+REGISTRY_HOST=${REGISTRY_HOST:-"registry2.resin.io"}
 
 # Check if credentials have been set
 test "$API_TOKEN" -o "$API_KEY" || { echo >&2 "API_TOKEN or API_KEY must be set"; exit 1; }
@@ -103,7 +103,7 @@ function get_app_data() {
         log "Using API_KEY"
         response=$(curl "$API_HOST/v2/application($APP_ID)?\$expand=environment_variable&apikey=$API_KEY")
     fi
-    echo $response | jq --arg registryHost "$REGISTRY_HOST" '.d[0] |
+    echo "$response" | jq --arg registryHost "$REGISTRY_HOST" '.d[0] |
         (.app_name) as $repoName |
         ($repoName + "/" + .commit | ascii_downcase) as $imageRepo |
         ($registryHost + "/" + $imageRepo | ascii_downcase) as $imageId |
@@ -114,11 +114,29 @@ function get_app_data() {
 
 # Fetch container metadata
 function get_container_size() {
-    echo $(curl -s "$REGISTRY_HOST/v1/images/$IMAGE_ID/ancestry" | \
-        jq '.[]' | awk '{print "'$REGISTRY_HOST'/v1/images/" $1 "/json"}' | \
-        xargs -r -n 1 curl -I -s | \
-        grep 'X-Docker-Size' | \
-        awk '{s+=$2} END {print int(s / 1000000)}')
+    local REGISTRY_TOKEN
+    local response
+    # Get an auth token for the registry
+    REGISTRY_TOKEN=$(
+        curl -s -H "Authorization: Bearer $API_TOKEN" "$API_HOST/auth/v1/token?service=$REGISTRY_HOST&scope=repository:$IMAGE_REPO:pull" | \
+        jq -r '.token'
+    )
+    # Get the image layers, then the size for each layer
+    response=$(
+        curl -s -H "Authorization: Bearer $REGISTRY_TOKEN" "https://$REGISTRY_HOST/v2/$IMAGE_REPO/manifests/latest" | \
+        jq -r '(.fsLayers // []) | map((.blobSum)) | map("https://'"$REGISTRY_HOST"'/v2/'"$IMAGE_REPO"'/blobs/" + .) | .[]' | \
+        # Get the layer blob URL
+        # NOTE: When using `curl -L` to follow redirects, the `Authorization:`
+        # header is carried along, causing Amazon S3 to return a HTTP 400;
+        # thus we need to split this into two separate requests
+        xargs -r -n 1 curl -I -s -H "Authorization: Bearer $REGISTRY_TOKEN" | \
+        grep "Location: " | sed -r 's/Location:\s*([^\\n\\r]+)/\1/g' | \
+        # Get the layer's size from the blob header
+        xargs -r -n 1 curl -I | \
+        grep 'Content-Length' | \
+        awk '{s+=$2} END {print int(s / 1000000)}'
+    )
+    echo "$response"
 }
 
 # Usage: map_loop <image> <part_no>
@@ -306,19 +324,17 @@ function start_docker_daemon() {
 
 # Fetch & process app / image / container data, set $APPS_JSON,
 # $IMAGE_REPO, $IMAGE_ID, and $CONTAINER_SIZE
+log ""
 log "Fetching application data"
-log "Using API host" $API_HOST
-log "Using Registry host" $REGISTRY_HOST
+log "Using API host $API_HOST"
+log "Using Registry host $REGISTRY_HOST"
 APPS_JSON=$(get_app_data)
-IMAGE_REPO=$(echo $APPS_JSON | jq -r '.[0].imageRepo')
+IMAGE_REPO=$(echo "$APPS_JSON" | jq -r '.[0].imageRepo')
+log ""
 
-log "Fetching image data" $IMAGE_REPO
-IMAGE_ID=$(curl -s "$REGISTRY_HOST/v1/repositories/$IMAGE_REPO/tags/latest" | jq -r '.')
-log "Image ID:" $IMAGE_ID
-
-log "Fetching container data"
+log "Fetching image data for $IMAGE_REPO"
 CONTAINER_SIZE=$(get_container_size)
-log "Container size:" $CONTAINER_SIZE "MB"
+log "Container size: $CONTAINER_SIZE MB"
 
 get_resin_os_version $ROOTFS_MNT
 
