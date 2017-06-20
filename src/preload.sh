@@ -6,6 +6,7 @@ set -o pipefail
 IMAGE=${IMAGE:-"/img/resin.img"}
 API_HOST=${API_HOST:-"https://api.resin.io"}
 REGISTRY_HOST=${REGISTRY_HOST:-"registry2.resin.io"}
+SPLASH_IMAGE=${SPLASH_IMAGE:-"/img/resin-logo.png"}
 
 # Check if credentials have been set
 test "$API_TOKEN" -o "$API_KEY" || { echo >&2 "API_TOKEN or API_KEY must be set"; exit 1; }
@@ -23,6 +24,7 @@ IMAGE_ADD_SPACE=
 # Mountpoints
 ROOTFS_MNT="/mnt/$APP_ID-rootfs"
 APPFS_MNT="/mnt/$APP_ID"
+BOOTFS_MNT="/mnt/$APP_ID-bootfs"
 
 # Docker vars
 DOCKER_TMP="/tmp/docker-$APP_ID"
@@ -63,6 +65,12 @@ function cleanup() {
         log "Unmounting application from $APPFS_MNT"
         umount -v $APPFS_MNT || true
         test -d $APPFS_MNT && rmdir $APPFS_MNT
+    fi
+
+    if [[ $(mount | grep "$BOOTFS_MNT") ]]; then
+        log "Unmounting bootfs from $BOOTFS_MNT"
+        umount -v $BOOTFS_MNT || true
+        test -d $BOOTFS_MNT && rmdir $BOOTFS_MNT
     fi
 
     sync
@@ -322,6 +330,42 @@ function start_docker_daemon() {
     log "Docker started"
 }
 
+# Mount the image's bootfs to $BOOTFS_MNT
+# Usage: mount_bootfs <device>
+function mount_bootfs() {
+    log "Mounting bootfs from $1 to" $BOOTFS_MNT
+    # Create the mount path, then sync & sleep
+    # to ensure it exists before mounting
+    mkdir -p $BOOTFS_MNT
+    sync
+    sleep 2
+    # Mount the bootfs from partition 1
+    mount -o loop,rw $1 $BOOTFS_MNT
+}
+
+function unmount_bootfs() {
+    log "Unmounting bootfs from" $BOOTFS_MNT
+    umount -v $BOOTFS_MNT || true
+    test -d $BOOTFS_MNT && rmdir $BOOTFS_MNT
+}
+
+# Replaces the resin-logo.png used on boot splash to allow a more branded
+# experience.
+# Usage: replace_splash_image
+function replace_splash_image() {
+    local LOOPDEVICE=$(map_loop $IMAGE 1)
+    log
+    log "Using " $LOOPDEVICE
+
+    mount_bootfs $LOOPDEVICE
+
+    log "Copying splash image"
+    cp $SPLASH_IMAGE $BOOTFS_MNT/splash/resin-logo.png
+
+    unmount_bootfs $LOOPDEVICE
+    unmap_loop $LOOPDEVICE
+}
+
 # Fetch & process app / image / container data, set $APPS_JSON,
 # $IMAGE_REPO, $IMAGE_ID, and $CONTAINER_SIZE
 log ""
@@ -331,6 +375,16 @@ log "Using Registry host $REGISTRY_HOST"
 APPS_JSON=$(get_app_data)
 IMAGE_REPO=$(echo "$APPS_JSON" | jq -r '.[0].imageRepo')
 log ""
+
+if test -e $SPLASH_IMAGE; then
+    log "Replacing splash image"
+    replace_splash_image
+    log "Splash image replaced"
+    log
+else
+    log "Leaving splash image alone"
+    log
+fi
 
 log "Fetching image data for $IMAGE_REPO"
 CONTAINER_SIZE=$(get_container_size)
