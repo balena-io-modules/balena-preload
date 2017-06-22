@@ -22,6 +22,7 @@ function usage() {
     echo "  --api-key      API key"
     echo "  --api-host     API hostname"
     echo "  --registry     Image registry host"
+    echo "  --splash-image PNG Image for custom splash screen"
     echo ""
     echo "Environment variables:"
     echo ""
@@ -34,6 +35,7 @@ function usage() {
     echo "  --api-key      API_KEY"
     echo "  --api-host     API_HOST"
     echo "  --registry     REGISTRY_HOST"
+    echo "  --splash-image SPLASH_IMAGE"
     echo ""
     echo "Example:"
     echo ""
@@ -59,11 +61,17 @@ function set_options() {
             --api-key) API_KEY=${argv[$index]} ;;
             --api-host) API_HOST=${argv[$index]} ;;
             --registry) REGISTRY_HOST=${argv[$index]} ;;
+            --splash-image) SPLASH_IMAGE=${argv[$index]} ;;
         esac
     done
 }
 
 set_options $@
+
+# Allows us to inject the splash image if specified
+if [ $SPLASH_IMAGE ] ; then
+    SPLASH_IMAGE_ARG="-v $SPLASH_IMAGE:/img/resin-logo.png"
+fi
 
 # Build the preloader image
 docker build -t resin/resin-preload $DIRNAME
@@ -75,4 +83,5 @@ docker run -it --privileged \
     -e API_HOST=$API_HOST \
     -v $IMAGE:/img/resin.img \
     --name $CONTAINER_NAME \
+    $SPLASH_IMAGE_ARG \
     resin/resin-preload
