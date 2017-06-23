@@ -140,7 +140,7 @@ function get_container_size() {
         xargs -r -n 1 curl -I -s -H "Authorization: Bearer $REGISTRY_TOKEN" | \
         grep "Location: " | sed -r 's/Location:\s*([^\\n\\r]+)/\1/g' | \
         # Get the layer's size from the blob header
-        xargs -r -n 1 curl -I | \
+        xargs -r -n 1 curl -I -H "Accept-Encoding: identity" | \
         grep 'Content-Length' | \
         awk '{s+=$2} END {print int(s / 1000000)}'
     )
