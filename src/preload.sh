@@ -35,42 +35,42 @@ DOCKER_DIR=
 # Log to stderr to avoid interfering
 # with function output
 function log() {
-    echo >&2 $@
+    echo >&2 "$@"
 }
 
 function cleanup() {
 
     log "Cleaning up"
 
-    if [[ -e $DOCKER_PID ]]; then
+    if [[ -e "$DOCKER_PID" ]]; then
         log "Waiting for Docker to stop"
-        kill $(cat $DOCKER_PID)
+        kill $(cat "$DOCKER_PID")
         while [[ -e "$DOCKER_PID" ]]; do
             sleep 1
         done
     fi
 
-    if [[ -d $DOCKER_TMP ]]; then
+    if [[ -d "$DOCKER_TMP" ]]; then
         log "Removing Docker tmp files"
-        rm -rfv $DOCKER_TMP || true
+        rm -rfv "$DOCKER_TMP" || true
     fi
 
     if [[ $(mount | grep "$ROOTFS_MNT") ]]; then
         log "Unmounting rootfs from $ROOTFS_MNT"
-        umount -v $ROOTFS_MNT || true
-        test -d $ROOTFS_MNT && rmdir $ROOTFS_MNT
+        umount -v "$ROOTFS_MNT" || true
+        test -d "$ROOTFS_MNT" && rmdir "$ROOTFS_MNT"
     fi
 
     if [[ $(mount | grep "$APPFS_MNT") ]]; then
         log "Unmounting application from $APPFS_MNT"
-        umount -v $APPFS_MNT || true
-        test -d $APPFS_MNT && rmdir $APPFS_MNT
+        umount -v "$APPFS_MNT" || true
+        test -d "$APPFS_MNT" && rmdir "$APPFS_MNT"
     fi
 
     if [[ $(mount | grep "$BOOTFS_MNT") ]]; then
         log "Unmounting bootfs from $BOOTFS_MNT"
-        umount -v $BOOTFS_MNT || true
-        test -d $BOOTFS_MNT && rmdir $BOOTFS_MNT
+        umount -v "$BOOTFS_MNT" || true
+        test -d "$BOOTFS_MNT" && rmdir "$BOOTFS_MNT"
     fi
 
     sync
@@ -96,7 +96,7 @@ function version() {
 #   echo "$first_version >= $second_version !"
 # fi
 function version_ge() {
-    [[ $(version $1) -ge $(version $2) ]]
+    [[ $(version "$1") -ge $(version "$2") ]]
 }
 
 # Fetch application metadata
@@ -157,39 +157,39 @@ function map_loop() {
     # Find the next free /dev/loop
     local LOOPDEVICE=$(losetup -f)
     # Get partition offset & size
-    local PART_START=$(get_partition_start $2 B)
-    local PART_END=$(get_partition_end $2 B)
+    local PART_START=$(get_partition_start "$2" B)
+    local PART_END=$(get_partition_end "$2" B)
     local PART_SIZE=$(( $PART_END - $PART_START + 1 ))
     # Map image partition to device
     log "Mapping $IMAGE $PART_START:$PART_SIZE to $LOOPDEVICE"
-    losetup $LOOPDEVICE $1 --offset $PART_START --sizelimit $PART_SIZE >&2
-    echo $LOOPDEVICE
+    losetup "$LOOPDEVICE" "$1" --offset "$PART_START" --sizelimit "$PART_SIZE" >&2
+    echo "$LOOPDEVICE"
 }
 
 # Usage: unmap_loop <loopdevice>
 function unmap_loop() {
-    log "Unmapping" $1
-    losetup -d $1
+    log "Unmapping $1"
+    losetup -d "$1"
 }
 
 # Mount the image's rootfs to $ROOTFS_MNT
 # Usage: mount_rootfs <device>
 function mount_rootfs() {
     log
-    log "Mounting rootfs from $1 to" $ROOTFS_MNT
+    log "Mounting rootfs from $1 to $ROOTFS_MNT"
     # Create the mount path, then sync & sleep
     # to ensure it exists before mounting
-    mkdir -p $ROOTFS_MNT
+    mkdir -p "$ROOTFS_MNT"
     sync
     sleep 2
     # Mount the rootfs from partition 2
-    mount -o loop,ro $1 $ROOTFS_MNT
+    mount -o loop,ro "$1" "$ROOTFS_MNT"
 }
 
 function unmount_rootfs() {
-    log "Unmounting rootfs from" $ROOTFS_MNT
-    umount -v $ROOTFS_MNT || true
-    test -d $ROOTFS_MNT && rmdir $ROOTFS_MNT
+    log "Unmounting rootfs from $ROOTFS_MNT"
+    umount -v "$ROOTFS_MNT" || true
+    test -d "$ROOTFS_MNT" && rmdir "$ROOTFS_MNT"
 }
 
 # Get the Resin OS version info by mounting the root partition
@@ -208,30 +208,30 @@ function unmount_rootfs() {
 # MACHINE=raspberrypi3
 function get_resin_os_version() {
 
-    local LOOPDEVICE=$(map_loop $IMAGE 2)
-    mount_rootfs $LOOPDEVICE
+    local LOOPDEVICE=$(map_loop "$IMAGE" 2)
+    mount_rootfs "$LOOPDEVICE"
 
     log
     local OS_RELEASE="${1}/etc/os-release"
-    log "Sourcing release info from" $OS_RELEASE
-    source $OS_RELEASE
+    log "Sourcing release info from $OS_RELEASE"
+    source "$OS_RELEASE"
 
-    log "Detected" $PRETTY_NAME
+    log "Detected $PRETTY_NAME"
 
     log
-    log "id:" $ID
-    log "name:" $NAME
-    log "version:" $VERSION
-    log "version_id:" $VERSION_ID
-    log "pretty_name:" $PRETTY_NAME
-    log "resin_board_rev:" $RESIN_BOARD_REV
-    log "meta_resin_rev:" $META_RESIN_REV
-    log "slug:" $SLUG
-    log "machine:" $MACHINE
+    log "id: $ID"
+    log "name: $NAME"
+    log "version: $VERSION"
+    log "version_id: $VERSION_ID"
+    log "pretty_name: $PRETTY_NAME"
+    log "resin_board_rev: $RESIN_BOARD_REV"
+    log "meta_resin_rev: $META_RESIN_REV"
+    log "slug: $SLUG"
+    log "machine: $MACHINE"
     log
 
     unmount_rootfs
-    unmap_loop $LOOPDEVICE
+    unmap_loop "$LOOPDEVICE"
 
 }
 
@@ -251,7 +251,7 @@ function get_partition_start() {
     local LINENO=$(($1 + 2))
     # Extract value & strip the unit
     local PATTERN="s/[^:]:\([^${2}]*\).*/\1/"
-    parted -s -m $IMAGE unit $2 p | sed -n "${LINENO}p" | sed $PATTERN
+    parted -s -m "$IMAGE" unit "$2" p | sed -n "${LINENO}p" | sed "$PATTERN"
 }
 
 # Get the end offset (in bytes) of a partition by partition number
@@ -261,7 +261,7 @@ function get_partition_end() {
     local LINENO=$(($1 + 2))
     # Extract value & strip the unit
     local PATTERN="s/[^:]:[^${2}]*${2}:\([^${2}]*\).*/\1/"
-    parted -s -m $IMAGE unit $2 p | sed -n "${LINENO}p" | sed $PATTERN
+    parted -s -m "$IMAGE" unit "$2" p | sed -n "${LINENO}p" | sed "$PATTERN"
 }
 
 # Resizes partition 4 & 6 by <add_space> (in MB)
@@ -269,15 +269,15 @@ function get_partition_end() {
 function expand_partitions() {
     local PART_END=$(get_partition_end 6 MB)
     local NEW_PART_END=$(($PART_END + $1))
-    log "Expanding extended partition 4 by" $1 "MB"
-    log "Expanding logical partition 6 by" $1 "MB"
+    log "Expanding extended partition 4 by $1 MB"
+    log "Expanding logical partition 6 by $1 MB"
     parted -s "$IMAGE" resizepart 4 "${NEW_PART_END}MB" resizepart 6 "${NEW_PART_END}MB"
 }
 
 # Resize ext4 filesystem
 function expand_ext4() {
-    local LOOPDEVICE=$(map_loop $IMAGE 6)
-    log "Using" $LOOPDEVICE
+    local LOOPDEVICE=$(map_loop "$IMAGE" 6)
+    log "Using $LOOPDEVICE"
 
     # For ext4, we'll have to keep it unmounted to resize
     log "Resizing filesystem"
@@ -291,22 +291,22 @@ function expand_ext4() {
     else
         log "e2fsck: File system OK"
     fi
-    resize2fs -f $LOOPDEVICE
-    mount -t ext4 -o rw $LOOPDEVICE $APPFS_MNT
+    resize2fs -f "$LOOPDEVICE"
+    mount -t ext4 -o rw "$LOOPDEVICE" "$APPFS_MNT"
 }
 
 # Resize BTRFS filesystem
 function expand_btrfs() {
     log
     # For btrfs we'll need to mount the fs, and setup the loop device manually,
-    local LOOPDEVICE=$(map_loop $IMAGE 6)
-    log "Using" $LOOPDEVICE
+    local LOOPDEVICE=$(map_loop "$IMAGE" 6)
+    log "Using $LOOPDEVICE"
 
-    log "Mounting application fs to" $APPFS_MNT
-    mount -t btrfs -o nospace_cache,rw $LOOPDEVICE $APPFS_MNT
+    log "Mounting application fs to $APPFS_MNT"
+    mount -t btrfs -o nospace_cache,rw "$LOOPDEVICE" "$APPFS_MNT"
 
     log "Resizing filesystem"
-    btrfs filesystem resize max $APPFS_MNT
+    btrfs filesystem resize max "$APPFS_MNT"
 }
 
 # Write apps.json to file $1
@@ -324,7 +324,7 @@ function write_apps_json() {
 # Start the docker daemon
 # Usage: start_docker_daemon <filesystem_type>
 function start_docker_daemon() {
-    mkdir -p $DOCKER_TMP
+    mkdir -p "$DOCKER_TMP"
 
     # If this preload script was ran before implementing the rce/docker fix,
     # make sure you cleanup
@@ -338,7 +338,7 @@ function start_docker_daemon() {
         DOCKER_DIR="${APPFS_MNT}/rce"
     fi
 
-    docker daemon -s $1 -g "$DOCKER_DIR" -p "$DOCKER_PID" -H "unix://$DOCKER_SOCK" &
+    docker daemon -s "$1" -g "$DOCKER_DIR" -p "$DOCKER_PID" -H "unix://$DOCKER_SOCK" &
 
     log "Waiting for Docker to start..."
     while [ ! -e "$DOCKER_SOCK" ]; do
@@ -350,37 +350,37 @@ function start_docker_daemon() {
 # Mount the image's bootfs to $BOOTFS_MNT
 # Usage: mount_bootfs <device>
 function mount_bootfs() {
-    log "Mounting bootfs from $1 to" $BOOTFS_MNT
+    log "Mounting bootfs from $1 to $BOOTFS_MNT"
     # Create the mount path, then sync & sleep
     # to ensure it exists before mounting
-    mkdir -p $BOOTFS_MNT
+    mkdir -p "$BOOTFS_MNT"
     sync
     sleep 2
     # Mount the bootfs from partition 1
-    mount -o loop,rw $1 $BOOTFS_MNT
+    mount -o loop,rw "$1" "$BOOTFS_MNT"
 }
 
 function unmount_bootfs() {
-    log "Unmounting bootfs from" $BOOTFS_MNT
-    umount -v $BOOTFS_MNT || true
-    test -d $BOOTFS_MNT && rmdir $BOOTFS_MNT
+    log "Unmounting bootfs from $BOOTFS_MNT"
+    umount -v "$BOOTFS_MNT" || true
+    test -d "$BOOTFS_MNT" && rmdir "$BOOTFS_MNT"
 }
 
 # Replaces the resin-logo.png used on boot splash to allow a more branded
 # experience.
 # Usage: replace_splash_image
 function replace_splash_image() {
-    local LOOPDEVICE=$(map_loop $IMAGE 1)
+    local LOOPDEVICE=$(map_loop "$IMAGE" 1)
     log
-    log "Using " $LOOPDEVICE
+    log "Using $LOOPDEVICE"
 
-    mount_bootfs $LOOPDEVICE
+    mount_bootfs "$LOOPDEVICE"
 
     log "Copying splash image"
-    cp $SPLASH_IMAGE $BOOTFS_MNT/splash/resin-logo.png
+    cp "$SPLASH_IMAGE" "$BOOTFS_MNT/splash/resin-logo.png"
 
-    unmount_bootfs $LOOPDEVICE
-    unmap_loop $LOOPDEVICE
+    unmount_bootfs "$LOOPDEVICE"
+    unmap_loop "$LOOPDEVICE"
 }
 
 # Fetch & process app / image / container data, set $APPS_JSON,
@@ -393,7 +393,7 @@ APPS_JSON=$(get_app_data)
 IMAGE_REPO=$(echo "$APPS_JSON" | jq -r '.[0].imageRepo')
 log ""
 
-if test -e $SPLASH_IMAGE; then
+if test -e "$SPLASH_IMAGE"; then
     log "Replacing splash image"
     replace_splash_image
     log "Splash image replaced"
@@ -407,20 +407,20 @@ log "Fetching image data for $IMAGE_REPO"
 CONTAINER_SIZE=$(get_container_size)
 log "Container size: $CONTAINER_SIZE MB"
 
-get_resin_os_version $ROOTFS_MNT
+get_resin_os_version "$ROOTFS_MNT"
 
-parted -s $IMAGE unit MB p
+parted -s "$IMAGE" unit MB p
 
 # Resize partition
-expand_image $IMAGE
-expand_partitions $IMAGE_ADD_SPACE
+expand_image "$IMAGE"
+expand_partitions "$IMAGE_ADD_SPACE"
 
-parted -s $IMAGE unit MB p
+parted -s "$IMAGE" unit MB p
 
-log "Creating mountpoint" $APPFS_MNT
+log "Creating mountpoint $APPFS_MNT"
 # Create the mount path, then sync & sleep
 # to ensure it exists before mounting
-mkdir -p $APPFS_MNT
+mkdir -p "$APPFS_MNT"
 sync
 sleep 2
 
@@ -428,7 +428,7 @@ sleep 2
 # and switch from BTRFS to EXT4 for 2.0.0+,
 # then expand & mount the application filesystem
 log "Expanding filesystem"
-if version_ge $VERSION "2.0.0"; then
+if version_ge "$VERSION" "2.0.0"; then
     log "Using EXTFS"
     expand_ext4
     start_docker_daemon aufs
