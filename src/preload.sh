@@ -314,8 +314,10 @@ function start_docker_daemon() {
     # If this preload script was ran before implementing the rce/docker fix,
     # make sure you cleanup
     if [[ -d "${APPFS_MNT}/docker" ]]; then
-        log "Removing" "${APPFS_MNT}/rce"
-        rm -rfv "${APPFS_MNT}/rce"
+        if [[ -d "${APPFS_MNT/rce}" ]]; then
+            log "Removing" "${APPFS_MNT}/rce"
+            rm -rfv "${APPFS_MNT}/rce"
+        fi
         DOCKER_DIR="${APPFS_MNT}/docker"
     else
         DOCKER_DIR="${APPFS_MNT}/rce"
