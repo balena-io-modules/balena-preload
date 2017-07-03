@@ -120,7 +120,7 @@ function get_app_data() {
         [ { appId: .id, name: $repoName, commit, imageRepo: $imageRepo, imageId: $imageId, env: ($env // {}), config: ($config // {}) } ]'
 }
 
-# Fetch container metadata
+# Fetch container size in MB by iterating through image layers
 function get_container_size() {
     local REGISTRY_TOKEN
     local response
@@ -135,14 +135,19 @@ function get_container_size() {
         jq -r '(.fsLayers // []) | map((.blobSum)) | map("https://'"$REGISTRY_HOST"'/v2/'"$IMAGE_REPO"'/blobs/" + .) | .[]' | \
         # Get the layer blob URL
         # NOTE: When using `curl -L` to follow redirects, the `Authorization:`
-        # header is carried along, causing Amazon S3 to return a HTTP 400;
+        # header is carried along on an HTTP 307, causing Amazon S3 to return a 400;
         # thus we need to split this into two separate requests
-        xargs -r -n 1 curl -I -s -H "Authorization: Bearer $REGISTRY_TOKEN" | \
+        # NOTE: We use `-I` and `-X GET` here to force curl to print the headers,
+        # while still using GET as the request method, as the subsequent request to S3
+        # needs to have the same method (due to request signatures)
+        xargs -r -n 1 curl -I -X GET -s -H "Authorization: Bearer $REGISTRY_TOKEN" | \
         grep "Location: " | sed -r 's/Location:\s*([^\\n\\r]+)/\1/g' | \
-        # Get the layer's size from the blob header
-        xargs -r -n 1 curl -I | \
-        grep 'Content-Length' | \
-        awk '{s+=$2} END {print int(s / 1000000)}'
+        # Get the layer's size from the blob's last 4 bytes (gzip ISIZE field)
+        xargs -r -n 1 curl -H 'Range: bytes=-4' | \
+        # Print the last 4 bytes of the tarball as uint32 in decimal
+        hexdump -v -e '"%u\n"' | \
+        # Sum them all up, and divide to get MB
+        awk '{s+=$1} END {print int(s / 1000000)}'
     )
     echo "$response"
 }
