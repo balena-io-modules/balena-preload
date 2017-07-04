@@ -281,7 +281,17 @@ function expand_ext4() {
 
     # For ext4, we'll have to keep it unmounted to resize
     log "Resizing filesystem"
-    e2fsck -f $LOOPDEVICE && resize2fs -f $LOOPDEVICE
+    e2fsck -p -f "$LOOPDEVICE"
+    local status=$?
+    if [[ $status -ne 0 && $status -le 2 ]]; then
+        log "e2fsck: File system errors corrected"
+    elif [[ $status -gt 2 ]]; then
+        log "e2fsck: File system errors could not be corrected"
+        exit 1
+    else
+        log "e2fsck: File system OK"
+    fi
+    resize2fs -f $LOOPDEVICE
     mount -t ext4 -o rw $LOOPDEVICE $APPFS_MNT
 }
 
