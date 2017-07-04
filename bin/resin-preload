@@ -6,27 +6,29 @@ const USAGE = `
 
   Options:
 
-    --app          Application ID (required)
-    --img          Disk image to preload into (required)
-    --api-token    API token (required, or api-key)
-    --api-key      API key (required, or api-token)
-    --api-host     API host (default: "https://api.resin.io")
-    --registry     Image registry host (default: "registry2.resin.io")
+    --app            Application ID (required)
+    --img            Disk image to preload into (required)
+    --api-token      API token (required, or api-key)
+    --api-key        API key (required, or api-token)
+    --api-host       API host (default: "https://api.resin.io")
+    --registry       Image registry host (default: "registry2.resin.io")
+    --splash-image   PNG Image for custom splash screen
 
-    --help, -h     Display ${info.name} usage
-    --version, -v  Display ${info.name} version
+    --help, -h       Display ${info.name} usage
+    --version, -v    Display ${info.name} version
 
   Environment variables:
 
     The following option flags can also be set
     via the corresponding environment variables:
 
-    --app          APP_ID
-    --img          IMAGE
-    --api-token    API_TOKEN
-    --api-key      API_KEY
-    --api-host     API_HOST
-    --registry     REGISTRY_HOST
+    --app            APP_ID
+    --img            IMAGE
+    --api-token      API_TOKEN
+    --api-key        API_KEY
+    --api-host       API_HOST
+    --registry       REGISTRY_HOST
+    --splash-image   SPLASH_IMAGE
 
   Example:
 
@@ -91,6 +93,7 @@ const options = {
   apiKey: process.env['API_KEY'],
   apiHost: process.env['API_HOST'],
   registryHost: process.env['REGISTRY_HOST'],
+  splashImage: process.env['SPLASH_IMAGE'],
 }
 
 while( argv.length ) {
@@ -101,6 +104,7 @@ while( argv.length ) {
     case '--api-key': options.apiKey = argv.shift(); break
     case '--api-host': options.apiHost = argv.shift(); break
     case '--registry': options.registryHost = argv.shift(); break
+    case '--splash-image': options.splashImage = argv.shift(); break
   }
 }
 
