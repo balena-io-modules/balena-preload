@@ -19,6 +19,7 @@ $ npm install --global resin-preload
 - [Command Line Usage](#command-line-usage)
     - [Example](#example)
     - [Additional Options](#additional-options)
+    - [Custom Splash Screen](#custom-splash-screen)
 - [Module usage](#module-usage)
 - [Known Issues](#known-issues)
     - [Flasher Images Unsupported](#flasher-images-unsupported)
@@ -40,27 +41,29 @@ Usage: resin-preload [options]
 
 Options:
 
-  --app          Application ID (required)
-  --img          Disk image to preload into (required)
-  --api-token    API token (required, or api-key)
-  --api-key      API key (required, or api-token)
-  --api-host     API host (default: "https://api.resin.io")
-  --registry     Image registry host (default: "registry2.resin.io")
+  --app            Application ID (required)
+  --img            Disk image to preload into (required)
+  --api-token      API token (required, or api-key)
+  --api-key        API key (required, or api-token)
+  --api-host       API host (default: "https://api.resin.io")
+  --registry       Image registry host (default: "registry2.resin.io")
+  --splash-image   PNG Image for custom splash screen
 
-  --help, -h     Display resin-preload usage
-  --version, -v  Display resin-preload version
+  --help, -h       Display resin-preload usage
+  --version, -v    Display resin-preload version
 
 Environment variables:
 
   The following option flags can also be set
   via the corresponding environment variables:
 
-  --app          APP_ID
-  --img          IMAGE
-  --api-token    API_TOKEN
-  --api-key      API_KEY
-  --api-host     API_HOST
-  --registry     REGISTRY_HOST
+  --app            APP_ID
+  --img            IMAGE
+  --api-token      API_TOKEN
+  --api-key        API_KEY
+  --api-host       API_HOST
+  --registry       REGISTRY_HOST
+  --splash-image   SPLASH_IMAGE
 
 Example:
 
@@ -71,13 +74,15 @@ Example:
 If using environment variables, this program requires the following options to be set:
 
   * `IMAGE`: The path to the OS image you downloaded for the `APP_ID` you want to target.
-  * `APP_ID`: ID of the App that will be assigned to the device. It can be extracted from the URL in the Resin dashboard, for instance `https://dashboard.resin.io/apps/2167` means the `APP_ID` is `2167`.
-  * `API_TOKEN`: Authentication token for Resin, taken from the [preferences page](https://dashboard.resin.io/preferences?tab=details). 
+  * `APP_ID`: ID of the App that will be assigned to the device. It can be extracted from the URL in the Resin dashboard,
+     for instance `https://dashboard.resin.io/apps/2167` means the `APP_ID` is `2167`.
+  * `API_TOKEN`: Authentication token for Resin, taken from the [preferences page](https://dashboard.resin.io/preferences/details). 
 
 
 ### Example
 
-**NOTE:** Before running the example below, make sure that you have successfully pushed to the app and that the `Application commit` is the correct version of the code you intend to preload.
+**NOTE:** Before running the example below, make sure that you have successfully pushed to the app and
+that the `Application commit` is the correct version of the code you intend to preload.
 
 Download an OS image from the Resin dashboard and then run:
 
@@ -107,6 +112,15 @@ The `/path/to/resin.img` file, will now have the latest version of your applicat
 * `REGISTRY_HOST`: Docker registry from which to download the image. If unsure, leave empty.
 * Alternatively to `API_TOKEN`, you can use an `API_KEY` variable with an API key from a config.json file or the [SDK](https://github.com/resin-io/resin-sdk/blob/master/DOCUMENTATION.md#resin.models.application.getApiKey).
 * `API_HOST`: Address of the Resin API. If unsure, use `https://api.resin.io`.
+* `SPLASH_IMAGE`: Path to a custom splash image, to copy into the preloaded OS image
+
+### Custom Splash Screen
+
+At this time, the custom splash screen image needs to be a PNG.
+For more details on splash images, see:
+  - [The Resin.io Notes – What are we working on / Revamping Splash Screens](https://forums.resin.io/t/what-are-we-working-on-the-resin-io-notes/414/7)
+  - [Documenting the custom boot splash screen](https://github.com/resin-io/docs/issues/155)
+  - [resin-io/resin-plugin-img](https://github.com/resin-io/resin-plugin-img)
 
 ## Module usage
 
@@ -136,7 +150,8 @@ var options = {
   apiKey: null,
   apiHost: 'https://api.resin.io', // Optional
   registryHost: 'registry2.resin.io', // Optional
-  containerName: 'resin-image-preloader' // Optional, Docker container name
+  containerName: 'resin-image-preloader', // Optional, Docker container name
+  splashImage: 'path/to/custom-splash-image.png' // Optional
 }
 
 // preload.run() also returns a ChildProcess,
