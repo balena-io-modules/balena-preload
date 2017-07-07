@@ -114,6 +114,24 @@ if( !(options.appId && options.image && (options.apiToken || options.apiKey)) ) 
   process.exit(1)
 }
 
+const fs = require('fs')
+
+function isReadableAndWritable(path) {
+  try {
+    fs.accessSync(path, fs.constants.R_OK | fs.constants.W_OK)
+  } catch(e) {
+    return false
+  }
+  return true
+}
+
+const rwAccess = isReadableAndWritable(options.image)
+
+if (!(rwAccess && fs.statSync(options.image).isFile())) {
+  console.error('--img argument must be a read / write accessible file')
+  process.exit(1)
+}
+
 const preload = require('..')
 
 console.error('\nBuilding preloader image...\n')
