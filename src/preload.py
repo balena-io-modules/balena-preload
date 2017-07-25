@@ -37,6 +37,7 @@ SECTOR_SIZE = 512
 API_TOKEN = os.environ["API_TOKEN"]
 API_KEY = os.environ["API_KEY"]
 APP_ID = os.environ["APP_ID"]
+COMMIT = os.environ["COMMIT"]
 
 API_HOST = os.environ["API_HOST"] or "https://api.resin.io"
 REGISTRY_HOST = os.environ["REGISTRY_HOST"] or "registry2.resin.io"
@@ -135,10 +136,12 @@ def registry(endpoint, registry_token, headers=None, decode_json=True):
     return response.json() if decode_json else response.content
 
 
-def get_app_data():
+def get_app_data(app_id, commit):
     """Fetches application metadata"""
-    endpoint = "v2/application({})?$expand=environment_variable".format(APP_ID)
+    endpoint = "v2/application({})?$expand=environment_variable".format(app_id)
     data = api(endpoint)["d"][0]
+    if commit:
+        data["commit"] = commit
     image_repo = "{app_name}/{commit}".format(**data).lower()
     image_id = "{}/{}".format(REGISTRY_HOST, image_repo).lower()
     env = {v["name"]: v["value"] for v in data.get("environment_variable", [])}
@@ -409,7 +412,7 @@ def main():
     log.info("Fetching application data")
     log.info("Using API host {}".format(API_HOST))
     log.info("Using Registry host {}".format(REGISTRY_HOST))
-    app_data = get_app_data()
+    app_data = get_app_data(APP_ID, COMMIT)
     replace_splash_image(IMAGE)
     repo = app_data["imageRepo"]
     container_size = get_container_size(repo)
