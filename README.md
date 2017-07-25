@@ -46,6 +46,7 @@ Options:
   --img            Disk image to preload into (required)
   --api-token      API token (required, or api-key)
   --api-key        API key (required, or api-token)
+  --commit         App commit to be preloaded (default: latest)
   --api-host       API host (default: "https://api.resin.io")
   --registry       Image registry host (default: "registry2.resin.io")
   --splash-image   PNG Image for custom splash screen
@@ -62,6 +63,7 @@ Environment variables:
   --img            IMAGE
   --api-token      API_TOKEN
   --api-key        API_KEY
+  --commit         COMMIT
   --api-host       API_HOST
   --registry       REGISTRY_HOST
   --splash-image   SPLASH_IMAGE
@@ -148,6 +150,7 @@ var options = {
   appId: '123456', // Application ID of the app to preload
   image: 'resin-RPi3-2.0.0+rev3-4.1.1-...img', // Image to preload into
   apiToken: 'pZCI6MTc2OCwidXNlc...', // API credentials
+  commit: '321654987654321654', // Optional
   apiKey: null,
   apiHost: 'https://api.resin.io', // Optional
   registryHost: 'registry2.resin.io', // Optional

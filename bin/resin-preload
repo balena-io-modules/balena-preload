@@ -10,6 +10,7 @@ const USAGE = `
     --img            Disk image to preload into (required)
     --api-token      API token (required, or api-key)
     --api-key        API key (required, or api-token)
+    --commit         Application commit to preload (default: latest)
     --api-host       API host (default: "https://api.resin.io")
     --registry       Image registry host (default: "registry2.resin.io")
     --splash-image   PNG Image for custom splash screen
@@ -26,6 +27,7 @@ const USAGE = `
     --img            IMAGE
     --api-token      API_TOKEN
     --api-key        API_KEY
+    --commit         COMMIT
     --api-host       API_HOST
     --registry       REGISTRY_HOST
     --splash-image   SPLASH_IMAGE
@@ -91,6 +93,7 @@ const options = {
   image: process.env['IMAGE'],
   apiToken: process.env['API_TOKEN'],
   apiKey: process.env['API_KEY'],
+  commit: process.env['COMMIT'],
   apiHost: process.env['API_HOST'],
   registryHost: process.env['REGISTRY_HOST'],
   splashImage: process.env['SPLASH_IMAGE'],
@@ -102,6 +105,7 @@ while( argv.length ) {
     case '--img': options.image = argv.shift(); break
     case '--api-token': options.apiToken = argv.shift(); break
     case '--api-key': options.apiKey = argv.shift(); break
+    case '--commit': options.commit = argv.shift(); break
     case '--api-host': options.apiHost = argv.shift(); break
     case '--registry': options.registryHost = argv.shift(); break
     case '--splash-image': options.splashImage = argv.shift(); break
