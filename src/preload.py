@@ -5,11 +5,13 @@ import os
 
 from contextlib import contextmanager
 from distutils.version import LooseVersion
+from functools import partial
 from logging import getLogger, INFO, StreamHandler
 from math import ceil, floor
 from requests import get
 from sh import (
     btrfs,
+    dd,
     docker,
     dockerd,
     e2fsck,
@@ -19,14 +21,18 @@ from sh import (
     mount,
     parted,
     resize2fs,
+    sfdisk,
     umount,
     ErrorReturnCode,
 )
+from re import sub
 from shutil import copyfile, rmtree
 from sys import exit
-from tempfile import mkdtemp
+from tempfile import mkdtemp, NamedTemporaryFile
 
 os.environ["LANG"] = "C"
+
+SECTOR_SIZE = 512
 
 API_TOKEN = os.environ["API_TOKEN"]
 API_KEY = os.environ["API_KEY"]
@@ -50,15 +56,21 @@ def human_size(size, precision=2):
     return "{} {}B".format(result, suffixes[idx])
 
 
-def get_offset_and_size(image, partition):
-    output = parted("-s", "-m", image, "unit", "B", "p").stdout.decode("utf8")
+def get_offsets_and_sizes(image, unit="B"):
+    result = []
+    output = parted("-s", "-m", image, "unit", unit, "p").stdout.decode("utf8")
     lines = output.strip().split("\n")
     for line in lines:
-        if line.startswith("{}:".format(partition)):
+        if line[0].isdigit():
             data = line.split(":")
             offset = int(data[1][:-1])
             size = int(data[3][:-1])
-            return offset, size
+            result.append((offset, size))
+    return result
+
+
+def get_offset_and_size(image, partition):
+    return get_offsets_and_sizes(image)[partition - 1]
 
 
 def mount_partition(image, partition, extra_options):
@@ -189,9 +201,9 @@ def expand_partitions(image):
     parted("-s", image, "resizepart", 4, "100%", "resizepart", 6, "100%")
 
 
-def expand_ext4(image):
-    """Resizes the ext4 filesystem in the 6th partition of the image"""
-    with losetup_context_manager(image, 6) as loop_device:
+def expand_ext4(image, partition):
+    # Resize ext4 filesystem
+    with losetup_context_manager(image, partition) as loop_device:
         log.info("Using {}".format(loop_device))
         log.info("Resizing filesystem")
         try:
@@ -290,7 +302,7 @@ def resize_fs_copy_splash_image_and_pull(image, app_data):
     if version_ge_2:
         # For ext4, we'll have to keep it unmounted to resize
         log.info("Expanding ext filesystem")
-        expand_ext4(image)
+        expand_ext4(image, 6)
     else:
         extra_options = "nospace_cache,rw"
     docker_sock = mkdtemp() + "/docker.sock"
@@ -307,11 +319,83 @@ def resize_fs_copy_splash_image_and_pull(image, app_data):
             docker_pull(docker_sock, app_data["imageId"])
 
 
-def round_to_sector_size(size, sector_size=512):
+def round_to_sector_size(size, sector_size=SECTOR_SIZE):
     sectors = size / sector_size
     if not sectors.is_integer():
         sectors = floor(sectors) + 1
     return sectors * sector_size
+
+
+def file_size(path):
+    with open(path, "a") as f:
+        return f.tell()
+
+
+def ddd(**kwargs):
+    # dd helper
+    return dd(*("{}={}".format(k.lstrip("_"), v) for k, v in kwargs.items()))
+
+
+def resize_rootfs_get_sfdisk_script(image, additional_sectors):
+    """
+    Helper for resize_rootfs: it gets the image sfdisk script, updates it
+    by increasing the size of the 2nd partition and moving all partitions after
+    it, and returns the resulting sfdisk script.
+    """
+    # Extract the image layout.
+    layout = sfdisk(d=image).stdout.decode("utf8").strip()
+
+    def add_size(match):
+        # Helper for updating offset / size in a sfdisk script file line.
+        groups = list(match.groups())
+        groups[1] = str(int(groups[1]) + additional_sectors)
+        return "".join(groups)
+
+    lines = layout.split("\n")
+    # Update 2nd partition size in the new layout.
+    lines[6] = sub("(.*size=\s*)(\d+)(,.*)", add_size, lines[6])
+    # Update the offsets of partitions 3+.
+    for i in range(7, len(lines)):
+        lines[i] = sub("(.*start=\s*)(\d+)(,.*)", add_size, lines[i])
+    return "\n".join(lines)
+
+
+def resize_rootfs(image, additional_space):
+    log.info("Resizing the 2nd partition of the image.")
+    size = file_size(image) + additional_space
+    log.info("New disk image size: {}.".format(human_size(size)))
+    additional_sectors = additional_space // SECTOR_SIZE
+    # Create a new empty image of the required size
+    tmp = NamedTemporaryFile(dir=os.path.dirname(image), delete=False)
+    tmp.truncate(size)
+    tmp.close()
+    new_layout = resize_rootfs_get_sfdisk_script(image, additional_sectors)
+    # Write the new layout on the new image.
+    sfdisk(tmp.name, _in=new_layout)
+    offsets_and_sizes = get_offsets_and_sizes(image, "s")
+    copy = partial(ddd, _if=image, of=tmp.name, bs=SECTOR_SIZE, conv="notrunc")
+    # Copy partitions 1 and 2.
+    for offset, size in offsets_and_sizes[:2]:
+        copy(skip=offset, seek=offset, count=size)
+    # Copy partitions 3+.
+    for offset, size in offsets_and_sizes[2:]:
+        copy(skip=offset, seek=offset + additional_sectors, count=size)
+    # Expand 2nd partition.
+    expand_ext4(tmp.name, 2)
+    # Replace the original image contents.
+    ddd(_if=tmp.name, of=image, bs=SECTOR_SIZE)
+
+
+def get_device_type(image):
+    with mount_context_manager(image, 1) as mountpoint:
+        with open(mountpoint + "/device-type.json") as f:
+            return json.load(f)
+
+
+def preload(image, additional_space, app_data):
+    expand_image(image, additional_space)
+    expand_partitions(image)
+    resize_fs_copy_splash_image_and_pull(image, app_data)
 
 
 def check():
@@ -331,9 +415,20 @@ def main():
     container_size = get_container_size(repo)
     # Size will be increased by 110% of the container size
     additional_space = round_to_sector_size(ceil(container_size * 1.1))
-    expand_image(IMAGE, additional_space)
-    expand_partitions(IMAGE)
-    resize_fs_copy_splash_image_and_pull(IMAGE, app_data)
+    device_type = get_device_type(IMAGE)
+    deployArtifact = device_type["yocto"]["deployArtifact"]
+    if "-flasher-" in deployArtifact:
+        fname = deployArtifact.replace("flasher-", "", 1)
+        log.info(
+            "This is a flasher image, preloading into /opt/{} on the 2nd "
+            "partition of {}".format(fname, IMAGE)
+        )
+        resize_rootfs(IMAGE, additional_space)
+        with mount_context_manager(IMAGE, 2) as mountpoint:
+            image = os.path.join(mountpoint, "opt", fname)
+            preload(image, additional_space, app_data)
+    else:
+        preload(IMAGE, additional_space, app_data)
     log.info("Done.")
 
 

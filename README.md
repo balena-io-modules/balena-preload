@@ -22,7 +22,7 @@ $ npm install --global resin-preload
     - [Custom Splash Screen](#custom-splash-screen)
 - [Module usage](#module-usage)
 - [Known Issues](#known-issues)
-    - [Flasher Images Unsupported](#flasher-images-unsupported)
+    - [Speed Issues For Flasher Images on macOS](#speed-issues-for-flasher-images-on-macos)
     - [Version Compatibility](#version-compatibility)
     - [BTRFS Support](#btrfs-support)
 
@@ -165,11 +165,10 @@ run.once('exit', (code, signal) => {
 
 ## Known Issues
 
-### Flasher Images Unsupported
+### Speed Issues For Flasher Images on macOS
 
-Currently flasher-type images – OS images that write the OS to
-internal storage devices (like an eMMC) on first boot – are currently unsupported.
-For details see [issue #37](https://github.com/resin-io/resin-preload-image-script/issues/37).
+Docker on macOS has [some speed issues with volumes](https://github.com/docker/for-mac/issues/77).
+This makes this script slow, especially with Flasher Images.
 
 ### Version Compatibility
 
