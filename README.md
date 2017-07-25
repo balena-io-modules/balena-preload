@@ -21,6 +21,7 @@ $ npm install --global resin-preload
     - [Additional Options](#additional-options)
     - [Custom Splash Screen](#custom-splash-screen)
 - [Module usage](#module-usage)
+- [Contributing](#contributing)
 - [Known Issues](#known-issues)
     - [Speed Issues For Flasher Images on macOS](#speed-issues-for-flasher-images-on-macos)
     - [Version Compatibility](#version-compatibility)
@@ -162,6 +163,19 @@ run.once('exit', (code, signal) => {
   // ...
 })
 ```
+
+## Contributing
+
+### Install from github
+
+ * Clone this repo: `git clone git@github.com:resin-io/resin-preload.git`
+ * Change directory: `cd resin-preload`
+ * Install dependencies: `npm i`
+ * Run resin-preload: `./bin/resin-preload`
+
+### Issues
+
+ If you encounter any problem, you can [open an issue](https://github.com/resin-io/resin-preload/issues)
 
 ## Known Issues
 
