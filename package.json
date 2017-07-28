@@ -13,8 +13,16 @@
   ],
   "main": "lib/preload.js",
   "dependencies": {
-    "command-join": "^2.0.0",
-    "compare-versions": "^3.0.1"
+    "bluebird": "^3.5.0",
+    "dockerode": "^2.5.0",
+    "lodash": "^4.17.4",
+    "request-promise": "^4.2.1",
+    "resin-cli-form": "^1.4.1",
+    "resin-errors": "^2.8.0",
+    "resin-sdk": "^6.8.0",
+    "resin-sdk-preconfigured": "^6.4.1",
+    "stream-to-promise": "^2.2.0",
+    "tar-stream": "^1.5.4"
   },
   "devDependencies": {
     "standard": "^10.0.2"
@@ -30,7 +38,7 @@
     "url": "https://github.com/resin-io/resin-preload/issues"
   },
   "scripts": {
-    "pretest": "standard lib/preload.js bin/resin-preload"
+    "pretest": "standard lib/*.js bin/resin-preload"
   },
   "bin": {
     "resin-preload": "bin/resin-preload"

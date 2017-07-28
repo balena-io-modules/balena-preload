@@ -7,6 +7,16 @@ Script for preloading resin.io OS images (`.img`) with a user application contai
 
 Using this will allow images with supervisor version above 1.0.0 to run the user application without connectivity, and without the need to download the container.
 
+## Deprecation
+
+The standalone mode described below (resin-preload) is now deprecated.
+It will be removed in a future release.
+You should use [resin-cli](https://www.npmjs.com/package/resin-cli) instead.
+
+Install [resin-cli](https://www.npmjs.com/package/resin-cli) and run
+`resin help preload`.
+
+
 ## Install via [npm](https://npmjs.com)
 
 ```sh
@@ -51,7 +61,7 @@ Options:
   --registry       Image registry host (default: "registry2.resin.io")
   --splash-image   PNG Image for custom splash screen
 
-  --dont-detect-flasher-type-images Disables the flasher type images detection: treats all images as non flsher types
+  --dont-detect-flasher-type-images Disables the flasher type images detection: treats all images as non flasher types
 
   --help, -h       Display resin-preload usage
   --version, -v    Display resin-preload version
@@ -157,7 +167,6 @@ var options = {
   apiKey: null,
   apiHost: 'https://api.resin.io', // Optional
   registryHost: 'registry2.resin.io', // Optional
-  containerName: 'resin-image-preloader', // Optional, Docker container name
   splashImage: 'path/to/custom-splash-image.png' // Optional
 }
 
