@@ -16,7 +16,9 @@
     "command-join": "^2.0.0",
     "compare-versions": "^3.0.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "standard": "^10.0.2"
+  },
   "peerDependencies": {},
   "optionalDependencies": {},
   "homepage": "https://github.com/resin-io/resin-preload",
@@ -28,7 +30,7 @@
     "url": "https://github.com/resin-io/resin-preload/issues"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pretest": "standard lib/preload.js bin/resin-preload"
   },
   "bin": {
     "resin-preload": "bin/resin-preload"
