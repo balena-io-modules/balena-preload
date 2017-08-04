@@ -20,6 +20,8 @@ const USAGE = `
     --registry       Image registry host (default: "registry2.resin.io")
     --splash-image   PNG Image for custom splash screen
 
+    --dont-detect-flasher-type-images Disables the flasher type images detection: treats all images as non flsher types
+
     --help, -h       Display ${info.name} usage
     --version, -v    Display ${info.name} version
 
@@ -28,14 +30,15 @@ const USAGE = `
     The following option flags can also be set
     via the corresponding environment variables:
 
-    --app            APP_ID
-    --img            IMAGE
-    --api-token      API_TOKEN
-    --api-key        API_KEY
-    --commit         COMMIT
-    --api-host       API_HOST
-    --registry       REGISTRY_HOST
-    --splash-image   SPLASH_IMAGE
+    --app                               APP_ID
+    --img                               IMAGE
+    --api-token                         API_TOKEN
+    --api-key                           API_KEY
+    --commit                            COMMIT
+    --api-host                          API_HOST
+    --registry                          REGISTRY_HOST
+    --splash-image                      SPLASH_IMAGE
+    --dont-detect-flasher-type-images   DONT_DETECT_FLASHER_TYPE_IMAGES
 
   Example:
 
@@ -98,7 +101,8 @@ const options = {
   commit: process.env['COMMIT'],
   apiHost: process.env['API_HOST'],
   registryHost: process.env['REGISTRY_HOST'],
-  splashImage: process.env['SPLASH_IMAGE']
+  splashImage: process.env['SPLASH_IMAGE'],
+  dontDetectFlasherTypeImages: process.env['DONT_DETECT_FLASHER_TYPE_IMAGES']
 }
 
 while (argv.length) {
@@ -111,6 +115,7 @@ while (argv.length) {
     case '--api-host': options.apiHost = argv.shift(); break
     case '--registry': options.registryHost = argv.shift(); break
     case '--splash-image': options.splashImage = argv.shift(); break
+    case '--dont-detect-flasher-type-images': options.dontDetectFlasherTypeImages = true; break
   }
 }
 
