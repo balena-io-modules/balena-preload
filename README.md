@@ -51,6 +51,8 @@ Options:
   --registry       Image registry host (default: "registry2.resin.io")
   --splash-image   PNG Image for custom splash screen
 
+  --dont-detect-flasher-type-images Disables the flasher type images detection: treats all images as non flsher types
+
   --help, -h       Display resin-preload usage
   --version, -v    Display resin-preload version
 
@@ -59,14 +61,15 @@ Environment variables:
   The following option flags can also be set
   via the corresponding environment variables:
 
-  --app            APP_ID
-  --img            IMAGE
-  --api-token      API_TOKEN
-  --api-key        API_KEY
-  --commit         COMMIT
-  --api-host       API_HOST
-  --registry       REGISTRY_HOST
-  --splash-image   SPLASH_IMAGE
+  --app                               APP_ID
+  --img                               IMAGE
+  --api-token                         API_TOKEN
+  --api-key                           API_KEY
+  --commit                            COMMIT
+  --api-host                          API_HOST
+  --registry                          REGISTRY_HOST
+  --splash-image                      SPLASH_IMAGE
+  --dont-detect-flasher-type-images   DONT_DETECT_FLASHER_TYPE_IMAGES
 
 Example:
 
