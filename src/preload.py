@@ -38,6 +38,9 @@ API_TOKEN = os.environ["API_TOKEN"]
 API_KEY = os.environ["API_KEY"]
 APP_ID = os.environ["APP_ID"]
 COMMIT = os.environ["COMMIT"]
+DETECT_FLASHER_TYPE_IMAGES = (
+    os.environ["DONT_DETECT_FLASHER_TYPE_IMAGES"] == "FALSE"
+)
 
 API_HOST = os.environ["API_HOST"] or "https://api.resin.io"
 REGISTRY_HOST = os.environ["REGISTRY_HOST"] or "registry2.resin.io"
@@ -420,7 +423,12 @@ def main():
     additional_space = round_to_sector_size(ceil(container_size * 1.1))
     device_type = get_device_type(IMAGE)
     deployArtifact = device_type["yocto"]["deployArtifact"]
-    if "-flasher-" in deployArtifact:
+    if not DETECT_FLASHER_TYPE_IMAGES and "-flasher-" in deployArtifact:
+        log.info(
+            "Warning: This looks like a flasher type image but we're going to "
+            "preload it like a regular image."
+        )
+    if DETECT_FLASHER_TYPE_IMAGES and "-flasher-" in deployArtifact:
         fname = deployArtifact.replace("flasher-", "", 1)
         log.info(
             "This is a flasher image, preloading into /opt/{} on the 2nd "
