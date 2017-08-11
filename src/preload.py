@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 import json
 import os
 
@@ -8,7 +7,6 @@ from distutils.version import LooseVersion
 from functools import partial
 from logging import getLogger, INFO, StreamHandler
 from math import ceil, floor
-from requests import get
 from sh import (
     btrfs,
     dd,
@@ -34,16 +32,16 @@ os.environ["LANG"] = "C"
 
 SECTOR_SIZE = 512
 
-API_TOKEN = os.environ["API_TOKEN"]
-API_KEY = os.environ["API_KEY"]
-APP_ID = os.environ["APP_ID"]
-COMMIT = os.environ["COMMIT"]
+IMAGE = "/img/resin.img"
+
+CONTAINER_SIZE = os.environ["CONTAINER_SIZE"]
+APP_DATA = os.environ["APP_DATA"]
+
+COMMAND = os.environ["COMMAND"]
 DETECT_FLASHER_TYPE_IMAGES = (
     os.environ["DONT_DETECT_FLASHER_TYPE_IMAGES"] == "FALSE"
 )
 
-API_HOST = os.environ["API_HOST"] or "https://api.resin.io"
-REGISTRY_HOST = os.environ["REGISTRY_HOST"] or "registry2.resin.io"
 
 log = getLogger(__name__)
 log.setLevel(INFO)
@@ -109,78 +107,6 @@ def losetup_context_manager(image, partition):
     losetup("-d", device)
 
 
-def api(endpoint, params=None, headers=None):
-    url = "{}/{}".format(API_HOST, endpoint)
-    params = params or {}
-    headers = headers or {}
-    if API_TOKEN:
-        headers["Authorization"] = "Bearer {}".format(API_TOKEN)
-    elif API_KEY:
-        params["apikey"] = API_KEY
-    response = get(url, params=params, headers=headers)
-    response.raise_for_status()
-    return response.json()
-
-
-def get_registry_token(image_repo):
-    params = {
-        "service": REGISTRY_HOST,
-        "scope": "repository:{}:pull".format(image_repo),
-    }
-    return api("auth/v1/token", params)["token"]
-
-
-def registry(endpoint, registry_token, headers=None, decode_json=True):
-    headers = headers or {}
-    headers["Authorization"] = "Bearer {}".format(registry_token)
-    url = "https://{}/{}".format(REGISTRY_HOST, endpoint)
-    response = get(url, headers=headers)
-    response.raise_for_status()
-    return response.json() if decode_json else response.content
-
-
-def get_app_data(app_id, commit):
-    """Fetches application metadata"""
-    endpoint = "v2/application({})?$expand=environment_variable".format(app_id)
-    data = api(endpoint)["d"][0]
-    if commit:
-        data["commit"] = commit
-    image_repo = "{app_name}/{commit}".format(**data).lower()
-    image_id = "{}/{}".format(REGISTRY_HOST, image_repo).lower()
-    env = {v["name"]: v["value"] for v in data.get("environment_variable", [])}
-    return {
-        "appId": data["id"],
-        "name": data["app_name"],
-        "commit": data["commit"],
-        "imageRepo": image_repo,
-        "imageId": image_id,
-        "env": {k: v for k, v in env.items() if not k.startswith("RESIN_")},
-        "config": {k: v for k, v in env.items() if k.startswith("RESIN_")},
-    }
-
-
-def get_container_size(image_repo):
-    log.info("Fetching container size for {}".format(image_repo))
-    token = get_registry_token(image_repo)
-    data = registry("v2/{}/manifests/latest".format(image_repo), token)
-    headers = {"Range": "bytes=-4"}
-    size = 0
-    # the last 4 bytes of each gzipped layer are the layer size % 32
-    for layer in data["fsLayers"]:
-        endpoint = "v2/{}/blobs/{}".format(image_repo, layer["blobSum"])
-        layer_size_bytes = registry(
-            endpoint,
-            token,
-            headers,
-            decode_json=False
-        )
-        layer_size = int.from_bytes(layer_size_bytes, byteorder="little")
-        size += layer_size
-        log.info("{} {}".format(endpoint, size))
-    log.info("Container size: {}".format(human_size(size)))
-    return size
-
-
 def get_resin_os_version(image):
     with mount_context_manager(image, 2) as mountpoint:
         with open(os.path.join(mountpoint, "etc/os-release")) as f:
@@ -209,6 +135,7 @@ def expand_partitions(image):
 
 def expand_ext4(image, partition):
     # Resize ext4 filesystem
+    error = False
     with losetup_context_manager(image, partition) as loop_device:
         log.info("Using {}".format(loop_device))
         log.info("Resizing filesystem")
@@ -221,8 +148,10 @@ def expand_ext4(image, partition):
                 log.warning("e2fsck: File system errors corrected")
         except ErrorReturnCode:
             log.error("e2fsck: File system errors could not be corrected")
-            exit(1)
+            error = True
         resize2fs("-f", loop_device)
+    if error:
+        exit(1)
 
 
 def expand_btrfs(mountpoint):
@@ -248,7 +177,12 @@ def fix_rce_docker(mountpoint):
 def start_docker_daemon(filesystem_type, mountpoint, socket):
     """Starts the docker daemon and waits for it to be ready."""
     docker_dir = fix_rce_docker(mountpoint)
-    dockerd(s=filesystem_type, g=docker_dir, H="unix://" + socket, _bg=True)
+    dockerd(
+        s=filesystem_type,
+        data_root=docker_dir,
+        H="unix://" + socket,
+        _bg=True,
+    )
     log.info("Waiting for Docker to start...")
     while os.path.isfile(socket):
         inotifywait("-t", 1, "-e", "create", os.path.dirname(socket))
@@ -269,12 +203,6 @@ def docker_context_manager(filesystem_type, mountpoint, socket):
 
 def write_apps_json(data, output):
     """Writes data dict to output as json"""
-    data = data.copy()
-    # NOTE: This replaces the registry host in the `imageId` to stop the newer
-    # supervisors from re-downloading the app on first boot
-    data["imageId"] = "registry2.resin.io/" + data["imageRepo"]
-    # Keep only the fields we need from APPS_JSON
-    del data["imageRepo"]
     with open(output, "w") as f:
         json.dump([data], f, indent=4, sort_keys=True)
 
@@ -404,23 +332,11 @@ def preload(image, additional_space, app_data):
     resize_fs_copy_splash_image_and_pull(image, app_data)
 
 
-def check():
-    assert API_TOKEN or API_KEY, "API_TOKEN or API_KEY must be set"
-    assert APP_ID, "APP_ID must be set"
-
-
-def main():
-    check()
-    IMAGE = "/img/resin.img"
-    log.info("Fetching application data")
-    log.info("Using API host {}".format(API_HOST))
-    log.info("Using Registry host {}".format(REGISTRY_HOST))
-    app_data = get_app_data(APP_ID, COMMIT)
+def main_preload():
+    app_data = json.loads(APP_DATA)
     replace_splash_image(IMAGE)
-    repo = app_data["imageRepo"]
-    container_size = get_container_size(repo)
     # Size will be increased by 110% of the container size
-    additional_space = round_to_sector_size(ceil(container_size * 1.1))
+    additional_space = round_to_sector_size(ceil(int(CONTAINER_SIZE) * 1.1))
     device_type = get_device_type(IMAGE)
     deployArtifact = device_type["yocto"]["deployArtifact"]
     if not DETECT_FLASHER_TYPE_IMAGES and "-flasher-" in deployArtifact:
@@ -443,5 +359,13 @@ def main():
     log.info("Done.")
 
 
+def main_get_device_type_slug():
+    device_type = get_device_type(IMAGE)
+    print(device_type["slug"])
+
+
 if __name__ == "__main__":
-    main()
+    if COMMAND == "preload":
+        main_preload()
+    elif COMMAND == "get_device_type_slug":
+        main_get_device_type_slug()
