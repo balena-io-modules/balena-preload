@@ -22,7 +22,8 @@
     "resin-sdk": "^6.8.0",
     "resin-sdk-preconfigured": "^6.4.1",
     "stream-to-promise": "^2.2.0",
-    "tar-stream": "^1.5.4"
+    "tar-stream": "^1.5.4",
+    "tmp": "0.0.33"
   },
   "devDependencies": {
     "standard": "^10.0.2"
