@@ -8,8 +8,11 @@ const info = require('../package.json')
 const Promise = require('bluebird')
 const streamToPromise = require('stream-to-promise')
 const resinSdk = require('resin-sdk')
+const tmp = Promise.promisifyAll(require('tmp'))
 
 const docker = new Docker({Promise})
+
+tmp.setGracefulCleanup()
 
 const USAGE = `
   Usage: ${info.name} [options]
@@ -88,6 +91,21 @@ if (argv.includes('--version') || argv.includes('-v')) {
   process.exit(0)
 }
 
+const getResinSdk = (options) => {
+  // Creates a temporary directory for resin sdk so it won't replace any existing token.
+  const resinSdkOptions = { apiKey: options.apiKey, apiUrl: options.apiHost }
+  return tmp.dirAsync({ unsafeCleanup: true })
+  .then((path) => {
+    resinSdkOptions.dataDirectory = path
+    const resin = resinSdk(resinSdkOptions)
+    if (options.apiToken) {
+      return resin.token.set(options.apiToken)
+      .return(resin)
+    }
+    return resin
+  })
+}
+
 const options = {
   appId: process.env['APP_ID'],
   image: process.env['IMAGE'],
@@ -120,24 +138,21 @@ if (!(options.appId && options.image && (options.apiToken || options.apiKey))) {
   process.exit(1)
 }
 
-const resin = resinSdk({
-  apiToken: options.apiToken,
-  apiKey: options.apiKey,
-  apiUrl: options.apiHost
-})
-
 console.log('\nBuilding preloader image...\n')
 const buildOutputStream = preload.build(docker)
 buildOutputStream.pipe(process.stdout)
 
 streamToPromise(buildOutputStream)
 .then(() => {
+  return getResinSdk(options)
+})
+.then((resin) => {
   console.log('\nPreloading...\n')
   return preload.getApplication(resin, options.appId)
-})
-.then((application) => {
-  options.application = application
-  return preload.run(resin, docker, options)
+  .then((application) => {
+    options.application = application
+    return preload.run(resin, docker, options)
+  })
 })
 .then((info) => {
   info.stdout.pipe(process.stdout)
