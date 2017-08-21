@@ -147,10 +147,26 @@ streamToPromise(buildOutputStream)
   return getResinSdk(options)
 })
 .then((resin) => {
-  console.log('\nPreloading...\n')
   return preload.getApplication(resin, options.appId)
   .then((application) => {
     options.application = application
+    return preload.getDeviceTypeSlugAndPreloadedBuilds(docker, options)
+  })
+  .then((data) => {
+    if (data.slug !== options.application.device_type) {
+      console.error(
+        `Application device type (${options.application.device_type}) and image device type (${data.slug}) do not match.`
+      )
+      process.exit(1)
+    }
+    const builds = data.builds.map((build) => {
+      return build.slice(-preload.BUILD_HASH_LENGTH)
+    })
+    if (builds.indexOf(options.commit || options.application.commit) !== -1) {
+      console.log('This build is already preloaded in this image.')
+      process.exit(0)
+    }
+    console.log('\nPreloading...\n')
     return preload.run(resin, docker, options)
   })
 })

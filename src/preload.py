@@ -174,8 +174,9 @@ def fix_rce_docker(mountpoint):
         return _rce_dir
 
 
-def start_docker_daemon(filesystem_type, mountpoint, socket):
+def start_docker_daemon(filesystem_type, mountpoint):
     """Starts the docker daemon and waits for it to be ready."""
+    socket = mkdtemp() + "/docker.sock"
     docker_dir = fix_rce_docker(mountpoint)
     dockerd(
         s=filesystem_type,
@@ -191,12 +192,13 @@ def start_docker_daemon(filesystem_type, mountpoint, socket):
         output = docker("-H", "unix://" + socket, "version", _ok_code=[0, 1])
         ok = output.exit_code == 0
     log.info("Docker started")
+    return socket
 
 
 @contextmanager
-def docker_context_manager(filesystem_type, mountpoint, socket):
-    start_docker_daemon(filesystem_type, mountpoint, socket)
-    yield
+def docker_context_manager(filesystem_type, mountpoint):
+    socket = start_docker_daemon(filesystem_type, mountpoint)
+    yield socket
     with open("/var/run/docker.pid", "r") as f:
         kill(f.read().strip())
 
@@ -228,10 +230,13 @@ def docker_pull(docker_sock, image_id):
     docker("-H", "unix://" + docker_sock, "images", "--all", _fg=True)
 
 
+def resin_version_ge_2(image):
+    return LooseVersion(get_resin_os_version(image)) >= LooseVersion("2.0.0")
+
+
 def resize_fs_copy_splash_image_and_pull(image, app_data):
     # Use ext4 for 2.0.0+ versions, btrfs otherwise
-    version = get_resin_os_version(image)
-    version_ge_2 = LooseVersion(version) >= LooseVersion("2.0.0")
+    version_ge_2 = resin_version_ge_2(image)
     extra_options = ""
     if version_ge_2:
         # For ext4, we'll have to keep it unmounted to resize
@@ -239,7 +244,6 @@ def resize_fs_copy_splash_image_and_pull(image, app_data):
         expand_ext4(image, 6)
     else:
         extra_options = "nospace_cache,rw"
-    docker_sock = mkdtemp() + "/docker.sock"
     with mount_context_manager(image, 6, extra_options) as mountpoint:
         if version_ge_2:
             driver = "aufs"
@@ -248,7 +252,7 @@ def resize_fs_copy_splash_image_and_pull(image, app_data):
             log.info("Expanding btrfs filesystem")
             expand_btrfs(mountpoint)
             driver = "btrfs"
-        with docker_context_manager(driver, mountpoint, docker_sock):
+        with docker_context_manager(driver, mountpoint) as docker_sock:
             write_apps_json(app_data, mountpoint + "/apps.json")
             docker_pull(docker_sock, app_data["imageId"])
 
@@ -320,10 +324,31 @@ def resize_rootfs(image, additional_space):
     ddd(_if=tmp.name, of=image, bs=SECTOR_SIZE)
 
 
+def get_json(image, partition, path):
+    with mount_context_manager(image, partition) as mountpoint:
+        try:
+            with open(os.path.join(mountpoint, path)) as f:
+                return json.load(f)
+        except FileNotFoundError:
+            pass
+
+
+def get_config(image):
+    return (
+        get_json(image, 1, "config.json") or  # resinOS 1.26+
+        get_json(image, 5, "config.json")  # resinOS 1.8
+    )
+
+
 def get_device_type(image):
-    with mount_context_manager(image, 1) as mountpoint:
-        with open(mountpoint + "/device-type.json") as f:
-            return json.load(f)
+    return get_json(image, 1, "device-type.json")
+
+
+def get_device_type_slug(image):
+    device_type = get_device_type(image)
+    if device_type is not None:
+        return device_type["slug"]
+    return get_config(image)["deviceType"]
 
 
 def preload(image, additional_space, app_data):
@@ -332,40 +357,73 @@ def preload(image, additional_space, app_data):
     resize_fs_copy_splash_image_and_pull(image, app_data)
 
 
+def get_inner_image_filename(image):
+    device_type = get_device_type(IMAGE)
+    if device_type:
+        deployArtifact = device_type["yocto"]["deployArtifact"]
+        if "-flasher-" in deployArtifact:
+            return deployArtifact.replace("flasher-", "", 1)
+
+
+def _list_images(image):
+    driver = "aufs" if resin_version_ge_2(image) else "btrfs"
+    with mount_context_manager(image, 6) as mountpoint:
+        with docker_context_manager(driver, mountpoint) as docker_sock:
+            output = docker(
+                "-H",
+                "unix://" + docker_sock,
+                "images",
+                "--all",
+                "--format",
+                "{{.Repository}}",
+            )
+            return output.strip().split("\n")
+
+
+def list_images(image):
+    inner_image = get_inner_image_filename(image)
+    if DETECT_FLASHER_TYPE_IMAGES and inner_image:
+        with mount_context_manager(image, 2) as mountpoint:
+            inner_image = os.path.join(mountpoint, "opt", inner_image)
+            return _list_images(inner_image)
+    return _list_images(image)
+
+
 def main_preload():
     app_data = json.loads(APP_DATA)
     replace_splash_image(IMAGE)
     # Size will be increased by 110% of the container size
     additional_space = round_to_sector_size(ceil(int(CONTAINER_SIZE) * 1.1))
-    device_type = get_device_type(IMAGE)
-    deployArtifact = device_type["yocto"]["deployArtifact"]
-    if not DETECT_FLASHER_TYPE_IMAGES and "-flasher-" in deployArtifact:
+    inner_image = get_inner_image_filename(IMAGE)
+    if not DETECT_FLASHER_TYPE_IMAGES and inner_image:
         log.info(
             "Warning: This looks like a flasher type image but we're going to "
             "preload it like a regular image."
         )
-    if DETECT_FLASHER_TYPE_IMAGES and "-flasher-" in deployArtifact:
-        fname = deployArtifact.replace("flasher-", "", 1)
+    if DETECT_FLASHER_TYPE_IMAGES and inner_image:
         log.info(
             "This is a flasher image, preloading into /opt/{} on the 2nd "
-            "partition of {}".format(fname, IMAGE)
+            "partition of {}".format(inner_image, IMAGE)
         )
         resize_rootfs(IMAGE, additional_space)
         with mount_context_manager(IMAGE, 2) as mountpoint:
-            image = os.path.join(mountpoint, "opt", fname)
+            image = os.path.join(mountpoint, "opt", inner_image)
             preload(image, additional_space, app_data)
     else:
         preload(IMAGE, additional_space, app_data)
     log.info("Done.")
 
 
-def main_get_device_type_slug():
-    device_type = get_device_type(IMAGE)
-    print(device_type["slug"])
+def main_get_device_type_slug_and_preloaded_builds():
+    result = {
+        "slug": get_device_type_slug(IMAGE),
+        "builds": list_images(IMAGE),
+    }
+    print(json.dumps(result))
 
 
 if __name__ == "__main__":
     if COMMAND == "preload":
         main_preload()
-    elif COMMAND == "get_device_type_slug":
-        main_get_device_type_slug()
+    elif COMMAND == "get_device_type_slug_and_preloaded_builds":
+        main_get_device_type_slug_and_preloaded_builds()
