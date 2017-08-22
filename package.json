@@ -1,6 +1,6 @@
 {
   "name": "resin-preload",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Preload resinOS images with a user application container",
   "license": "Apache-2.0",
   "author": "Resin.io Ltd (https://resin.io)",
@@ -18,6 +18,7 @@
     "lodash": "^4.17.4",
     "request-promise": "^4.2.1",
     "resin-cli-form": "^1.4.1",
+    "resin-cli-visuals": "^1.4.0",
     "resin-errors": "^2.8.0",
     "resin-sdk": "^6.8.0",
     "resin-sdk-preconfigured": "^6.4.1",
