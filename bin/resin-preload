@@ -140,7 +140,9 @@ if (!(options.appId && options.image && (options.apiToken || options.apiKey))) {
 
 console.log('\nBuilding preloader image...\n')
 const buildOutputStream = preload.build(docker)
-buildOutputStream.pipe(process.stdout)
+if (process.env.DEBUG) {
+  buildOutputStream.pipe(process.stdout)
+}
 
 streamToPromise(buildOutputStream)
 .then(() => {
