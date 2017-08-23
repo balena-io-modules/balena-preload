@@ -3,10 +3,10 @@ import json
 import os
 
 from contextlib import contextmanager
-from distutils.version import LooseVersion
 from functools import partial
 from logging import getLogger, INFO, StreamHandler
 from math import ceil, floor
+from re import sub
 from sh import (
     btrfs,
     dd,
@@ -14,7 +14,6 @@ from sh import (
     dockerd,
     e2fsck,
     inotifywait,
-    kill,
     losetup,
     mount,
     parted,
@@ -23,7 +22,6 @@ from sh import (
     umount,
     ErrorReturnCode,
 )
-from re import sub
 from shutil import copyfile, rmtree
 from sys import exit
 from tempfile import mkdtemp, NamedTemporaryFile
@@ -107,15 +105,6 @@ def losetup_context_manager(image, partition):
     losetup("-d", device)
 
 
-def get_resin_os_version(image):
-    with mount_context_manager(image, 2) as mountpoint:
-        with open(os.path.join(mountpoint, "etc/os-release")) as f:
-            for line in f:
-                key, value = line.split("=", 1)
-                if key == "VERSION":
-                    return value.strip('"\n"')
-
-
 def expand_image(image, additional_space):
     log.info("Expanding image size by {}".format(human_size(additional_space)))
     # Add zero bytes to image to be able to resize partitions
@@ -174,12 +163,12 @@ def fix_rce_docker(mountpoint):
         return _rce_dir
 
 
-def start_docker_daemon(filesystem_type, mountpoint):
+def start_docker_daemon(storage_driver, mountpoint):
     """Starts the docker daemon and waits for it to be ready."""
     socket = mkdtemp() + "/docker.sock"
     docker_dir = fix_rce_docker(mountpoint)
-    dockerd(
-        s=filesystem_type,
+    running_dockerd = dockerd(
+        storage_driver=storage_driver,
         data_root=docker_dir,
         H="unix://" + socket,
         _bg=True,
@@ -189,18 +178,25 @@ def start_docker_daemon(filesystem_type, mountpoint):
         inotifywait("-t", 1, "-e", "create", os.path.dirname(socket))
     ok = False
     while not ok:
+        # dockerd should not exit, if it does, we'll throw an exception.
+        if running_dockerd.process.exit_code is not None:
+            # There is no reason for dockerd to exit with a 0 status now.
+            assert running_dockerd.process.exit_code != 0
+            # This will raise an sh.ErrorReturnCode_X exception.
+            running_dockerd.wait()
+        # Check that we can connect to  the dockerd socket.
         output = docker("-H", "unix://" + socket, "version", _ok_code=[0, 1])
         ok = output.exit_code == 0
     log.info("Docker started")
-    return socket
+    return running_dockerd, socket
 
 
 @contextmanager
-def docker_context_manager(filesystem_type, mountpoint):
-    socket = start_docker_daemon(filesystem_type, mountpoint)
+def docker_context_manager(storage_driver, mountpoint):
+    running_dockerd, socket = start_docker_daemon(storage_driver, mountpoint)
     yield socket
-    with open("/var/run/docker.pid", "r") as f:
-        kill(f.read().strip())
+    running_dockerd.terminate()
+    running_dockerd.wait()
 
 
 def write_apps_json(data, output):
@@ -230,28 +226,20 @@ def docker_pull(docker_sock, image_id):
     docker("-H", "unix://" + docker_sock, "images", "--all", _fg=True)
 
 
-def resin_version_ge_2(image):
-    return LooseVersion(get_resin_os_version(image)) >= LooseVersion("2.0.0")
-
-
 def resize_fs_copy_splash_image_and_pull(image, app_data):
-    # Use ext4 for 2.0.0+ versions, btrfs otherwise
-    version_ge_2 = resin_version_ge_2(image)
+    driver = get_docker_storage_driver(image)
     extra_options = ""
-    if version_ge_2:
+    if driver != "btrfs":
         # For ext4, we'll have to keep it unmounted to resize
         log.info("Expanding ext filesystem")
         expand_ext4(image, 6)
     else:
         extra_options = "nospace_cache,rw"
     with mount_context_manager(image, 6, extra_options) as mountpoint:
-        if version_ge_2:
-            driver = "aufs"
-        else:
+        if driver == "btrfs":
             # For btrfs we need to mount the fs for resizing.
             log.info("Expanding btrfs filesystem")
             expand_btrfs(mountpoint)
-            driver = "btrfs"
         with docker_context_manager(driver, mountpoint) as docker_sock:
             write_apps_json(app_data, mountpoint + "/apps.json")
             docker_pull(docker_sock, app_data["imageId"])
@@ -366,7 +354,7 @@ def get_inner_image_filename(image):
 
 
 def _list_images(image):
-    driver = "aufs" if resin_version_ge_2(image) else "btrfs"
+    driver = get_docker_storage_driver(image)
     with mount_context_manager(image, 6) as mountpoint:
         with docker_context_manager(driver, mountpoint) as docker_sock:
             output = docker(
@@ -387,6 +375,38 @@ def list_images(image):
             inner_image = os.path.join(mountpoint, "opt", inner_image)
             return _list_images(inner_image)
     return _list_images(image)
+
+
+def get_docker_init_file_content(image):
+    with mount_context_manager(image, 2) as mountpoint:
+        path = os.path.join(
+            mountpoint,
+            'lib',
+            'systemd',
+            'system',
+            'docker.service',
+        )
+        with open(path) as f:
+            return f.read()
+
+
+def find_one_of(lst, *args):
+    for elem in args:
+        index = lst.index(elem)
+        if index != -1:
+            return index
+    return -1
+
+
+def get_docker_storage_driver(image):
+    for line in get_docker_init_file_content(image).strip().split("\n"):
+        if line.startswith("ExecStart="):
+            words = line.split()
+            position = find_one_of(words, "-s", "--storage-driver")
+            if position != -1 and position < len(words) - 1:
+                return words[position + 1]
+    # Stop here if no driver was found
+    assert False
 
 
 def main_preload():

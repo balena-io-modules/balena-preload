@@ -7,6 +7,16 @@ Script for preloading resin.io OS images (`.img`) with a user application contai
 
 Using this will allow images with supervisor version above 1.0.0 to run the user application without connectivity, and without the need to download the container.
 
+## Warning
+
+In order to preload images that use the overlay2 Docker storage driver (like
+nvidia jetson tx2 for example), you need to load the `overlay` Linux module:
+
+```sh
+sudo modprobe overlay
+```
+
+
 ## Deprecation
 
 The standalone mode described below (resin-preload) is now deprecated.
