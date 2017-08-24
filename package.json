@@ -12,6 +12,13 @@
     "container"
   ],
   "main": "lib/preload.js",
+  "files": [
+    "bin/resin-preload",
+    "lib/preload.js",
+    "src/preload.py",
+    "Dockerfile",
+    "requirements.txt"
+  ],
   "dependencies": {
     "bluebird": "^3.5.0",
     "dockerode": "^2.5.0",
