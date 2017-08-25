@@ -118,7 +118,7 @@ const options = {
   registryHost: process.env['REGISTRY_HOST'],
   splashImage: process.env['SPLASH_IMAGE'],
   dontDetectFlasherTypeImages: process.env['DONT_DETECT_FLASHER_TYPE_IMAGES'],
-  dontCheckDeviceType: process.env['DONT_CHECK_DEVICE_TYPE'] ? true : false
+  dontCheckDeviceType: !!process.env['DONT_CHECK_DEVICE_TYPE']
 }
 
 while (argv.length) {
