@@ -21,7 +21,9 @@
   ],
   "dependencies": {
     "bluebird": "^3.5.0",
+    "docker-progress": "^2.6.3",
     "dockerode": "^2.5.0",
+    "get-port": "^3.2.0",
     "lodash": "^4.17.4",
     "request-promise": "^4.2.1",
     "resin-cli-form": "^1.4.1",
