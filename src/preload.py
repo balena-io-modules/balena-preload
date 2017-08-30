@@ -13,7 +13,6 @@ from sh import (
     docker,
     dockerd,
     e2fsck,
-    inotifywait,
     losetup,
     mount,
     parted,
@@ -31,6 +30,8 @@ os.environ["LANG"] = "C"
 SECTOR_SIZE = 512
 
 IMAGE = "/img/resin.img"
+
+DOCKER_HOST = "tcp://0.0.0.0:{}".format(os.environ.get("DOCKER_PORT") or 8000)
 
 CONTAINER_SIZE = os.environ["CONTAINER_SIZE"]
 APP_DATA = os.environ["APP_DATA"]
@@ -165,17 +166,14 @@ def fix_rce_docker(mountpoint):
 
 def start_docker_daemon(storage_driver, mountpoint):
     """Starts the docker daemon and waits for it to be ready."""
-    socket = mkdtemp() + "/docker.sock"
     docker_dir = fix_rce_docker(mountpoint)
     running_dockerd = dockerd(
         storage_driver=storage_driver,
         data_root=docker_dir,
-        H="unix://" + socket,
+        host=DOCKER_HOST,
         _bg=True,
     )
     log.info("Waiting for Docker to start...")
-    while os.path.isfile(socket):
-        inotifywait("-t", 1, "-e", "create", os.path.dirname(socket))
     ok = False
     while not ok:
         # dockerd should not exit, if it does, we'll throw an exception.
@@ -184,17 +182,17 @@ def start_docker_daemon(storage_driver, mountpoint):
             assert running_dockerd.process.exit_code != 0
             # This will raise an sh.ErrorReturnCode_X exception.
             running_dockerd.wait()
-        # Check that we can connect to  the dockerd socket.
-        output = docker("-H", "unix://" + socket, "version", _ok_code=[0, 1])
+        # Check that we can connect to dockerd.
+        output = docker("--host", DOCKER_HOST, "version", _ok_code=[0, 1])
         ok = output.exit_code == 0
     log.info("Docker started")
-    return running_dockerd, socket
+    return running_dockerd
 
 
 @contextmanager
 def docker_context_manager(storage_driver, mountpoint):
-    running_dockerd, socket = start_docker_daemon(storage_driver, mountpoint)
-    yield socket
+    running_dockerd = start_docker_daemon(storage_driver, mountpoint)
+    yield
     running_dockerd.terminate()
     running_dockerd.wait()
 
@@ -219,13 +217,6 @@ def replace_splash_image(disk_image):
         log.info("Leaving splash image alone")
 
 
-def docker_pull(docker_sock, image_id):
-    log.info("Pulling image...")
-    docker("-H", "unix://" + docker_sock, "pull", image_id, _fg=True)
-    log.info("Docker images loaded:")
-    docker("-H", "unix://" + docker_sock, "images", "--all", _fg=True)
-
-
 def resize_fs_copy_splash_image_and_pull(image, app_data):
     driver = get_docker_storage_driver(image)
     extra_options = ""
@@ -240,9 +231,12 @@ def resize_fs_copy_splash_image_and_pull(image, app_data):
             # For btrfs we need to mount the fs for resizing.
             log.info("Expanding btrfs filesystem")
             expand_btrfs(mountpoint)
-        with docker_context_manager(driver, mountpoint) as docker_sock:
+        with docker_context_manager(driver, mountpoint):
             write_apps_json(app_data, mountpoint + "/apps.json")
-            docker_pull(docker_sock, app_data["imageId"])
+            # Signal that Docker is ready.
+            print()
+            # Wait for the js to finish its job.
+            input()
 
 
 def round_to_sector_size(size, sector_size=SECTOR_SIZE):
@@ -356,10 +350,10 @@ def get_inner_image_filename(image):
 def _list_images(image):
     driver = get_docker_storage_driver(image)
     with mount_context_manager(image, 6) as mountpoint:
-        with docker_context_manager(driver, mountpoint) as docker_sock:
+        with docker_context_manager(driver, mountpoint):
             output = docker(
-                "-H",
-                "unix://" + docker_sock,
+                "--host",
+                DOCKER_HOST,
                 "images",
                 "--all",
                 "--format",
@@ -431,7 +425,6 @@ def main_preload():
             preload(image, additional_space, app_data)
     else:
         preload(IMAGE, additional_space, app_data)
-    log.info("Done.")
 
 
 def main_get_device_type_slug_and_preloaded_builds():
