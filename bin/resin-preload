@@ -9,6 +9,7 @@ const Promise = require('bluebird')
 const streamToPromise = require('stream-to-promise')
 const resinSdk = require('resin-sdk')
 const tmp = Promise.promisifyAll(require('tmp'))
+const visuals = require('resin-cli-visuals')
 
 const docker = new Docker({Promise})
 
@@ -144,6 +145,12 @@ if (!(options.appId && options.image && (options.apiToken || options.apiKey))) {
 
 console.log('\nBuilding preloader image...\n')
 const buildOutputStream = preload.build(docker)
+
+const buildProgress = new visuals.Progress('Building Docker preloader image.')
+buildOutputStream.on('progress', (percentage) => {
+  buildProgress.update({ percentage })
+})
+
 if (process.env.DEBUG) {
   buildOutputStream.pipe(process.stdout)
 }
@@ -156,9 +163,20 @@ streamToPromise(buildOutputStream)
   return preload.getApplication(resin, options.appId)
   .then((application) => {
     options.application = application
-    return preload.getDeviceTypeSlugAndPreloadedBuilds(docker, options)
+
+    const slugAndBuilds = preload.getDeviceTypeSlugAndPreloadedBuilds(docker, options)
+    const interceptor = new preload.CtrlCInterceptor(slugAndBuilds.cancel)
+    interceptor.start()
+    return slugAndBuilds.promise
+    .tap(() => {
+      interceptor.stop()
+    })
   })
   .then((data) => {
+    if (data === undefined) {
+      // getDeviceTypeSlugAndPreloadedBuilds has been cancelled
+      process.exit(130)
+    }
     if (options.dontCheckDeviceType === false && data.slug !== options.application.device_type) {
       console.error(
         `Application device type (${options.application.device_type}) and image device type (${data.slug}) do not match.`
@@ -173,13 +191,35 @@ streamToPromise(buildOutputStream)
       process.exit(0)
     }
     console.log('\nPreloading...\n')
-    return preload.run(resin, docker, options)
+    const runInfo = preload.run(process.stdin, resin, docker, options)
+
+    // handle CTRL+C
+    const runInterceptor = new preload.CtrlCInterceptor(runInfo.cancel)
+
+    runInfo.output.pipe(process.stdout)
+
+    const fetchSizeProgress = new visuals.Progress(`Fetching container size for ${options.imageRepo}`)
+    runInfo.fetchSizeProgress.on('progress', (percentage) => {
+      fetchSizeProgress.update({ percentage })
+      if (percentage === 100) {
+        // When the docker container starts, we want it to
+        // finish and be removed. This is why we intercept
+        // CTRL+C.
+        // Set raw mode to be able to intercept CTRL-C
+        runInterceptor.start()
+      }
+    })
+
+    const dockerPullProgress = new visuals.Progress('Pulling image')
+    runInfo.dockerPullProgress.on('progress', (percentage) => {
+      dockerPullProgress.update({ percentage })
+    })
+
+    return runInfo.statusCodePromise
+    .tap(() => {
+      runInterceptor.stop()
+    })
   })
-})
-.then((info) => {
-  info.stdout.pipe(process.stdout)
-  info.stderr.pipe(process.stderr)
-  return info.statusCodePromise
 })
 .then((statusCode) => {
   if (statusCode !== 0) {
