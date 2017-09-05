@@ -156,7 +156,7 @@ streamToPromise(buildOutputStream)
   return preload.getApplication(resin, options.appId)
   .then((application) => {
     options.application = application
-    return preload.getDeviceTypeSlugAndPreloadedBuilds(docker, options)
+    return preload.getDeviceTypeSlugAndPreloadedBuilds(resin, docker, options)
   })
   .then((data) => {
     if (options.dontCheckDeviceType === false && data.slug !== options.application.device_type) {

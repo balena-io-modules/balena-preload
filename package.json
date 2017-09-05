@@ -28,9 +28,7 @@
     "request-promise": "^4.2.1",
     "resin-cli-form": "^1.4.1",
     "resin-cli-visuals": "^1.4.0",
-    "resin-errors": "^2.8.0",
-    "resin-sdk": "^6.8.0",
-    "resin-sdk-preconfigured": "^6.4.1",
+    "resin-sdk": "^6.9.0",
     "stream-to-promise": "^2.2.0",
     "tar-stream": "^1.5.4",
     "tmp": "0.0.33"
