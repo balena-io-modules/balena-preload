@@ -164,9 +164,8 @@ def fix_rce_docker(mountpoint):
         return _rce_dir
 
 
-def start_docker_daemon(storage_driver, mountpoint):
+def start_docker_daemon(storage_driver, docker_dir):
     """Starts the docker daemon and waits for it to be ready."""
-    docker_dir = fix_rce_docker(mountpoint)
     running_dockerd = dockerd(
         storage_driver=storage_driver,
         data_root=docker_dir,
@@ -189,12 +188,30 @@ def start_docker_daemon(storage_driver, mountpoint):
     return running_dockerd
 
 
+def read_file(name):
+    with open(name, "rb") as f:
+        return f.read()
+
+
+def write_file(name, content):
+    with open(name, "wb") as f:
+        f.write(content)
+
+
 @contextmanager
 def docker_context_manager(storage_driver, mountpoint):
-    running_dockerd = start_docker_daemon(storage_driver, mountpoint)
+    docker_dir = fix_rce_docker(mountpoint)
+    # If we don't remove <part6>/<docker|rce>/network/files/local-kv.db and the
+    # preload container was started with bridged networking, the following
+    # dockerd is not reachable from the host.
+    local_kv_db_path = "{}/network/files/local-kv.db".format(docker_dir)
+    local_kv_db_content = read_file(local_kv_db_path)
+    os.remove(local_kv_db_path)
+    running_dockerd = start_docker_daemon(storage_driver, docker_dir)
     yield
     running_dockerd.terminate()
     running_dockerd.wait()
+    write_file(local_kv_db_path, local_kv_db_content)
 
 
 def write_apps_json(data, output):
