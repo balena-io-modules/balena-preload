@@ -11,6 +11,8 @@ const resinSdk = require('resin-sdk')
 const tmp = Promise.promisifyAll(require('tmp'))
 const visuals = require('resin-cli-visuals')
 
+const TERMINATED_BY_CTRL_C = 130
+
 const docker = new Docker({Promise})
 
 tmp.setGracefulCleanup()
@@ -147,6 +149,7 @@ console.log('\nBuilding preloader image...\n')
 const buildOutputStream = preload.build(docker)
 
 const buildProgress = new visuals.Progress('Building Docker preloader image.')
+
 buildOutputStream.on('progress', (percentage) => {
   buildProgress.update({ percentage })
 })
@@ -166,7 +169,9 @@ streamToPromise(buildOutputStream)
 
     const slugAndBuilds = preload.getDeviceTypeSlugAndPreloadedBuilds(docker, options)
     const interceptor = new preload.CtrlCInterceptor(slugAndBuilds.cancel)
+
     interceptor.start()
+
     return slugAndBuilds.promise
     .tap(() => {
       interceptor.stop()
@@ -175,7 +180,7 @@ streamToPromise(buildOutputStream)
   .then((data) => {
     if (data === undefined) {
       // getDeviceTypeSlugAndPreloadedBuilds has been cancelled
-      process.exit(130)
+      process.exit(TERMINATED_BY_CTRL_C)
     }
     if (options.dontCheckDeviceType === false && data.slug !== options.application.device_type) {
       console.error(
