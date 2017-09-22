@@ -30,7 +30,6 @@
     "node-cleanup": "^2.1.2",
     "request": "^2.83.0",
     "request-promise": "^4.2.1",
-    "resin-cli-form": "^1.4.1",
     "resin-cli-visuals": "^1.4.0",
     "resin-errors": "^2.8.0",
     "resin-sdk": "^6.8.0",
