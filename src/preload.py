@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -u
 import json
 import os
 
@@ -29,18 +29,12 @@ os.environ["LANG"] = "C"
 
 SECTOR_SIZE = 512
 
-IMAGE = "/img/resin.img"
+PARTITIONS = json.loads(os.environ["PARTITIONS"])
+
+SPLASH_IMAGE_FROM = "/img/resin-logo.png"
+SPLASH_IMAGE_TO = "/splash/resin-logo.png"
 
 DOCKER_HOST = "tcp://0.0.0.0:{}".format(os.environ.get("DOCKER_PORT") or 8000)
-
-CONTAINER_SIZE = os.environ["CONTAINER_SIZE"]
-APP_DATA = os.environ["APP_DATA"]
-
-COMMAND = os.environ["COMMAND"]
-DETECT_FLASHER_TYPE_IMAGES = (
-    os.environ["DONT_DETECT_FLASHER_TYPE_IMAGES"] == "FALSE"
-)
-
 
 log = getLogger(__name__)
 log.setLevel(INFO)
@@ -70,63 +64,74 @@ def get_offsets_and_sizes(image, unit="B"):
     return result
 
 
-def get_offset_and_size(image, partition):
-    return get_offsets_and_sizes(image)[partition - 1]
+def get_partition(name, image=None):
+    partition = PARTITIONS[name].copy()
+    # override disk image (needed for flashed type devices)
+    if image is not None:
+        partition["image"] = image
+    return partition
 
 
-def mount_partition(image, partition, extra_options):
-    offset, size = get_offset_and_size(image, partition)
+def get_offset_and_size(part):
+    if part["number"] == 0:
+        # partition image: no need to read the partition table
+        return 0, file_size(part["image"])
+    else:
+        # disk image
+        return get_offsets_and_sizes(part["image"])[part["number"] - 1]
+
+
+def mount_partition(partition_name, extra_options, image):
+    part = get_partition(partition_name, image)
+    offset, size = get_offset_and_size(part)
     mountpoint = mkdtemp()
     options = "offset={},sizelimit={}".format(offset, size)
     if extra_options:
         options += "," + extra_options
-    mount("-o", options, image, mountpoint)
+    mount("-o", options, part["image"], mountpoint)
     return mountpoint
 
 
 @contextmanager
-def mount_context_manager(image, partition, extra_options=""):
-    mountpoint = mount_partition(image, partition, extra_options)
+def mount_context_manager(partition_name, extra_options="", image=None):
+    mountpoint = mount_partition(partition_name, extra_options, image)
     yield mountpoint
     umount(mountpoint)
     os.rmdir(mountpoint)
 
 
-def losetup_partition(image, partition):
-    offset, size = get_offset_and_size(image, partition)
-    device = losetup("-f").stdout.decode("utf8").strip()
-    losetup("-o", offset, "--sizelimit", size, device, image)
-    return device
+def losetup_partition(partition_name, image=None):
+    part = get_partition(partition_name, image)
+    offset, size = get_offset_and_size(part)
+    return losetup(
+        "-o",
+        offset,
+        "--sizelimit",
+        size,
+        "-P",
+        "--show",
+        "-f",
+        part["image"],
+    ).stdout.decode("utf8").strip()
 
 
 @contextmanager
-def losetup_context_manager(image, partition):
-    device = losetup_partition(image, partition)
+def losetup_context_manager(partition_name, image=None):
+    device = losetup_partition(partition_name, image=image)
     yield device
     losetup("-d", device)
 
 
-def expand_image(image, additional_space):
-    log.info("Expanding image size by {}".format(human_size(additional_space)))
-    # Add zero bytes to image to be able to resize partitions
-    with open(image, "a") as f:
+def expand_file(path, additional_space):
+    with open(path, "a") as f:
         size = f.tell()
         f.truncate(size + additional_space)
 
 
-def expand_partitions(image):
-    """Resizes partitions 4 & 6 to the end of the image"""
-    log.info(
-        "Expanding extended partition 4 and logical partition 6 to the end of "
-        "the disk image."
-    )
-    parted("-s", image, "resizepart", 4, "100%", "resizepart", 6, "100%")
-
-
-def expand_ext4(image, partition):
+def expand_ext4(partition_name, image=None):
     # Resize ext4 filesystem
     error = False
-    with losetup_context_manager(image, partition) as loop_device:
+    with losetup_context_manager(partition_name, image=image) as loop_device:
         log.info("Using {}".format(loop_device))
         log.info("Resizing filesystem")
         try:
@@ -220,38 +225,44 @@ def write_apps_json(data, output):
         json.dump([data], f, indent=4, sort_keys=True)
 
 
-def replace_splash_image(disk_image):
+def replace_splash_image(image=None):
     """
     Replaces the resin-logo.png used on boot splash to allow a more branded
     experience.
     """
-    splash_image = "/img/resin-logo.png"
-    if os.path.isfile(splash_image):
-        log.info("Replacing splash image")
-        with mount_context_manager(disk_image, 1) as mountpoint:
-            copyfile(splash_image, mountpoint + "/splash/resin-logo.png")
+    if os.path.isfile(SPLASH_IMAGE_FROM):
+        with mount_context_manager("boot", image=image) as mpoint:
+            path = mpoint + SPLASH_IMAGE_TO
+            if os.path.isdir(os.path.dirname(path)):
+                log.info("Replacing splash image")
+                copyfile(SPLASH_IMAGE_FROM, path)
+            else:
+                log.info(
+                    "No splash folder on the boot partition, the splash image "
+                    "won't be inserted."
+                )
     else:
         log.info("Leaving splash image alone")
 
 
-def resize_fs_copy_splash_image_and_pull(image, app_data):
+def resize_fs_copy_splash_image_and_pull(app_data, image=None):
     driver = get_docker_storage_driver(image)
     extra_options = ""
     if driver != "btrfs":
         # For ext4, we'll have to keep it unmounted to resize
         log.info("Expanding ext filesystem")
-        expand_ext4(image, 6)
+        expand_ext4("data", image=image)
     else:
         extra_options = "nospace_cache,rw"
-    with mount_context_manager(image, 6, extra_options) as mountpoint:
+    with mount_context_manager("data", extra_options, image=image) as mpoint:
         if driver == "btrfs":
             # For btrfs we need to mount the fs for resizing.
             log.info("Expanding btrfs filesystem")
-            expand_btrfs(mountpoint)
-        with docker_context_manager(driver, mountpoint):
-            write_apps_json(app_data, mountpoint + "/apps.json")
+            expand_btrfs(mpoint)
+        with docker_context_manager(driver, mpoint):
+            write_apps_json(app_data, mpoint + "/apps.json")
             # Signal that Docker is ready.
-            print()
+            print(json.dumps({}))
             # Wait for the js to finish its job.
             input()
 
@@ -260,7 +271,7 @@ def round_to_sector_size(size, sector_size=SECTOR_SIZE):
     sectors = size / sector_size
     if not sectors.is_integer():
         sectors = floor(sectors) + 1
-    return sectors * sector_size
+    return int(sectors * sector_size)
 
 
 def file_size(path):
@@ -297,8 +308,10 @@ def resize_rootfs_get_sfdisk_script(image, additional_sectors):
     return "\n".join(lines)
 
 
-def resize_rootfs(image, additional_space):
+def resize_rootfs(additional_space):
     log.info("Resizing the 2nd partition of the image.")
+    part = get_partition("root")
+    image = part["image"]
     size = file_size(image) + additional_space
     log.info("New disk image size: {}.".format(human_size(size)))
     additional_sectors = additional_space // SECTOR_SIZE
@@ -318,13 +331,13 @@ def resize_rootfs(image, additional_space):
     for offset, size in offsets_and_sizes[2:]:
         copy(skip=offset, seek=offset + additional_sectors, count=size)
     # Expand 2nd partition.
-    expand_ext4(tmp.name, 2)
+    expand_ext4("root", image=tmp.name)
     # Replace the original image contents.
     ddd(_if=tmp.name, of=image, bs=SECTOR_SIZE)
 
 
-def get_json(image, partition, path):
-    with mount_context_manager(image, partition) as mountpoint:
+def get_json(partition_name, path, image=None):
+    with mount_context_manager(partition_name, image=image) as mountpoint:
         try:
             with open(os.path.join(mountpoint, path)) as f:
                 return json.load(f)
@@ -332,41 +345,67 @@ def get_json(image, partition, path):
             pass
 
 
-def get_config(image):
+def get_config(image=None):
     return (
-        get_json(image, 1, "config.json") or  # resinOS 1.26+
-        get_json(image, 5, "config.json")  # resinOS 1.8
+        get_json("boot", "config.json", image=image) or  # resinOS 1.26+
+        get_json("conf", "config.json", image=image)  # resinOS 1.8
     )
 
 
-def get_device_type(image):
-    return get_json(image, 1, "device-type.json")
+def get_device_type(image=None):
+    return get_json("boot", "device-type.json", image=image)
 
 
-def get_device_type_slug(image):
-    device_type = get_device_type(image)
+def get_device_type_slug():
+    device_type = get_device_type()
     if device_type is not None:
         return device_type["slug"]
-    return get_config(image)["deviceType"]
+    return get_config()["deviceType"]
 
 
-def preload(image, additional_space, app_data):
-    expand_image(image, additional_space)
-    expand_partitions(image)
-    resize_fs_copy_splash_image_and_pull(image, app_data)
+def expand_data_partition(additional_space, image=None):
+    part = get_partition("data", image)
+    log.info("Expanding image size by {}".format(human_size(additional_space)))
+    # Add zero bytes to image to be able to resize partitions
+    expand_file(part["image"], additional_space)
+    # do nothing if the data parition is in its own file
+    if part["number"] != 0:
+        # This code assumes that the data partition is the 6th and last one
+        # and is contained in the 4th (extended) partition.
+        assert part["number"] == 6
+        log.info(
+            "Expanding extended partition 4 and logical partition 6 to the "
+            "end of the disk image."
+        )
+        parted(
+            "-s",
+            part["image"],
+            "resizepart",
+            4,
+            "100%",
+            "resizepart",
+            part["number"],
+            "100%",
+        )
 
 
-def get_inner_image_filename(image):
-    device_type = get_device_type(IMAGE)
+def preload(additional_space, app_data, image=None):
+    replace_splash_image(image)
+    expand_data_partition(additional_space, image)
+    resize_fs_copy_splash_image_and_pull(app_data, image)
+
+
+def get_inner_image_filename():
+    device_type = get_device_type()
     if device_type:
         deployArtifact = device_type["yocto"]["deployArtifact"]
         if "-flasher-" in deployArtifact:
             return deployArtifact.replace("flasher-", "", 1)
 
 
-def _list_images(image):
-    driver = get_docker_storage_driver(image)
-    with mount_context_manager(image, 6) as mountpoint:
+def _list_images(image=None):
+    driver = get_docker_storage_driver(image=image)
+    with mount_context_manager("data", image=image) as mountpoint:
         with docker_context_manager(driver, mountpoint):
             output = docker(
                 "--host",
@@ -379,17 +418,17 @@ def _list_images(image):
             return output.strip().split("\n")
 
 
-def list_images(image):
-    inner_image = get_inner_image_filename(image)
-    if DETECT_FLASHER_TYPE_IMAGES and inner_image:
-        with mount_context_manager(image, 2) as mountpoint:
+def list_images(detect_flasher_type_images):
+    inner_image = get_inner_image_filename()
+    if detect_flasher_type_images and inner_image:
+        with mount_context_manager("root") as mountpoint:
             inner_image = os.path.join(mountpoint, "opt", inner_image)
             return _list_images(inner_image)
-    return _list_images(image)
+    return _list_images()
 
 
-def get_docker_init_file_content(image):
-    with mount_context_manager(image, 2) as mountpoint:
+def get_docker_init_file_content(image=None):
+    with mount_context_manager("root", image=image) as mountpoint:
         path = os.path.join(
             mountpoint,
             'lib',
@@ -409,7 +448,7 @@ def find_one_of(lst, *args):
     return -1
 
 
-def get_docker_storage_driver(image):
+def get_docker_storage_driver(image=None):
     for line in get_docker_init_file_content(image).strip().split("\n"):
         if line.startswith("ExecStart="):
             words = line.split()
@@ -420,40 +459,48 @@ def get_docker_storage_driver(image):
     assert False
 
 
-def main_preload():
-    app_data = json.loads(APP_DATA)
-    replace_splash_image(IMAGE)
+def main_preload(app_data, container_size, detect_flasher_type_images):
     # Size will be increased by 110% of the container size
-    additional_space = round_to_sector_size(ceil(int(CONTAINER_SIZE) * 1.1))
-    inner_image = get_inner_image_filename(IMAGE)
-    if not DETECT_FLASHER_TYPE_IMAGES and inner_image:
+    additional_space = round_to_sector_size(ceil(int(container_size) * 1.1))
+    inner_image = get_inner_image_filename()
+    if not detect_flasher_type_images and inner_image:
         log.info(
             "Warning: This looks like a flasher type image but we're going to "
             "preload it like a regular image."
         )
-    if DETECT_FLASHER_TYPE_IMAGES and inner_image:
+    if detect_flasher_type_images and inner_image:
+        part = get_partition("root")
         log.info(
             "This is a flasher image, preloading into /opt/{} on the 2nd "
-            "partition of {}".format(inner_image, IMAGE)
+            "partition of {}".format(inner_image, part["image"])
         )
-        resize_rootfs(IMAGE, additional_space)
-        with mount_context_manager(IMAGE, 2) as mountpoint:
+        resize_rootfs(additional_space)
+        with mount_context_manager("root") as mountpoint:
             image = os.path.join(mountpoint, "opt", inner_image)
-            preload(image, additional_space, app_data)
+            preload(additional_space, app_data, image)
     else:
-        preload(IMAGE, additional_space, app_data)
+        preload(additional_space, app_data)
 
 
-def main_get_device_type_slug_and_preloaded_builds():
-    result = {
-        "slug": get_device_type_slug(IMAGE),
-        "builds": list_images(IMAGE),
+def get_device_type_and_preloaded_builds(detect_flasher_type_images=True):
+    return {
+        "device_type": get_device_type_slug(),
+        "preloaded_builds": list_images(detect_flasher_type_images),
     }
-    print(json.dumps(result))
+
+
+methods = {
+    "get_device_type_and_preloaded_builds": (
+        get_device_type_and_preloaded_builds
+    ),
+    "preload": main_preload,
+}
 
 
 if __name__ == "__main__":
-    if COMMAND == "preload":
-        main_preload()
-    elif COMMAND == "get_device_type_slug_and_preloaded_builds":
-        main_get_device_type_slug_and_preloaded_builds()
+    import sys
+    for line in sys.stdin:
+        data = json.loads(line)
+        method = methods[data["command"]]
+        result = method(**data.get("parameters", {}))
+        print(json.dumps({"result": result}))

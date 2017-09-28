@@ -63,12 +63,11 @@ Usage: resin-preload [options]
 Options:
 
   --app            Application ID (required)
-  --img            Disk image to preload into (required)
+  --img            Disk image (or Edison zip file) to preload into (required)
   --api-token      API token (required, or api-key)
   --api-key        API key (required, or api-token)
   --commit         App commit to be preloaded (default: latest)
-  --api-host       API host (default: "https://api.resin.io")
-  --registry       Image registry host (default: "registry2.resin.io")
+  --api-host       API host (default: "https://api.resin.io", the TLD will also be used for registry2 requests)
   --splash-image   PNG Image for custom splash screen
 
   --dont-detect-flasher-type-images Disables the flasher type images detection: treats all images as non flasher types
@@ -88,7 +87,6 @@ Environment variables:
   --api-key                           API_KEY
   --commit                            COMMIT
   --api-host                          API_HOST
-  --registry                          REGISTRY_HOST
   --splash-image                      SPLASH_IMAGE
   --dont-detect-flasher-type-images   DONT_DETECT_FLASHER_TYPE_IMAGES
   --dont-check-device-type            DONT_CHECK_DEVICE_TYPE
@@ -137,7 +135,6 @@ The `/path/to/resin.img` file, will now have the latest version of your applicat
 
 ### Additional Options
 
-* `REGISTRY_HOST`: Docker registry from which to download the image. If unsure, leave empty.
 * Alternatively to `API_TOKEN`, you can use an `API_KEY` variable with an API key from a config.json file or the [SDK](https://github.com/resin-io/resin-sdk/blob/master/DOCUMENTATION.md#resin.models.application.getApiKey).
 * `API_HOST`: Address of the Resin API. If unsure, use `https://api.resin.io`.
 * `SPLASH_IMAGE`: Path to a custom splash image, to copy into the preloaded OS image
@@ -152,44 +149,7 @@ For more details on splash images, see:
 
 ## Module usage
 
-```js
-const preload = require('resin-preload')
-```
-
-Building the preloader docker image:
-
-```js
-// preload.build() returns a ChildProcess,
-// `spawnOptions` are passed to `childProcess.spawn()`
-var build = preload.build(spawnOptions)
-
-build.once('exit', (code, signal) => {
-  // ...
-})
-```
-
-Preloading a disk image (this requires to have built the preloader image):
-
-```js
-var options = {
-  appId: '123456', // Application ID of the app to preload
-  image: 'resin-RPi3-2.0.0+rev3-4.1.1-...img', // Image to preload into
-  apiToken: 'pZCI6MTc2OCwidXNlc...', // API credentials
-  commit: '321654987654321654', // Optional
-  apiKey: null,
-  apiHost: 'https://api.resin.io', // Optional
-  registryHost: 'registry2.resin.io', // Optional
-  splashImage: 'path/to/custom-splash-image.png' // Optional
-}
-
-// preload.run() also returns a ChildProcess,
-// `spawnOptions` are passed to `childProcess.spawn()`
-var run = preload.run(options, spawnOptions)
-
-run.once('exit', (code, signal) => {
-  // ...
-})
-```
+Please check bin/resin-preload
 
 ## Contributing
 
