@@ -213,6 +213,9 @@ getResinSdk(options)
       return preloader.fetchApplication()
     })
     .then(() => {
+      if (preloader.application.build.length === 0) {
+        reject(new ExitError('This application has no successful builds'))
+      }
       return preloader.getDeviceTypeAndPreloadedBuilds()
     })
     .then((info) => {
