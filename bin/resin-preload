@@ -83,12 +83,12 @@ process.on('uncaughtException', handleError)
 
 const argv = process.argv.slice(2)
 
-if (argv.includes('--help') || argv.includes('-h')) {
+if ((argv.indexOf('--help') !== -1) || (argv.indexOf('-h') !== -1)) {
   console.log(USAGE)
   process.exit(0)
 }
 
-if (argv.includes('--version') || argv.includes('-v')) {
+if ((argv.indexOf('--version') !== -1) || (argv.indexOf('-v') !== -1)) {
   console.log(info.version)
   process.exit(0)
 }
