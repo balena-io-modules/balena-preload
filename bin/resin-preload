@@ -25,7 +25,6 @@ const USAGE = `
     --api-token      API token (required, or api-key)
     --api-key        API key (required, or api-token)
     --commit         Application commit to preload (default: latest)
-    --api-host       API host (default: "https://api.resin.io")
     --splash-image   PNG Image for custom splash screen
 
     --dont-detect-flasher-type-images Disables the flasher type images detection: treats all images as non flasher types
@@ -36,6 +35,8 @@ const USAGE = `
 
   Environment variables:
 
+    RESINRC_RESIN_URL (defaults to resin.io)
+
     The following option flags can also be set
     via the corresponding environment variables:
 
@@ -44,7 +45,6 @@ const USAGE = `
     --api-token                         API_TOKEN
     --api-key                           API_KEY
     --commit                            COMMIT
-    --api-host                          API_HOST
     --splash-image                      SPLASH_IMAGE
     --dont-detect-flasher-type-images   DONT_DETECT_FLASHER_TYPE_IMAGES
     --dont-check-device-type            DONT_CHECK_DEVICE_TYPE
@@ -94,7 +94,10 @@ if ((argv.indexOf('--version') !== -1) || (argv.indexOf('-v') !== -1)) {
 
 const getResinSdk = (options) => {
   // Creates a temporary directory for resin sdk so it won't replace any existing token.
-  const resinSdkOptions = { apiKey: options.apiKey, apiUrl: options.apiHost }
+  const resinSdkOptions = { apiKey: options.apiKey }
+  if (process.env.RESINRC_RESIN_URL !== undefined) {
+    resinSdkOptions.apiUrl = 'https://api.' + process.env.RESINRC_RESIN_URL  // TODO: this should not be needed
+  }
   return tmp.dirAsync({ unsafeCleanup: true })
   .spread((path) => {
     resinSdkOptions.dataDirectory = path
@@ -113,7 +116,6 @@ const options = {
   apiToken: process.env['API_TOKEN'],
   apiKey: process.env['API_KEY'],
   commit: process.env['COMMIT'],
-  apiHost: process.env['API_HOST'],
   splashImage: process.env['SPLASH_IMAGE'],
   dontDetectFlasherTypeImages: process.env['DONT_DETECT_FLASHER_TYPE_IMAGES'],
   dontCheckDeviceType: !!process.env['DONT_CHECK_DEVICE_TYPE']
@@ -126,7 +128,6 @@ while (argv.length) {
     case '--api-token': options.apiToken = argv.shift(); break
     case '--api-key': options.apiKey = argv.shift(); break
     case '--commit': options.commit = argv.shift(); break
-    case '--api-host': options.apiHost = argv.shift(); break
     case '--splash-image': options.splashImage = argv.shift(); break
     case '--dont-detect-flasher-type-images': options.dontDetectFlasherTypeImages = true; break
     case '--dont-check-device-type': options.dontCheckDeviceType = true; break
