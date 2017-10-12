@@ -232,6 +232,7 @@ getResinSdk(options)
       return preloader.preload()
       .then(resolve)
     })
+    .catch(reject)
   })
   .finally(() => {
     if (!gotSignal) {
