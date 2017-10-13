@@ -6,9 +6,10 @@ const Docker = require('dockerode')
 const preload = require('..')
 const info = require('../package.json')
 const Promise = require('bluebird')
-const streamToPromise = require('stream-to-promise')
 const resinSdk = require('resin-sdk')
 const tmp = Promise.promisifyAll(require('tmp'))
+const visuals = require('resin-cli-visuals')
+const nodeCleanup = require('node-cleanup')
 
 const docker = new Docker({Promise})
 
@@ -20,12 +21,10 @@ const USAGE = `
   Options:
 
     --app            Application ID (required)
-    --img            Disk image to preload into (required)
+    --img            Disk image (or zip file for Edison images) to preload into (required)
     --api-token      API token (required, or api-key)
     --api-key        API key (required, or api-token)
     --commit         Application commit to preload (default: latest)
-    --api-host       API host (default: "https://api.resin.io")
-    --registry       Image registry host (default: "registry2.resin.io")
     --splash-image   PNG Image for custom splash screen
 
     --dont-detect-flasher-type-images Disables the flasher type images detection: treats all images as non flasher types
@@ -36,6 +35,8 @@ const USAGE = `
 
   Environment variables:
 
+    RESINRC_RESIN_URL (defaults to resin.io)
+
     The following option flags can also be set
     via the corresponding environment variables:
 
@@ -44,8 +45,6 @@ const USAGE = `
     --api-token                         API_TOKEN
     --api-key                           API_KEY
     --commit                            COMMIT
-    --api-host                          API_HOST
-    --registry                          REGISTRY_HOST
     --splash-image                      SPLASH_IMAGE
     --dont-detect-flasher-type-images   DONT_DETECT_FLASHER_TYPE_IMAGES
     --dont-check-device-type            DONT_CHECK_DEVICE_TYPE
@@ -95,9 +94,12 @@ if ((argv.indexOf('--version') !== -1) || (argv.indexOf('-v') !== -1)) {
 
 const getResinSdk = (options) => {
   // Creates a temporary directory for resin sdk so it won't replace any existing token.
-  const resinSdkOptions = { apiKey: options.apiKey, apiUrl: options.apiHost }
+  const resinSdkOptions = { apiKey: options.apiKey }
+  if (process.env.RESINRC_RESIN_URL !== undefined) {
+    resinSdkOptions.apiUrl = 'https://api.' + process.env.RESINRC_RESIN_URL  // TODO: this should not be needed
+  }
   return tmp.dirAsync({ unsafeCleanup: true })
-  .then((path) => {
+  .spread((path) => {
     resinSdkOptions.dataDirectory = path
     const resin = resinSdk(resinSdkOptions)
     if (options.apiToken) {
@@ -114,8 +116,6 @@ const options = {
   apiToken: process.env['API_TOKEN'],
   apiKey: process.env['API_KEY'],
   commit: process.env['COMMIT'],
-  apiHost: process.env['API_HOST'],
-  registryHost: process.env['REGISTRY_HOST'],
   splashImage: process.env['SPLASH_IMAGE'],
   dontDetectFlasherTypeImages: process.env['DONT_DETECT_FLASHER_TYPE_IMAGES'],
   dontCheckDeviceType: !!process.env['DONT_CHECK_DEVICE_TYPE']
@@ -128,8 +128,6 @@ while (argv.length) {
     case '--api-token': options.apiToken = argv.shift(); break
     case '--api-key': options.apiKey = argv.shift(); break
     case '--commit': options.commit = argv.shift(); break
-    case '--api-host': options.apiHost = argv.shift(); break
-    case '--registry': options.registryHost = argv.shift(); break
     case '--splash-image': options.splashImage = argv.shift(); break
     case '--dont-detect-flasher-type-images': options.dontDetectFlasherTypeImages = true; break
     case '--dont-check-device-type': options.dontCheckDeviceType = true; break
@@ -142,49 +140,109 @@ if (!(options.appId && options.image && (options.apiToken || options.apiKey))) {
   process.exit(1)
 }
 
-console.log('\nBuilding preloader image...\n')
-const buildOutputStream = preload.build(docker)
-if (process.env.DEBUG) {
-  buildOutputStream.pipe(process.stdout)
+const progressBars = {}
+
+const progressHandler = (event) => {
+  let progressBar = progressBars[event.name]
+  if (!progressBar) {
+    progressBar = progressBars[event.name] = new visuals.Progress(event.name)
+  }
+  progressBar.update({ percentage: event.percentage })
 }
 
-streamToPromise(buildOutputStream)
-.then(() => {
-  return getResinSdk(options)
-})
-.then((resin) => {
-  return preload.getApplication(resin, options.appId)
-  .then((application) => {
-    options.application = application
-    return preload.getDeviceTypeSlugAndPreloadedBuilds(docker, options)
-  })
-  .then((data) => {
-    if (options.dontCheckDeviceType === false && data.slug !== options.application.device_type) {
-      console.error(
-        `Application device type (${options.application.device_type}) and image device type (${data.slug}) do not match.`
-      )
-      process.exit(1)
-    }
-    const builds = data.builds.map((build) => {
-      return build.slice(-preload.BUILD_HASH_LENGTH)
-    })
-    if (builds.indexOf(options.commit || options.application.commit) !== -1) {
-      console.log('This build is already preloaded in this image.')
-      process.exit(0)
-    }
-    console.log('\nPreloading...\n')
-    return preload.run(resin, docker, options)
-  })
-})
-.then((info) => {
-  info.stdout.pipe(process.stdout)
-  info.stderr.pipe(process.stderr)
-  return info.statusCodePromise
-})
-.then((statusCode) => {
-  if (statusCode !== 0) {
-    process.exit(statusCode)
+const spinners = {}
+
+const spinnerHandler = (event) => {
+  let spinner = spinners[event.name]
+  if (!spinner) {
+    spinner = spinners[event.name] = new visuals.Spinner(event.name)
   }
-  console.log('\n[OK] Done.')
+  if (event.action === 'start') {
+    spinner.start()
+  } else {
+    spinner.stop()
+  }
+}
+
+class ExitError extends (Error) {}
+
+let gotSignal = false
+
+getResinSdk(options)
+.then((resin) => {
+  const preloader = new preload.Preloader(
+    resin,
+    docker,
+    options.appId,
+    options.commit,
+    options.image,
+    options.splashImage,
+    options.proxy,
+    options.dontDetectFlasherTypeImages
+  )
+
+  if (process.env.DEBUG) {
+    preloader.stderr.pipe(process.stderr)
+  }
+
+  preloader.on('progress', progressHandler)
+  preloader.on('spinner', spinnerHandler)
+
+  nodeCleanup((exitCode, signal) => {
+    if (signal) {
+      gotSignal = true
+      nodeCleanup.uninstall()  // don't call cleanup handler again
+      preloader.cleanup()
+      .then(() => {
+        // calling process.exit() won't inform parent process of signal
+        process.kill(process.pid, signal)
+      })
+      return false
+    }
+  })
+
+  return new Promise((resolve, reject) => {
+    preloader.on('error', (err) => {
+      reject(err)
+    })
+
+    return preloader.build()
+    .then(() => {
+      return preloader.prepare()
+    })
+    .then(() => {
+      return preloader.fetchApplication()
+    })
+    .then(() => {
+      if (preloader.application.build.length === 0) {
+        reject(new ExitError('This application has no successful builds'))
+      }
+      return preloader.getDeviceTypeAndPreloadedBuilds()
+    })
+    .then((info) => {
+      if (options.dontCheckDeviceType === false && info.device_type !== preloader.application.device_type) {
+        const msg = `Application device type (${preloader.application.device_type}) and image device type (${info.device_type}) do not match.`
+        reject(new ExitError(msg))
+      }
+      const builds = info.preloaded_builds.map((build) => {
+        return build.slice(-preload.BUILD_HASH_LENGTH)
+      })
+      if (builds.indexOf(options.commit || preloader.application.commit) !== -1) {
+        reject(new ExitError('This build is already preloaded in this image.'))
+      }
+      return preloader.preload()
+      .then(resolve)
+    })
+    .catch(reject)
+  })
+  .finally(() => {
+    if (!gotSignal) {
+      return preloader.cleanup()
+    }
+  })
+})
+.catch(ExitError, (err) => {
+  console.error('Error:', err.message)
+  process.exit(1)
 })
 .catch(handleError)
