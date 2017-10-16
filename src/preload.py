@@ -427,15 +427,48 @@ def list_images(detect_flasher_type_images):
     return _list_images()
 
 
+def is_non_empty_folder(folder):
+    # True if the folder has at least one file not starting with a dot.
+    if not os.path.exists(folder) or not os.path.isdir(folder):
+        return False
+    return any(f for f in os.listdir(folder) if not f.startswith("."))
+
+
+def find_non_empty_folder_in_path(path, child_dir=""):
+    # If child_dir is not given, returns any non empty folder like <path>/...;
+    # else, returns any non empty folder like <path>/.../<child_dir>
+    # where ... can be any subfodler of <path>.
+    if os.path.exists(path) and os.path.isdir(path):
+        for folder in os.listdir(path):
+            folder_path = os.path.join(path, folder, child_dir)
+            if is_non_empty_folder(folder_path):
+                return folder_path
+
+
+def find_docker_aufs_root(mountpoint):
+    # We're looking for a /docker/aufs/diff/<xxxxxxxxxxxxx>/ folder with some
+    # files not starting with a '.'
+    path = os.path.join(mountpoint, "docker", "aufs", "diff")
+    return find_non_empty_folder_in_path(path)
+
+
+def find_docker_overlay2_root(mountpoint):
+    # We're looking for a /docker/overlay2/<xxxxxxxxxxxxx>/diff folder with
+    # some files not starting with a '.'
+    path = os.path.join(mountpoint, "docker", "overlay2")
+    return find_non_empty_folder_in_path(path, "diff")
+
+
 def get_docker_init_file_content(image=None):
+    docker_service_file_path = "lib/systemd/system/docker.service"
     with mount_context_manager("root", image=image) as mountpoint:
-        path = os.path.join(
-            mountpoint,
-            'lib',
-            'systemd',
-            'system',
-            'docker.service',
-        )
+        docker_root = find_docker_aufs_root(mountpoint)
+        if docker_root is None:
+            docker_root = find_docker_overlay2_root(mountpoint)
+        if docker_root is not None:
+            path = os.path.join(docker_root, docker_service_file_path)
+        else:
+            path = os.path.join(mountpoint, docker_service_file_path)
         with open(path) as f:
             return f.read()
 
