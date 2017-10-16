@@ -160,6 +160,8 @@ const spinnerHandler = (event) => {
   if (event.action === 'start') {
     spinner.start()
   } else {
+    // Output an empty line so the spinner doesn't get erased
+    console.log()
     spinner.stop()
   }
 }
