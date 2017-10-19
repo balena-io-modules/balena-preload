@@ -210,13 +210,18 @@ def docker_context_manager(storage_driver, mountpoint):
     # preload container was started with bridged networking, the following
     # dockerd is not reachable from the host.
     local_kv_db_path = "{}/network/files/local-kv.db".format(docker_dir)
-    local_kv_db_content = read_file(local_kv_db_path)
-    os.remove(local_kv_db_path)
+    kv_file_existed = (
+        os.path.exists(local_kv_db_path) and os.path.isfile(local_kv_db_path)
+    )
+    if kv_file_existed:
+        local_kv_db_content = read_file(local_kv_db_path)
+        os.remove(local_kv_db_path)
     running_dockerd = start_docker_daemon(storage_driver, docker_dir)
     yield
     running_dockerd.terminate()
     running_dockerd.wait()
-    write_file(local_kv_db_path, local_kv_db_content)
+    if kv_file_existed:
+        write_file(local_kv_db_path, local_kv_db_content)
 
 
 def write_apps_json(data, output):
