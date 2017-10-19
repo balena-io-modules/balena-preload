@@ -1,6 +1,7 @@
 #!/usr/bin/python3 -u
 import json
 import os
+import sys
 
 from contextlib import contextmanager
 from functools import partial
@@ -12,10 +13,12 @@ from sh import (
     dd,
     docker,
     dockerd,
-    e2fsck,
+    e2fsck,  # TODO: remove
+    fsck,
     losetup,
+    lsblk,
     mount,
-    parted,
+    parted,  # TODO: remove
     resize2fs,
     sfdisk,
     umount,
@@ -30,7 +33,7 @@ os.environ["LANG"] = "C"
 MBR_SIZE = 512
 SECTOR_SIZE = 512
 
-PARTITIONS = json.loads(os.environ["PARTITIONS"])
+#PARTITIONS = json.loads(os.environ["PARTITIONS"])
 
 SPLASH_IMAGE_FROM = "/img/resin-logo.png"
 SPLASH_IMAGE_TO = "/splash/resin-logo.png"
@@ -40,6 +43,307 @@ DOCKER_HOST = "tcp://0.0.0.0:{}".format(os.environ.get("DOCKER_PORT") or 8000)
 log = getLogger(__name__)
 log.setLevel(INFO)
 log.addHandler(StreamHandler())
+
+def get_partitions(image):
+#    log.info("gruik {}".format(PartitionTable(image).partitions))
+    table = PartitionTable(image)
+    log.info("gruik {} {}".format(image, table.partitions))
+    for p in table.partitions:
+        log.info("kkkkkk {} {}".format(p.label, p.number))
+    return {
+        p.label: {"number": p.number, "image": image}
+        for p in table.partitions
+    }
+
+def prepare_global_partitions():
+    partitions = os.environ.get("PARTITIONS")
+    log.info('oioioioioioi {}'.format(partitions))
+    if partitions is not None:
+        return json.loads(partitions)
+    return get_partitions("/img/resin.img")
+
+
+def get_labels_from_device(device):
+    # Dict of <partition number>: <partition label> for this device
+    out = lsblk("-J", "-o", "name,label", device).stdout.decode("utf8")
+    from sh import blkid, file, ls
+    log.info("labels {} {} {} {} {} {}".format(lsblk("-V"), device, out, blkid("-p", "{}p1".format(device)), ls("/dev/"), file("-s", "{}p1".format(device))))
+    data = json.loads(out)
+    partitions = data["blockdevices"][0]["children"]
+    return {
+        int(p["name"].rsplit("p", 1)[-1]): p["label"]
+        for p in partitions
+    }
+
+
+class Partition(object):
+    def __init__(
+        self,
+        partition_table,
+        number,
+        label=None,
+        node=None,
+        start=None,
+        size=None,
+        type=None,
+        uuid=None,
+        name=None,
+        bootable=False,
+    ):
+        self.partition_table = partition_table
+        self.number = number
+        # label returned by lsblk, not part of the sfdisk script
+        self.label = label
+        self.node = node
+        self.start = start
+        self.size = size
+        self.type = type
+        self.uuid = uuid
+        self.name = name
+        self.bootable = bootable
+
+    def set_parent(self, parent):
+        # For logical partitions on MBR disks we store the parent extended
+        # partition
+        assert self.partition_table.label == "dos"
+        self.parent = parent
+
+    @property
+    def end(self):
+        # last byte (included)
+        return self.start + self.size - 1
+
+    def is_included_in(self, other):
+        return (
+            other.start <= self.start <= other.end and
+            other.start <= self.end <= other.end
+        )
+
+    def is_extended(self):
+        return self.partition_table.label == "dos" and self.type == "f"
+
+    def is_last(self):
+        # returns True if this partition is the last on the disk
+        return self == self.partition_table.get_partitions_in_disk_order()[-1]
+
+    def get_sfdisk_line(self):
+        result = "{} : start={}, size={}, type={}".format(
+            self.node,
+            self.start,
+            self.size,
+            self.type
+        )
+        if self.uuid is not None:
+            result += ", uuid={}".format(self.uuid)
+        if self.name is not None:
+            result += ', name="{}"'.format(self.name)
+        if self.bootable:
+            result += ", bootable"
+        return result
+
+
+class PartitionTable(object):
+    def __init__(self, image):
+        self.image = image
+        data = json.loads(
+            sfdisk("--dump", "--json", image).stdout.decode("utf8")
+        )["partitiontable"]
+        self.label = data["label"]
+        assert self.label in ("dos", "gpt")
+        self.id = data["id"]
+        self.device = data["device"]
+        self.unit = data["unit"]
+        self.firstlba = data.get("firstlba")
+        self.lastlba = data.get("lastlba")
+        # use lsblk to get partition labels (they are not returned by sfdisk on
+        # MBR disks)
+        labels = get_labels_from_image(image)
+        self.partitions = []
+        extended_partition = None
+        for number, partition_data in enumerate(data["partitions"], 1):
+            partition_data["label"] = labels.get(number)
+            part = Partition(self, number, **partition_data)
+            if part.is_extended():
+                extended_partition = part
+            if extended_partition and part.is_included_in(extended_partition):
+                part.set_parent(extended_partition)
+            self.partitions.append(part)
+
+    def get(self, label_or_number):
+        if type(label_or_number) == int:
+            return self.get_by_number(label_or_number)
+        elif type(label_or_number) == str:
+            return self.get_by_label(label_or_number)
+
+    def get_by_number(self, number):
+        return self.partitions[number - 1]
+
+    def get_by_label(self, label):
+        if self.label == "gpt":
+            for part in self.partitions:
+                if partition.label == label:
+                    return partition
+
+    def get_partitions_in_disk_order(self):
+        # Returns the partitions in the same order that they are on the disk
+        # This excludes extended partitions.
+        partitions = (p for p in self.partitions if not p.is_extended())
+        return sorted(partitions, key=lambda p: p.start)
+
+    def get_sfdisk_script(self):
+        result = (
+            "label: {}\n"
+            "label-id: {}\n"
+            "device: {}\n"
+            "unit: {}\n"
+        ).format(self.label, self.id, self.device, self.unit)
+        if self.firstlba is not None:
+            result += "first-lba: {}\n".format(self.firstlba)
+        if self.lastlba is not None:
+            result += "last-lba: {}\n".format(self.lastlba)
+        result += "\n"
+        result += "\n".join(p.get_sfdisk_line() for p in self.partitions)
+        return result
+
+#def get_partition_table(image):
+#      result = {"partitions": []}
+#      lines = sfdisk("--dump", image).stdout.decode("utf8").strip().split("\n")
+#      label = lines[0][7:]
+#      assert label in ("dos", "gpt")
+#      result["label"] = label
+#      partition_lines = lines[lines.index("") + 1:]
+#      for number, line in enumerate(partition_lines, 1):
+#          line = line.replace(" ", "").split(":", 1)[1]  # remove filename
+#          data = dict(pair.split("=") for pair in line.split(","))
+#          data["number"] = number
+#          data["image"] = image
+#          for k in ("start", "size"):  # convert sectors to bytes
+#              data[k] = int(data[k]) * SECTOR_SIZE
+#          name = data.get("name")
+#          if name:
+#              name = name[1:-1]  # remove double quotes around the name
+#          elif label == "dos":
+#              name = RESIN_MBR_PARTITION_NAMES.get(number)
+#          else:
+#              assert False, "No partition names on a gpt image."
+#          data["name"] = name
+#          result["partitions"].append(data)
+#      return result
+
+
+def resize_partition(image, number, additional_bytes): # TODO: split
+    # This function expects the partitions to be in disk order: it will fail if
+    # there are primary partitions after an extended one containing logical
+    # partitions.
+    # Get the partition
+    partition_table = PartitionTable(image)
+    partition = partition_table.get(number)
+    # Is it the last partition on the disk?
+    if partition.is_last():
+        # This is the simple case: expand the partition and its parent extended
+        # partition if it is a logical one.
+        # Expand image size
+        expand_file(image, additional_bytes)
+        if partition.parent is not None:
+            # Resize the extended partition
+            sfdisk("-n", partition.parent.number, image, _in=", +")
+        # Resize the partition itself
+        sfdisk("-n", partition.number, image, _in=", +")
+    else:
+        # Resizing logical partitions that are not the last on the disk is not
+        # implemented
+        assert partition.parent is None
+        # Create a new temporary file of the correct size
+        tmp = NamedTemporaryFile(dir=os.path.dirname(image), delete=False)
+        tmp.truncate(file_size(image) + additional_bytes)
+        tmp.close()
+        # Update the partition table
+        additional_sectors = additional_bytes / SECTOR_SIZE
+        # resize the partition
+        partition.size += additional_sectors
+        # move the partitions after
+        for part in partition_table.partitions[number:]:
+            part.start += additional_sectors
+        if partition_table.lastlba is not None:
+            partition_table.lastlba += additional_sectors
+        sfdisk(tmp.name, _in=partition_table.get_sfdisk_script())
+        # Now we copy the data from the image to the temporary file
+        copy = partial(  # TODO: bs
+            ddd,
+            _if=image,
+            of=tmp.name,
+            bs=SECTOR_SIZE,
+            conv="notrunc",
+        )
+        # Copy partitions before and the partition itself
+        for part in partition_table.partitions[:number]:
+            # No need to copy extended partitions, we'll copy their logical
+            # partitions
+            if not part.is_extended():
+                copy(skip=part.start, seek=part.start, count=part.size)
+        # Copy partitions after.
+        for part in partition_table.partitions[number:]:
+            if not part.is_extended():
+                copy(
+                    skip=part.start,
+                    seek=part.start + additional_sectors,
+                    count=part.size,
+                )
+        # Expand the filesystem.
+        expand_filesystem(image, number)
+        # Replace the original image contents.
+        ddd(_if=tmp.name, of=image, bs=SECTOR_SIZE)
+
+
+def get_filesystem(device):
+    line = fsck("-N", device).stdout.decode("utf8").strip().split("\n")[1]
+    return line.rsplit(" ", 2)[-2].split(".")[1]
+
+
+@contextmanager
+def new_mount_context_manager(device):  # TODO: remove old
+    mountpoint = mkdtemp()
+    mount(device, mountpoint)
+    yield mountpoint
+    umount(mountpoint)
+    os.rmdir(mountpoint)
+
+
+@contextmanager
+def new_losetup_context_manager(image, number=None):  # TODO: remove old
+    device = losetup("-f", "--show", "-P", image).stdout.decode("utf8").strip()
+    yield device if number is None else "{}p{}".format(device, number)
+    losetup("-d", device)
+
+
+def get_labels_from_image(image):
+    with new_losetup_context_manager(image) as device:
+        log.info("wat {} {}".format(image, device))
+        return get_labels_from_device(device)
+
+
+def expand_filesystem(image, number=None):
+    # Detects the partition filesystem (ext{2,3,4} or btrfs) and uses the
+    # appropriate tool to expand the filesystem to all the available space.
+    with new_losetup_context_manager(image, number) as device:
+        log.info("Using {}".format(device))
+        fs = get_filesystem(device)
+        log.info("Resizing {} filesystem".format(fs))
+        if fs.startswith("ext"):
+            try:
+                status = fsck("-p", "-f", device, _ok_code=[0, 1, 2])
+                if status.exit_code == 0:
+                    log.info("File system OK")
+                else:
+                    log.warning("File system errors corrected")
+            except ErrorReturnCode:
+                raise Exception("File system errors could not be corrected")
+            resize2fs("-f", loop_device)
+        elif fs == "btrfs":
+            with new_mount_context_manager(device) as mountpoint:
+                btrfs("filesystem", "resize", "max", mountpoint)
+            
+                
 
 
 def human_size(size, precision=2):
@@ -52,7 +356,7 @@ def human_size(size, precision=2):
     return "{} {}B".format(result, suffixes[idx])
 
 
-def get_offsets_and_sizes(image, unit="B"):
+def get_offsets_and_sizes(image, unit="B"):  # TODO: remove
     result = []
     output = parted("-s", "-m", image, "unit", unit, "p").stdout.decode("utf8")
     lines = output.strip().split("\n")
@@ -65,16 +369,9 @@ def get_offsets_and_sizes(image, unit="B"):
     return result
 
 
-def get_partition(name, image=None):
-    partition = PARTITIONS[name].copy()
-    # override disk image (needed for flashed type devices)
-    if image is not None:
-        partition["image"] = image
-    return partition
-
-
-def get_offset_and_size(part):
-    if part["number"] == 0:
+def get_offset_and_size(part):  # TODO: remove
+    number = part.get("number")
+    if number is None:
         # partition image: no need to read the partition table
         return 0, file_size(part["image"])
     else:
@@ -82,7 +379,7 @@ def get_offset_and_size(part):
         return get_offsets_and_sizes(part["image"])[part["number"] - 1]
 
 
-def mount_partition(partition_name, extra_options, image):
+def mount_partition(partition_name, extra_options, image):  # TODO: remove
     part = get_partition(partition_name, image)
     offset, size = get_offset_and_size(part)
     mountpoint = mkdtemp()
@@ -94,14 +391,14 @@ def mount_partition(partition_name, extra_options, image):
 
 
 @contextmanager
-def mount_context_manager(partition_name, extra_options="", image=None):
+def mount_context_manager(partition_name, extra_options="", image=None):  # TODO: remove
     mountpoint = mount_partition(partition_name, extra_options, image)
     yield mountpoint
     umount(mountpoint)
     os.rmdir(mountpoint)
 
 
-def losetup_partition(partition_name, image=None):
+def losetup_partition(partition_name, image=None):  # TODO: remove
     part = get_partition(partition_name, image)
     offset, size = get_offset_and_size(part)
     return losetup(
@@ -117,7 +414,7 @@ def losetup_partition(partition_name, image=None):
 
 
 @contextmanager
-def losetup_context_manager(partition_name, image=None):
+def losetup_context_manager(partition_name, image=None):  # TODO: remove
     device = losetup_partition(partition_name, image=image)
     yield device
     losetup("-d", device)
@@ -129,7 +426,7 @@ def expand_file(path, additional_space):
         f.truncate(size + additional_space)
 
 
-def expand_ext4(partition_name, image=None):
+def expand_ext4(partition_name, image=None):  # TODO: remove
     # Resize ext4 filesystem
     error = False
     with losetup_context_manager(partition_name, image=image) as loop_device:
@@ -150,7 +447,7 @@ def expand_ext4(partition_name, image=None):
         exit(1)
 
 
-def expand_btrfs(mountpoint):
+def expand_btrfs(mountpoint):  # TODO: remove
     btrfs("filesystem", "resize", "max", mountpoint)
 
 
@@ -290,7 +587,7 @@ def ddd(**kwargs):
     return dd(*("{}={}".format(k.lstrip("_"), v) for k, v in kwargs.items()))
 
 
-def resize_rootfs_get_sfdisk_script(image, additional_sectors):
+def resize_rootfs_get_sfdisk_script(image, additional_sectors):  # TODO: remove
     """
     Helper for resize_rootfs: it gets the image sfdisk script, updates it
     by increasing the size of the 2nd partition and moving all partitions after
@@ -314,7 +611,7 @@ def resize_rootfs_get_sfdisk_script(image, additional_sectors):
     return "\n".join(lines)
 
 
-def resize_rootfs(additional_space):
+def resize_rootfs(additional_space):  # TODO: remove
     log.info("Resizing the 2nd partition of the image.")
     part = get_partition("root")
     image = part["image"]
@@ -380,7 +677,7 @@ def get_device_type_slug():
     return get_config()["deviceType"]
 
 
-def expand_data_partition(additional_space, image=None):
+def expand_data_partition(additional_space, image=None):  # TODO: remove
     part = get_partition("data", image)
     log.info("Expanding image size by {}".format(human_size(additional_space)))
     # Add zero bytes to image to be able to resize partitions
@@ -539,6 +836,24 @@ def get_device_type_and_preloaded_builds(detect_flasher_type_images=True):
     }
 
 
+PARTITIONS = prepare_global_partitions()
+
+
+def get_partition(name, image=None):  # TODO ?
+    partitions = PARTITIONS if image is None else get_partitions(image)
+    log.info("get_partition {} {} {}".format(name, image, partitions))
+    if name == "root":
+        # In resinOS 1.8 the root partition is named "resin-root"
+        return partitions.get("resin-rootA") or partitions.get("resin-root")
+    return partitions.get("resin-{}".format(name))
+
+#    partition = PARTITIONS[name].copy()
+#    # override disk image (needed for flasher type devices)
+#    if image is not None:
+#        partition["image"] = image
+#    return partition
+
+
 methods = {
     "get_device_type_and_preloaded_builds": (
         get_device_type_and_preloaded_builds
@@ -548,7 +863,6 @@ methods = {
 
 
 if __name__ == "__main__":
-    import sys
     for line in sys.stdin:
         data = json.loads(line)
         method = methods[data["command"]]
