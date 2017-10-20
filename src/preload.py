@@ -7,13 +7,14 @@ from contextlib import contextmanager
 from functools import partial
 from logging import getLogger, INFO, StreamHandler
 from math import ceil, floor
-from re import sub
+from re import search, sub
 from sh import (
     btrfs,
     dd,
     docker,
     dockerd,
     e2fsck,  # TODO: remove
+    file,
     fsck,
     losetup,
     lsblk,
@@ -21,7 +22,6 @@ from sh import (
     mount,
     parted,  # TODO: remove
     resize2fs,
-    rm,  # TODO: use os.xxx
     sfdisk,
     umount,
     ErrorReturnCode,
@@ -47,11 +47,9 @@ log.setLevel(INFO)
 log.addHandler(StreamHandler())
 
 def get_partitions(image):
-#    log.info("gruik {}".format(PartitionTable(image).partitions))
     table = PartitionTable(image)
-    log.info("gruik {} {}".format(image, table.partitions))
-    for p in table.partitions:
-        log.info("kkkkkk {} {}".format(p.label, p.number))
+    for p in table.partitions:  # TODO: remove
+        log.info("partition {}: {}".format(p.number, p.label))
     return {
         p.label: {"number": p.number, "image": image}
         for p in table.partitions
@@ -59,33 +57,25 @@ def get_partitions(image):
 
 def prepare_global_partitions():
     partitions = os.environ.get("PARTITIONS")
-    log.info('oioioioioioi {}'.format(partitions))
     if partitions is not None:
         return json.loads(partitions)
     return get_partitions("/img/resin.img")
 
 
 def get_labels_from_devices(devices):
-    from sh import blkid, file, ls, mknod
+    # `lsblk` does not give the partition labels inside this container.
+    # We workaround this by using `file -s`
+    # Returns a dict of <partition number>: <partition label> for these devices
     result = {}
     for number, device in devices.items():
         if number is not None:
             out = file("-s", device).stdout.decode("utf8").strip()
-            result[number] = 
-    # Dict of <partition number>: <partition label> for this device
-#    out = lsblk("-J", "-o", "name,label", device).stdout.decode("utf8")
-#    out = lsblk("-J", device).stdout.decode("utf8")
-#    data = json.loads(out)
-#    for part in data["blockdevices"][0]["children"]:
-#        major, minor = part["maj:min"].split(":")
-#        mknod(os.path.join("/dev", part["name"]), "b", major, minor)
-    file("-s", "{}p1".format(device))
-    log.info("labels {} {} {} {} {} {}".format(lsblk("-V"), device, out, blkid("-p", "{}p1".format(device)), ls("/dev/"), file("-s", "{}p1".format(device))))
-    partitions = data["blockdevices"][0]["children"]
-    return {
-        int(p["name"].rsplit("p", 1)[-1]): p["label"]
-        for p in partitions
-    }
+            # "label:" is for fat partitions,
+            # "volume name" is for ext partitions
+            match = search(', (label:|volume name) "(.*)"', out)
+            if match is not None:
+                result[number] = match.groups()[1].strip()
+    return result
 
 
 def get_labels_from_image(image):
@@ -328,10 +318,10 @@ def new_mount_context_manager(device):  # TODO: remove old
 
 @contextmanager
 def new_losetup_context_manager(image):  # TODO: remove old
-    # losetup -P does not work in a container, we need to create the devices
-    # manually.
+    # `losetup` does not create the partition devices inside a container, we
+    # need to create them manually with `mknod`
     result = {}
-    device = losetup("-f", "--show", image).stdout.decode("utf8").strip()
+    device = losetup("-f", "--show", "-P", image).stdout.decode("utf8").strip()
     result[None] = device
     out = lsblk("-J", device).stdout.decode("utf8")
     data = json.loads(out)
@@ -346,7 +336,7 @@ def new_losetup_context_manager(image):  # TODO: remove old
         created_devices.append(dev)
     yield result
     for dev in created_devices:
-        rm(dev)
+        os.remove(dev)
     losetup("-d", device)
 
 
@@ -371,8 +361,6 @@ def expand_filesystem(image, number=None):
         elif fs == "btrfs":
             with new_mount_context_manager(device) as mountpoint:
                 btrfs("filesystem", "resize", "max", mountpoint)
-            
-                
 
 
 def human_size(size, precision=2):
@@ -870,17 +858,16 @@ PARTITIONS = prepare_global_partitions()
 
 def get_partition(name, image=None):  # TODO ?
     partitions = PARTITIONS if image is None else get_partitions(image)
-    log.info("get_partition {} {} {}".format(name, image, partitions))
+    # Partition labels can be resin-<name> or flash-<name> for flasher images
     if name == "root":
         # In resinOS 1.8 the root partition is named "resin-root"
-        return partitions.get("resin-rootA") or partitions.get("resin-root")
-    return partitions.get("resin-{}".format(name))
-
-#    partition = PARTITIONS[name].copy()
-#    # override disk image (needed for flasher type devices)
-#    if image is not None:
-#        partition["image"] = image
-#    return partition
+        names = ["resin-rootA", "resin-root", "flash-rootA", "flash-root"]
+    else:
+        names = ["resin-{}".format(name), "flash-{}".format(name)]
+    for name in names:
+        part = partitions.get(name)
+        if part is not None:
+            return part
 
 
 methods = {
