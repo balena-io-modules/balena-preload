@@ -27,6 +27,7 @@ from tempfile import mkdtemp, NamedTemporaryFile
 
 os.environ["LANG"] = "C"
 
+MBR_SIZE = 512
 SECTOR_SIZE = 512
 
 PARTITIONS = json.loads(os.environ["PARTITIONS"])
@@ -329,6 +330,17 @@ def resize_rootfs(additional_space):
     sfdisk(tmp.name, _in=new_layout)
     offsets_and_sizes = get_offsets_and_sizes(image, "s")
     copy = partial(ddd, _if=image, of=tmp.name, bs=SECTOR_SIZE, conv="notrunc")
+    # Copy across any data that's located between the MBR and the first
+    # partition (some devices rely on the bootloader being there, like the
+    # Variscite DART-6UL)
+    # We rely on the fact that MBR_SIZE == SECTOR_SIZE == 512 here
+    # => mbr_size_in_sectors == 1
+    mbr_size_in_sectors = MBR_SIZE // SECTOR_SIZE
+    copy(
+        skip=mbr_size_in_sectors,
+        seek=mbr_size_in_sectors,
+        count=offsets_and_sizes[0][0] - mbr_size_in_sectors,
+    )
     # Copy partitions 1 and 2.
     for offset, size in offsets_and_sizes[:2]:
         copy(skip=offset, seek=offset, count=size)
