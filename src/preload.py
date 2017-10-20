@@ -437,10 +437,10 @@ def losetup_context_manager(partition_name, image=None):  # TODO: remove
     losetup("-d", device)
 
 
-def expand_file(path, additional_space):
+def expand_file(path, additional_bytes):
     with open(path, "a") as f:
         size = f.tell()
-        f.truncate(size + additional_space)
+        f.truncate(size + additional_bytes)
 
 
 def expand_ext4(partition_name, image=None):  # TODO: remove
@@ -628,13 +628,13 @@ def resize_rootfs_get_sfdisk_script(image, additional_sectors):  # TODO: remove
     return "\n".join(lines)
 
 
-def resize_rootfs(additional_space):  # TODO: remove
+def resize_rootfs(additional_bytes):  # TODO: remove
     log.info("Resizing the 2nd partition of the image.")
     part = get_partition("root")
     image = part["image"]
-    size = file_size(image) + additional_space
+    size = file_size(image) + additional_bytes
     log.info("New disk image size: {}.".format(human_size(size)))
-    additional_sectors = additional_space // SECTOR_SIZE
+    additional_sectors = additional_bytes // SECTOR_SIZE
     # Create a new empty image of the required size
     tmp = NamedTemporaryFile(dir=os.path.dirname(image), delete=False)
     tmp.truncate(size)
@@ -694,11 +694,11 @@ def get_device_type_slug():
     return get_config()["deviceType"]
 
 
-def expand_data_partition(additional_space, image=None):  # TODO: remove
+def expand_data_partition(additional_bytes, image=None):  # TODO: remove
     part = get_partition("data", image)
-    log.info("Expanding image size by {}".format(human_size(additional_space)))
+    log.info("Expanding image size by {}".format(human_size(additional_bytes)))
     # Add zero bytes to image to be able to resize partitions
-    expand_file(part["image"], additional_space)
+    expand_file(part["image"], additional_bytes)
     # do nothing if the data parition is in its own file
     if part["number"] != 0:
         # This code assumes that the data partition is the 6th and last one
@@ -720,9 +720,9 @@ def expand_data_partition(additional_space, image=None):  # TODO: remove
         )
 
 
-def preload(additional_space, app_data, image=None):
+def preload(additional_bytes, app_data, image=None):
     replace_splash_image(image)
-    expand_data_partition(additional_space, image)
+    expand_data_partition(additional_bytes, image)
     resize_fs_copy_splash_image_and_pull(app_data, image)
 
 
@@ -825,7 +825,7 @@ def get_docker_storage_driver(image=None):
 
 def main_preload(app_data, container_size, detect_flasher_type_images):
     # Size will be increased by 110% of the container size
-    additional_space = round_to_sector_size(ceil(int(container_size) * 1.1))
+    additional_bytes = round_to_sector_size(ceil(int(container_size) * 1.1))
     inner_image = get_inner_image_filename()
     if not detect_flasher_type_images and inner_image:
         log.info(
@@ -838,12 +838,12 @@ def main_preload(app_data, container_size, detect_flasher_type_images):
             "This is a flasher image, preloading into /opt/{} on the 2nd "
             "partition of {}".format(inner_image, part["image"])
         )
-        resize_rootfs(additional_space)
+        resize_rootfs(additional_bytes)
         with mount_context_manager("root") as mountpoint:
             image = os.path.join(mountpoint, "opt", inner_image)
-            preload(additional_space, app_data, image)
+            preload(additional_bytes, app_data, image)
     else:
-        preload(additional_space, app_data)
+        preload(additional_bytes, app_data)
 
 
 def get_device_type_and_preloaded_builds(detect_flasher_type_images=True):
