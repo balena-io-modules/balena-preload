@@ -243,7 +243,7 @@ def resize_partition(image, number, additional_bytes): # TODO: split
     # there are primary partitions after an extended one containing logical
     # partitions.
     # Get the partition
-    partition_table = PartitionTable(image)
+    partition_table = PartitionTable(image)  # TODO: edison (number is None)
     partition = partition_table.get(number)
     # Is it the last partition on the disk?
     if partition.is_last():
@@ -251,11 +251,35 @@ def resize_partition(image, number, additional_bytes): # TODO: split
         # partition if it is a logical one.
         # Expand image size
         expand_file(image, additional_bytes)
+        log.info(
+            "Expanding extended partition 4 and logical partition 6 to the "
+            "end of the disk image."
+        )
+        # Couldn't find a way to make sfdisk resize an extended partition: use
+        # parted instead
+        parted_args = ["-s", image]
         if partition.parent is not None:
             # Resize the extended partition
-            sfdisk("-n", partition.parent.number, image, _in=", +")
+            parted_args.extend(["resizepart", partition.parent.number, "100%"])
         # Resize the partition itself
-        sfdisk("-n", partition.number, image, _in=", +")
+        parted_args.extend(["resizepart", partition.number, "100%"])
+        parted(*parted_args)
+#        with new_losetup_context_manager(image) as devices:
+#            if partition.parent is not None:
+#                # Resize the extended partition
+#                try:
+##                    sfdisk("-N", partition.parent.number, image, _in=", +")
+#                    sfdisk("-N", partition.parent.number, devices[None], _in=", +")
+#                except Exception as e:
+#                    log.info("eeeeee {}".format(e.stdout.decode("utf8")))
+#                    raise e
+#            # Resize the partition itself
+#            try:
+##                sfdisk("-N", partition.number, image, _in=", +")
+#                sfdisk("-N", partition.number, devices[None], _in=", +")
+#            except Exception as e:
+#                log.info("eeeeee2 {}".format(e.stdout.decode("utf8")))
+#                raise e
     else:
         # Resizing logical partitions that are not the last on the disk is not
         # implemented
@@ -565,22 +589,47 @@ def replace_splash_image(image=None):
         log.info("Leaving splash image alone")
 
 
-def resize_fs_copy_splash_image_and_pull(app_data, image=None):
+#def resize_fs_copy_splash_image_and_pull(app_data, image=None):
+#    driver = get_docker_storage_driver(image)
+#    extra_options = ""
+#    if driver != "btrfs":
+#        # For ext4, we'll have to keep it unmounted to resize
+#        log.info("Expanding ext filesystem")
+#        expand_ext4("data", image=image)
+#    else:
+#        extra_options = "nospace_cache,rw"
+#    with mount_context_manager("data", extra_options, image=image) as mpoint:
+#        if driver == "btrfs":
+#            # For btrfs we need to mount the fs for resizing.
+#            log.info("Expanding btrfs filesystem")
+#            expand_btrfs(mpoint)
+#        with docker_context_manager(driver, mpoint):
+#            write_apps_json(app_data, mpoint + "/apps.json")
+#            # Signal that Docker is ready.
+#            print(json.dumps({}))
+#            # Wait for the js to finish its job.
+#            input()
+
+
+#def copy_splash_image_and_pull(app_data, image=None):
+def pull(app_data, image=None):
     driver = get_docker_storage_driver(image)
     extra_options = ""
     if driver != "btrfs":
+        pass
         # For ext4, we'll have to keep it unmounted to resize
-        log.info("Expanding ext filesystem")
-        expand_ext4("data", image=image)
+#        log.info("Expanding ext filesystem")
+#        expand_ext4("data", image=image)
     else:
         extra_options = "nospace_cache,rw"
     with mount_context_manager("data", extra_options, image=image) as mpoint:
+        write_apps_json(app_data, mpoint + "/apps.json")
         if driver == "btrfs":
+            pass
             # For btrfs we need to mount the fs for resizing.
-            log.info("Expanding btrfs filesystem")
-            expand_btrfs(mpoint)
+#            log.info("Expanding btrfs filesystem")
+#            expand_btrfs(mpoint)
         with docker_context_manager(driver, mpoint):
-            write_apps_json(app_data, mpoint + "/apps.json")
             # Signal that Docker is ready.
             print(json.dumps({}))
             # Wait for the js to finish its job.
@@ -720,10 +769,22 @@ def expand_data_partition(additional_bytes, image=None):  # TODO: remove
         )
 
 
+#def preload(additional_bytes, app_data, image=None):
+#    replace_splash_image(image)
+#    expand_data_partition(additional_bytes, image)
+#    resize_fs_copy_splash_image_and_pull(app_data, image)
+
+
 def preload(additional_bytes, app_data, image=None):
     replace_splash_image(image)
-    expand_data_partition(additional_bytes, image)
-    resize_fs_copy_splash_image_and_pull(app_data, image)
+    
+    part = get_partition("data", image)
+    resize_partition(image, part.get("number"), additional_bytes)
+
+
+#    expand_data_partition(additional_bytes, image)
+#    resize_fs_copy_splash_image_and_pull(app_data, image)
+    pull(app_data, image)
 
 
 def get_inner_image_filename():
