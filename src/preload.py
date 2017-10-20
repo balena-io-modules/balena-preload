@@ -17,9 +17,11 @@ from sh import (
     fsck,
     losetup,
     lsblk,
+    mknod,
     mount,
     parted,  # TODO: remove
     resize2fs,
+    rm,  # TODO: use os.xxx
     sfdisk,
     umount,
     ErrorReturnCode,
@@ -63,17 +65,32 @@ def prepare_global_partitions():
     return get_partitions("/img/resin.img")
 
 
-def get_labels_from_device(device):
+def get_labels_from_devices(devices):
+    from sh import blkid, file, ls, mknod
+    result = {}
+    for number, device in devices.items():
+        if number is not None:
+            file("-s", device)
+            result[number] = 
     # Dict of <partition number>: <partition label> for this device
-    out = lsblk("-J", "-o", "name,label", device).stdout.decode("utf8")
-    from sh import blkid, file, ls
+#    out = lsblk("-J", "-o", "name,label", device).stdout.decode("utf8")
+#    out = lsblk("-J", device).stdout.decode("utf8")
+#    data = json.loads(out)
+#    for part in data["blockdevices"][0]["children"]:
+#        major, minor = part["maj:min"].split(":")
+#        mknod(os.path.join("/dev", part["name"]), "b", major, minor)
+    file("-s", "{}p1".format(device))
     log.info("labels {} {} {} {} {} {}".format(lsblk("-V"), device, out, blkid("-p", "{}p1".format(device)), ls("/dev/"), file("-s", "{}p1".format(device))))
-    data = json.loads(out)
     partitions = data["blockdevices"][0]["children"]
     return {
         int(p["name"].rsplit("p", 1)[-1]): p["label"]
         for p in partitions
     }
+
+
+def get_labels_from_image(image):
+    with new_losetup_context_manager(image) as devices:
+        return get_labels_from_devices(devices)
 
 
 class Partition(object):
@@ -310,22 +327,34 @@ def new_mount_context_manager(device):  # TODO: remove old
 
 
 @contextmanager
-def new_losetup_context_manager(image, number=None):  # TODO: remove old
-    device = losetup("-f", "--show", "-P", image).stdout.decode("utf8").strip()
-    yield device if number is None else "{}p{}".format(device, number)
+def new_losetup_context_manager(image):  # TODO: remove old
+    # losetup -P does not work in a container, we need to create the devices
+    # manually.
+    result = {}
+    device = losetup("-f", "--show", image).stdout.decode("utf8").strip()
+    result[None] = device
+    out = lsblk("-J", device).stdout.decode("utf8")
+    data = json.loads(out)
+    created_devices = []
+    parts = data["blockdevices"][0]["children"]
+    for part in parts:
+        major, minor = part["maj:min"].split(":")
+        dev = os.path.join("/dev", part["name"])
+        mknod(dev, "b", major, minor)
+        number = int(part["name"].rsplit("p", 1)[-1])
+        result[number] = dev
+        created_devices.append(dev)
+    yield result
+    for dev in created_devices:
+        rm(dev)
     losetup("-d", device)
-
-
-def get_labels_from_image(image):
-    with new_losetup_context_manager(image) as device:
-        log.info("wat {} {}".format(image, device))
-        return get_labels_from_device(device)
 
 
 def expand_filesystem(image, number=None):
     # Detects the partition filesystem (ext{2,3,4} or btrfs) and uses the
     # appropriate tool to expand the filesystem to all the available space.
-    with new_losetup_context_manager(image, number) as device:
+    with new_losetup_context_manager(image) as devices:
+        device = devices[number]
         log.info("Using {}".format(device))
         fs = get_filesystem(device)
         log.info("Resizing {} filesystem".format(fs))
