@@ -70,7 +70,7 @@ def get_labels_from_devices(devices):
     result = {}
     for number, device in devices.items():
         if number is not None:
-            file("-s", device)
+            out = file("-s", device).stdout.decode("utf8").strip()
             result[number] = 
     # Dict of <partition number>: <partition label> for this device
 #    out = lsblk("-J", "-o", "name,label", device).stdout.decode("utf8")
