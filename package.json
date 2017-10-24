@@ -1,6 +1,6 @@
 {
   "name": "resin-preload",
-  "version": "4.0.7",
+  "version": "4.0.8",
   "description": "Preload resinOS images with a user application container",
   "license": "Apache-2.0",
   "author": "Resin.io Ltd (https://resin.io)",
@@ -22,6 +22,7 @@
   "dependencies": {
     "archiver": "^2.0.3",
     "bluebird": "^3.5.0",
+    "compare-versions": "^3.1.0",
     "docker-progress": "^2.6.3",
     "dockerode": "^2.5.0",
     "get-folder-size": "^1.0.0",
