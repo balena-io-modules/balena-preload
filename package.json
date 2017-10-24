@@ -22,6 +22,7 @@
   "dependencies": {
     "archiver": "^2.0.3",
     "bluebird": "^3.5.0",
+    "compare-versions": "^3.1.0",
     "docker-progress": "^2.6.3",
     "dockerode": "^2.5.0",
     "get-folder-size": "^1.0.0",

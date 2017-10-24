@@ -53,7 +53,7 @@ $ npm install --global resin-preload
 ## Requirements
 
 - [Node](https://nodejs.org)
-- [Docker](https://www.docker.com)
+- [Docker](https://www.docker.com) tested on 1.12.6 and up but 17.04 or up is recommended especially on macOS
 
 ## Command Line Usage
 
