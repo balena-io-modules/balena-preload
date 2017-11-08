@@ -16,6 +16,8 @@ nvidia jetson tx2 for example), you need to load the `overlay` Linux module:
 sudo modprobe overlay
 ```
 
+For other images you will need to have the `aufs` module loaded.
+
 
 ## Deprecation
 
@@ -53,7 +55,8 @@ $ npm install --global resin-preload
 ## Requirements
 
 - [Node](https://nodejs.org)
-- [Docker](https://www.docker.com) tested on 1.12.6 and up but 17.04 or up is recommended especially on macOS
+- [Docker](https://www.docker.com) tested on 1.12.6 and up but 17.04 or up is recommended especially on macOS, [docker-toolbox](https://www.docker.com/products/docker-toolbox) is not supported.
+Older versions of resin-preload do support docker-toolbox, see [Version Compatibility](#version-compatibility) below.
 
 ## Command Line Usage
 
