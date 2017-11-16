@@ -237,6 +237,7 @@ class Partition(object):
             log.info("Expanding extended {}".format(self.parent.str()))
             # Resize the extended partition
             parted_args.extend(["resizepart", self.parent.number, "100%"])
+            self.parent.size += additional_bytes
         # Resize the partition itself
         log.info(
             "Expanding{} {}".format(
@@ -246,6 +247,7 @@ class Partition(object):
         )
         parted_args.extend(["resizepart", self.number, "100%"])
         parted(*parted_args, _in="fix\n")
+        self.size += additional_bytes
 
     def _resize_partition_on_disk_image(self, additional_bytes):
         # This function expects the partitions to be in disk order: it will
