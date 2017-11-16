@@ -226,6 +226,7 @@ class Partition(object):
     def _resize_last_partition_of_disk_image(self, additional_bytes):
         # This is the simple case: expand the partition and its parent extended
         # partition if it is a logical one.
+        additional_sectors = additional_bytes // SECTOR_SIZE
         # Expand image size
         expand_file(self.image, additional_bytes)
         if self.partition_table.label == "gpt":
@@ -237,7 +238,7 @@ class Partition(object):
             log.info("Expanding extended {}".format(self.parent.str()))
             # Resize the extended partition
             parted_args.extend(["resizepart", self.parent.number, "100%"])
-            self.parent.size += additional_bytes
+            self.parent.size += additional_sectors
         # Resize the partition itself
         log.info(
             "Expanding{} {}".format(
@@ -247,7 +248,7 @@ class Partition(object):
         )
         parted_args.extend(["resizepart", self.number, "100%"])
         parted(*parted_args, _in="fix\n")
-        self.size += additional_bytes
+        self.size += additional_sectors
 
     def _resize_partition_on_disk_image(self, additional_bytes):
         # This function expects the partitions to be in disk order: it will
