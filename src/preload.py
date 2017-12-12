@@ -633,20 +633,33 @@ def find_non_empty_folder_in_path(path, child_dir=""):
 
 
 def find_docker_aufs_root(mountpoint):
-    # We're looking for a /docker/aufs/diff/<xxxxxxxxxxxxx>/ folder with some
+    # We're looking for a /<docker|balena>/aufs/diff/<xxxxxxxxxxxxx>/ folder with some
     # files not starting with a '.'
-    path = os.path.join(mountpoint, "docker", "aufs", "diff")
-    return find_non_empty_folder_in_path(path)
+    for name in ("docker", "balena"):
+        path = os.path.join(mountpoint, name)
+        if os.path.isdir(path):
+            path = os.path.join(path, "aufs", "diff")
+            return find_non_empty_folder_in_path(path)
 
 
 def find_docker_overlay2_root(mountpoint):
-    # We're looking for a /docker/overlay2/<xxxxxxxxxxxxx>/diff folder with
+    # We're looking for a /<docker|balena>/overlay2/<xxxxxxxxxxxxx>/diff folder with
     # some files not starting with a '.'
-    path = os.path.join(mountpoint, "docker", "overlay2")
-    return find_non_empty_folder_in_path(path, "diff")
+    for name in ("docker", "balena"):
+        path = os.path.join(mountpoint, name)
+        if os.path.isdir(path):
+            path = os.path.join(path, "overlay2")
+            return find_non_empty_folder_in_path(path, "diff")
 
 
-def get_docker_init_file_content(image=None):
+def get_docker_service_file_path(folder):
+    for name in ("docker", "balena"):
+        fpath = os.path.join(folder, "lib/systemd/system", name + ".service")
+        if os.path.exists(fpath):
+            return fpath
+
+
+def get_docker_service_file_content(image=None):
     docker_service_file_path = "lib/systemd/system/docker.service"
     part = get_partition("resin-rootA", image)
     with part.mount_context_manager() as mountpoint:
@@ -654,9 +667,9 @@ def get_docker_init_file_content(image=None):
         if docker_root is None:
             docker_root = find_docker_overlay2_root(mountpoint)
         if docker_root is not None:
-            path = os.path.join(docker_root, docker_service_file_path)
+            path = get_docker_service_file_path(docker_root)
         else:
-            path = os.path.join(mountpoint, docker_service_file_path)
+            path = get_docker_service_file_path(mountpoint)
         with open(path) as f:
             return f.read()
 
@@ -670,7 +683,7 @@ def find_one_of(lst, *args):
 
 
 def get_docker_storage_driver(image=None):
-    for line in get_docker_init_file_content(image).strip().split("\n"):
+    for line in get_docker_service_file_content(image).strip().split("\n"):
         if line.startswith("ExecStart="):
             words = line.split()
             position = find_one_of(words, "-s", "--storage-driver")
