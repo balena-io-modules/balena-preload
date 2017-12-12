@@ -657,7 +657,7 @@ def get_docker_service_file_path(folder):
             "lib",
             "systemd",
             "system",
-            name + ".service"
+            name + ".service",
         )
         if os.path.exists(fpath):
             return fpath

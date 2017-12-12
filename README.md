@@ -73,7 +73,6 @@ Options:
   --api-host       API host (default: "https://api.resin.io", the TLD will also be used for registry2 requests)
   --splash-image   PNG Image for custom splash screen
 
-  --dont-detect-flasher-type-images Disables the flasher type images detection: treats all images as non flasher types
   --dont-check-device-type          Disables check for matching device types in image and application
 
   --help, -h       Display resin-preload usage
@@ -91,7 +90,6 @@ Environment variables:
   --commit                            COMMIT
   --api-host                          API_HOST
   --splash-image                      SPLASH_IMAGE
-  --dont-detect-flasher-type-images   DONT_DETECT_FLASHER_TYPE_IMAGES
   --dont-check-device-type            DONT_CHECK_DEVICE_TYPE
 
 Example:
