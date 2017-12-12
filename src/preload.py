@@ -633,34 +633,37 @@ def find_non_empty_folder_in_path(path, child_dir=""):
 
 
 def find_docker_aufs_root(mountpoint):
-    # We're looking for a /<docker|balena>/aufs/diff/<xxxxxxxxxxxxx>/ folder with some
-    # files not starting with a '.'
+    # We're looking for a /<docker|balena>/aufs/diff/<xxxxxxxxxxxxx>/ folder
+    # with some files not starting with a '.'
     for name in ("docker", "balena"):
-        path = os.path.join(mountpoint, name)
+        path = os.path.join(mountpoint, name, "aufs", "diff")
         if os.path.isdir(path):
-            path = os.path.join(path, "aufs", "diff")
             return find_non_empty_folder_in_path(path)
 
 
 def find_docker_overlay2_root(mountpoint):
-    # We're looking for a /<docker|balena>/overlay2/<xxxxxxxxxxxxx>/diff folder with
-    # some files not starting with a '.'
+    # We're looking for a /<docker|balena>/overlay2/<xxxxxxxxxxxxx>/diff
+    # folder with some files not starting with a '.'
     for name in ("docker", "balena"):
-        path = os.path.join(mountpoint, name)
+        path = os.path.join(mountpoint, name, "overlay2")
         if os.path.isdir(path):
-            path = os.path.join(path, "overlay2")
             return find_non_empty_folder_in_path(path, "diff")
 
 
 def get_docker_service_file_path(folder):
     for name in ("docker", "balena"):
-        fpath = os.path.join(folder, "lib/systemd/system", name + ".service")
+        fpath = os.path.join(
+            folder,
+            "lib",
+            "systemd",
+            "system",
+            name + ".service"
+        )
         if os.path.exists(fpath):
             return fpath
 
 
 def get_docker_service_file_content(image=None):
-    docker_service_file_path = "lib/systemd/system/docker.service"
     part = get_partition("resin-rootA", image)
     with part.mount_context_manager() as mountpoint:
         docker_root = find_docker_aufs_root(mountpoint)
