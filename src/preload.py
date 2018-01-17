@@ -7,11 +7,12 @@ from contextlib import contextmanager
 from functools import partial
 from logging import getLogger, INFO, StreamHandler
 from math import ceil, floor
-from re import search
+from re import match, search
 from sh import (
     btrfs,
     dd,
-    docker,
+    df,
+    docker as _docker,
     dockerd,
     file,
     fsck,
@@ -40,7 +41,17 @@ MBR_BOOTSTRAP_CODE_SIZE = 446
 SPLASH_IMAGE_FROM = "/img/resin-logo.png"
 SPLASH_IMAGE_TO = "/splash/resin-logo.png"
 
+CONFIG_PARTITIONS = [
+    "resin-boot",  # resinOS 1.26+
+    "resin-conf",  # resinOS 1.8
+    "flash-conf",  # resinOS 1.8 flash
+    "flash-boot",  # flasher images
+]
+
+SUPERVISOR_REPOSITORY_RE = "^resin(playground)?/[a-z0-9]+-supervisor$"
+
 DOCKER_HOST = "tcp://0.0.0.0:{}".format(os.environ.get("DOCKER_PORT") or 8000)
+docker = partial(_docker, "--host", DOCKER_HOST)
 
 log = getLogger(__name__)
 log.setLevel(INFO)
@@ -106,14 +117,28 @@ class FilePartition(object):
         return mount_context_manager(self.image)
 
     def resize(self, additional_bytes):
-        expand_file(self.image, additional_bytes)
-        expand_filesystem(self)
+        if additional_bytes > 0:
+            expand_file(self.image, additional_bytes)
+            expand_filesystem(self)
 
     def str(self):
         return self.image
 
+    def free_space(self):
+        with self.losetup_context_manager() as device:
+            fs = get_filesystem(device)
+            with mount_context_manager(device) as mountpoint:
+                if fs == 'btrfs':
+                    for line in btrfs("fi", "usage", "--raw", mountpoint):
+                        line = line.strip()
+                        if line.startswith("Free (estimated):"):
+                            return int(line[line.rfind(" ") + 1:-1])
+                else:
+                    output = df("-B1", "--output=avail", mountpoint)
+                    return int(output.split("\n")[1].strip())
 
-class Partition(object):
+
+class Partition(FilePartition):
     def __init__(
         self,
         partition_table,
@@ -327,12 +352,13 @@ class Partition(object):
         ddd(_if=tmp.name, of=image, bs=1024 ** 2)
 
     def resize(self, additional_bytes):
-        # Is it the last partition on the disk?
-        if self.is_last():
-            self._resize_last_partition_of_disk_image(additional_bytes)
-        else:
-            self._resize_partition_on_disk_image(additional_bytes)
-        expand_filesystem(self)
+        if additional_bytes > 0:
+            # Is it the last partition on the disk?
+            if self.is_last():
+                self._resize_last_partition_of_disk_image(additional_bytes)
+            else:
+                self._resize_partition_on_disk_image(additional_bytes)
+            expand_filesystem(self)
 
 
 class PartitionTable(object):
@@ -453,7 +479,7 @@ def start_docker_daemon(storage_driver, docker_dir):
             # This will raise an sh.ErrorReturnCode_X exception.
             running_dockerd.wait()
         # Check that we can connect to dockerd.
-        output = docker("--host", DOCKER_HOST, "version", _ok_code=[0, 1])
+        output = docker("version", _ok_code=[0, 1])
         ok = output.exit_code == 0
     log.info("Docker started")
     return running_dockerd
@@ -493,7 +519,7 @@ def docker_context_manager(storage_driver, mountpoint):
 def write_apps_json(data, output):
     """Writes data dict to output as json"""
     with open(output, "w") as f:
-        json.dump([data], f, indent=4, sort_keys=True)
+        json.dump(data, f, indent=4, sort_keys=True)
 
 
 def replace_splash_image(image=None):
@@ -557,14 +583,6 @@ def get_json(partition_name, path, image=None):
                 pass
 
 
-def get_config(image=None):
-    return (
-        get_json("resin-boot", "config.json", image=image) or  # resinOS 1.26+
-        get_json("resin-conf", "config.json", image=image) or  # resinOS 1.8
-        get_json("flash-conf", "config.json", image=image)  # resinOS 1.8 flash
-    )
-
-
 def get_device_type(image=None):
     result = get_json("resin-boot", "device-type.json", image=image)
     if result is None:
@@ -572,11 +590,11 @@ def get_device_type(image=None):
     return result
 
 
-def get_device_type_slug():
-    device_type = get_device_type()
-    if device_type is not None:
-        return device_type["slug"]
-    return get_config()["deviceType"]
+def get_config(image=None):
+    for partition_name in CONFIG_PARTITIONS:
+        data = get_json(partition_name, "config.json", image=image)
+        if data is not None:
+            return data
 
 
 def preload(additional_bytes, app_data, image=None):
@@ -603,29 +621,45 @@ def get_inner_image_path(root_mountpoint):
         )
 
 
-def _list_images(image=None):
+def _get_images_and_supervisor_version(image=None):
     driver = get_docker_storage_driver(image=image)
     part = get_partition("resin-data", image)
     with part.mount_context_manager() as mountpoint:
         with docker_context_manager(driver, mountpoint):
             output = docker(
-                "--host",
-                DOCKER_HOST,
                 "images",
                 "--all",
                 "--format",
-                "{{.Repository}}",
+                "{{.Repository}} {{.Tag}}"
             )
-            return output.strip().split("\n")
+            images = set()
+            supervisor_version = None
+            for line in output:
+                repository, version = line.strip().split()
+                if match(SUPERVISOR_REPOSITORY_RE, repository):
+                    if version != "latest":
+                        supervisor_version = version.lstrip("v")
+                else:
+                    images.add(repository)
+            return list(images), supervisor_version
 
 
-def list_images():
+def get_images_and_supervisor_version():
     flasher_root = get_partition("flash-rootA")
     if flasher_root:
         with flasher_root.mount_context_manager() as mountpoint:
             inner_image_path = get_inner_image_path(mountpoint)
-            return _list_images(inner_image_path)
-    return _list_images()
+            return _get_images_and_supervisor_version(inner_image_path)
+    return _get_images_and_supervisor_version()
+
+
+def free_space():
+    flasher_root = get_partition("flash-rootA")
+    if flasher_root:
+        with flasher_root.mount_context_manager() as mountpoint:
+            inner_image_path = get_inner_image_path(mountpoint)
+            return get_partition("resin-data", inner_image_path).free_space()
+    return get_partition("resin-data").free_space()
 
 
 def is_non_empty_folder(folder):
@@ -709,9 +743,8 @@ def get_docker_storage_driver(image=None):
     assert False, "Docker storage driver could not be found"
 
 
-def main_preload(app_data, container_size):
-    # Size will be increased by 110% of the container size
-    additional_bytes = round_to_sector_size(ceil(int(container_size) * 1.1))
+def main_preload(app_data, additional_bytes):
+    additional_bytes = round_to_sector_size(ceil(additional_bytes))
     flasher_root = get_partition("flash-rootA")
     if flasher_root:
         flasher_root.resize(additional_bytes)
@@ -728,10 +761,13 @@ def main_preload(app_data, container_size):
         preload(additional_bytes, app_data)
 
 
-def get_device_type_and_preloaded_builds():
+def get_image_info():
+    images, supervisor_version = get_images_and_supervisor_version()
     return {
-        "device_type": get_device_type_slug(),
-        "preloaded_builds": list_images(),
+        "preloaded_builds": images,
+        "supervisor_version": supervisor_version,
+        "free_space": free_space(),
+        "config": get_config(),
     }
 
 
@@ -757,9 +793,7 @@ def get_partition(name, image=None):
 
 
 methods = {
-    "get_device_type_and_preloaded_builds": (
-        get_device_type_and_preloaded_builds
-    ),
+    "get_image_info": get_image_info,
     "preload": main_preload,
 }
 
