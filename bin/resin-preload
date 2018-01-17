@@ -11,8 +11,6 @@ const tmp = Promise.promisifyAll(require('tmp'))
 const visuals = require('resin-cli-visuals')
 const nodeCleanup = require('node-cleanup')
 
-const docker = new Docker({Promise})
-
 tmp.setGracefulCleanup()
 
 const USAGE = `
@@ -101,7 +99,7 @@ const getResinSdk = (options) => {
     resinSdkOptions.dataDirectory = path
     const resin = resinSdk(resinSdkOptions)
     if (options.apiToken) {
-      return resin.token.set(options.apiToken)
+      return resin.auth.loginWithToken(options.apiToken)
       .return(resin)
     }
     return resin
@@ -170,12 +168,13 @@ getResinSdk(options)
 .then((resin) => {
   const preloader = new preload.Preloader(
     resin,
-    docker,
+    new Docker({ Promise }),
     options.appId,
     options.commit,
     options.image,
     options.splashImage,
-    options.proxy
+    options.proxy,
+    options.dontCheckDeviceType
   )
 
   if (process.env.DEBUG) {
@@ -203,33 +202,16 @@ getResinSdk(options)
       reject(err)
     })
 
-    return preloader.build()
+    return preloader.prepare()
     .then(() => {
-      return preloader.prepare()
-    })
-    .then(() => {
-      return preloader.fetchApplication()
-    })
-    .then(() => {
-      if (preloader.application.build.length === 0) {
-        reject(new ExitError('This application has no successful builds'))
-      }
-      return preloader.getDeviceTypeAndPreloadedBuilds()
-    })
-    .then((info) => {
-      if (options.dontCheckDeviceType === false && info.device_type !== preloader.application.device_type) {
-        const msg = `Application device type (${preloader.application.device_type}) and image device type (${info.device_type}) do not match.`
+      const msg = preloader.cantPreload()
+      if (msg) {
         reject(new ExitError(msg))
+      } else {
+	return preloader.preload()
       }
-      const builds = info.preloaded_builds.map((build) => {
-        return build.slice(-preload.BUILD_HASH_LENGTH)
-      })
-      if (builds.indexOf(options.commit || preloader.application.commit) !== -1) {
-        reject(new ExitError('This build is already preloaded in this image.'))
-      }
-      return preloader.preload()
-      .then(resolve)
     })
+    .then(resolve)
     .catch(reject)
   })
   .finally(() => {
@@ -240,6 +222,6 @@ getResinSdk(options)
 })
 .catch(ExitError, (err) => {
   console.error('Error:', err.message)
-  process.exit(1)
+  process.exitCode = 1
 })
 .catch(handleError)
