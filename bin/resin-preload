@@ -208,7 +208,7 @@ getResinSdk(options)
       if (msg) {
         reject(new ExitError(msg))
       } else {
-	return preloader.preload()
+        return preloader.preload()
       }
     })
     .then(resolve)
