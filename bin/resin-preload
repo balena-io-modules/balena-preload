@@ -56,21 +56,13 @@ const inspect = (value) => {
   })
 }
 
-const showError = (error, details, report) => {
-  let message = !details ? `\n[ERROR] ${error.message}` : `\n${inspect(error)}`
-
-  if (report) {
-    message += '\n\n'
-    message += `Looks like this might be an issue with ${info.name};\n`
-    message += `Please report it at ${info.bugs.url}`
-  }
-
-  console.error(message)
+const showError = (error) => {
+  console.error(`\n${inspect(error)}\n\nLooks like this might be an issue with ${info.name}. Please report it at ${info.bugs.url}`)
 }
 
 const handleError = (error) => {
   const code = typeof error.code === 'number' ? (error.code || 1) : 1
-  showError(error, true, true)
+  showError(error)
   process.exit(code)
 }
 
@@ -92,7 +84,7 @@ const getResinSdk = (options) => {
   // Creates a temporary directory for resin sdk so it won't replace any existing token.
   const resinSdkOptions = { apiKey: options.apiKey }
   if (process.env.RESINRC_RESIN_URL !== undefined) {
-    resinSdkOptions.apiUrl = 'https://api.' + process.env.RESINRC_RESIN_URL  // TODO: this should not be needed
+    resinSdkOptions.apiUrl = 'https://api.' + process.env.RESINRC_RESIN_URL
   }
   return tmp.dirAsync({ unsafeCleanup: true })
   .spread((path) => {
