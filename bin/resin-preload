@@ -152,8 +152,6 @@ const spinnerHandler = (event) => {
   }
 }
 
-class ExitError extends (Error) {}
-
 let gotSignal = false
 
 getResinSdk(options)
@@ -196,12 +194,7 @@ getResinSdk(options)
 
     return preloader.prepare()
     .then(() => {
-      const msg = preloader.cantPreload()
-      if (msg) {
-        reject(new ExitError(msg))
-      } else {
-        return preloader.preload()
-      }
+      return preloader.preload()
     })
     .then(resolve)
     .catch(reject)
@@ -211,9 +204,9 @@ getResinSdk(options)
       return preloader.cleanup()
     }
   })
+  .catch(resin.errors.ResinError, (err) => {
+    console.error('Error:', err.message)
+    process.exitCode = 1
+  })
+  .catch(handleError)
 })
-.catch(ExitError, (err) => {
-  console.error('Error:', err.message)
-  process.exitCode = 1
-})
-.catch(handleError)

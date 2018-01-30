@@ -30,8 +30,7 @@
     "lodash": "^4.17.4",
     "node-cleanup": "^2.1.2",
     "resin-cli-visuals": "^1.4.0",
-    "resin-errors": "^2.8.0",
-    "resin-sdk": "beta",
+    "resin-sdk": "9.0.0-beta",
     "tar-stream": "^1.5.4",
     "tmp": "0.0.33",
     "unzipper": "^0.8.9"
