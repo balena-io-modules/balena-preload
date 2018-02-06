@@ -31,9 +31,11 @@ os.environ["LANG"] = "C"
 
 IMAGE = "/img/resin.img"
 
+# In bytes:
 SECTOR_SIZE = 512
 MBR_SIZE = 512
 GPT_SIZE = SECTOR_SIZE * 34
+MBR_BOOTSTRAP_CODE_SIZE = 446
 
 SPLASH_IMAGE_FROM = "/img/resin-logo.png"
 SPLASH_IMAGE_TO = "/splash/resin-logo.png"
@@ -284,6 +286,8 @@ class Partition(object):
             iflag="count_bytes,skip_bytes",  # count and skip in bytes
             oflag="seek_bytes",  # seek in bytes
         )
+        # Preserve GRUB
+        copy(count=MBR_BOOTSTRAP_CODE_SIZE)
         # Copy across any data that's located between the MBR and the first
         # partition (some devices rely on the bootloader being there, like the
         # Variscite DART-6UL)
