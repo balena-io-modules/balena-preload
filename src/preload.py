@@ -587,10 +587,11 @@ def preload(additional_bytes, app_data, image=None):
 
 
 def get_inner_image_path(root_mountpoint):
-    opt = os.path.join(root_mountpoint, "opt")
-    files = os.listdir(opt)
-    assert len(files) == 1, "More than one file in root partition's /opt"
-    return os.path.join(opt, files[0])
+    return os.path.join(
+        root_mountpoint,
+        "opt",
+        get_device_type()["yocto"]["deployArtifact"].replace("flasher-", ""),
+    )
 
 
 def _list_images(image=None):
