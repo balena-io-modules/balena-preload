@@ -587,11 +587,20 @@ def preload(additional_bytes, app_data, image=None):
 
 
 def get_inner_image_path(root_mountpoint):
-    return os.path.join(
-        root_mountpoint,
-        "opt",
-        get_device_type()["yocto"]["deployArtifact"].replace("flasher-", ""),
-    )
+    opt = os.path.join(root_mountpoint, "opt")
+    device_type = get_device_type()
+    if device_type is not None:
+        deploy_artifact = device_type["yocto"]["deployArtifact"]
+        return os.path.join(opt, deploy_artifact.replace("flasher-", "", 1))
+    else:
+        # Old images don't have a device type file (resinOS 1.8),
+        # return the first file in "/opt".
+        return next(
+            filter(
+                os.path.isfile,
+                map(partial(os.path.join, opt), os.listdir(opt))
+            )
+        )
 
 
 def _list_images(image=None):
