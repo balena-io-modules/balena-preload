@@ -11,8 +11,6 @@ const tmp = Promise.promisifyAll(require('tmp'))
 const visuals = require('resin-cli-visuals')
 const nodeCleanup = require('node-cleanup')
 
-const docker = new Docker({Promise})
-
 tmp.setGracefulCleanup()
 
 const USAGE = `
@@ -58,21 +56,13 @@ const inspect = (value) => {
   })
 }
 
-const showError = (error, details, report) => {
-  let message = !details ? `\n[ERROR] ${error.message}` : `\n${inspect(error)}`
-
-  if (report) {
-    message += '\n\n'
-    message += `Looks like this might be an issue with ${info.name};\n`
-    message += `Please report it at ${info.bugs.url}`
-  }
-
-  console.error(message)
+const showError = (error) => {
+  console.error(`\n${inspect(error)}\n\nLooks like this might be an issue with ${info.name}. Please report it at ${info.bugs.url}`)
 }
 
 const handleError = (error) => {
   const code = typeof error.code === 'number' ? (error.code || 1) : 1
-  showError(error, true, true)
+  showError(error)
   process.exit(code)
 }
 
@@ -94,14 +84,14 @@ const getResinSdk = (options) => {
   // Creates a temporary directory for resin sdk so it won't replace any existing token.
   const resinSdkOptions = { apiKey: options.apiKey }
   if (process.env.RESINRC_RESIN_URL !== undefined) {
-    resinSdkOptions.apiUrl = 'https://api.' + process.env.RESINRC_RESIN_URL  // TODO: this should not be needed
+    resinSdkOptions.apiUrl = 'https://api.' + process.env.RESINRC_RESIN_URL
   }
   return tmp.dirAsync({ unsafeCleanup: true })
   .spread((path) => {
     resinSdkOptions.dataDirectory = path
     const resin = resinSdk(resinSdkOptions)
     if (options.apiToken) {
-      return resin.token.set(options.apiToken)
+      return resin.auth.loginWithToken(options.apiToken)
       .return(resin)
     }
     return resin
@@ -162,20 +152,19 @@ const spinnerHandler = (event) => {
   }
 }
 
-class ExitError extends (Error) {}
-
 let gotSignal = false
 
 getResinSdk(options)
 .then((resin) => {
   const preloader = new preload.Preloader(
     resin,
-    docker,
+    new Docker({ Promise }),
     options.appId,
     options.commit,
     options.image,
     options.splashImage,
-    options.proxy
+    options.proxy,
+    options.dontCheckDeviceType
   )
 
   if (process.env.DEBUG) {
@@ -203,33 +192,11 @@ getResinSdk(options)
       reject(err)
     })
 
-    return preloader.build()
+    return preloader.prepare()
     .then(() => {
-      return preloader.prepare()
-    })
-    .then(() => {
-      return preloader.fetchApplication()
-    })
-    .then(() => {
-      if (preloader.application.build.length === 0) {
-        reject(new ExitError('This application has no successful builds'))
-      }
-      return preloader.getDeviceTypeAndPreloadedBuilds()
-    })
-    .then((info) => {
-      if (options.dontCheckDeviceType === false && info.device_type !== preloader.application.device_type) {
-        const msg = `Application device type (${preloader.application.device_type}) and image device type (${info.device_type}) do not match.`
-        reject(new ExitError(msg))
-      }
-      const builds = info.preloaded_builds.map((build) => {
-        return build.slice(-preload.BUILD_HASH_LENGTH)
-      })
-      if (builds.indexOf(options.commit || preloader.application.commit) !== -1) {
-        reject(new ExitError('This build is already preloaded in this image.'))
-      }
       return preloader.preload()
-      .then(resolve)
     })
+    .then(resolve)
     .catch(reject)
   })
   .finally(() => {
@@ -237,9 +204,9 @@ getResinSdk(options)
       return preloader.cleanup()
     }
   })
+  .catch(resin.errors.ResinError, (err) => {
+    console.error('Error:', err.message)
+    process.exitCode = 1
+  })
+  .catch(handleError)
 })
-.catch(ExitError, (err) => {
-  console.error('Error:', err.message)
-  process.exit(1)
-})
-.catch(handleError)
