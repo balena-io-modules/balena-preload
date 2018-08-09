@@ -528,7 +528,7 @@ def replace_splash_image(image=None):
     experience.
     """
     if os.path.isfile(SPLASH_IMAGE_FROM):
-        boot = get_partition("resin-boot", image)
+        boot = get_partition("flash-boot") or get_partition("resin-boot", image)
         with boot.mount_context_manager() as mpoint:
             path = mpoint + SPLASH_IMAGE_TO
             if os.path.isdir(os.path.dirname(path)):
