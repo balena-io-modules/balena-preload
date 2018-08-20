@@ -1,6 +1,6 @@
 {
   "name": "resin-preload",
-  "version": "6.3.2",
+  "version": "7.0.0",
   "description": "Preload resinOS images with a user application container",
   "license": "Apache-2.0",
   "author": "Resin.io Ltd (https://resin.io)",
