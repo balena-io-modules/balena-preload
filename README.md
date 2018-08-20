@@ -73,7 +73,7 @@ Options:
   --api-host       API host (default: "https://api.resin.io", the TLD will also be used for registry2 requests)
   --splash-image   PNG Image for custom splash screen
 
-  --dont-check-device-type          Disables check for matching device types in image and application
+  --dont-check-arch          Disables check for matching architecture in image and application
 
   --help, -h       Display resin-preload usage
   --version, -v    Display resin-preload version
@@ -90,7 +90,7 @@ Environment variables:
   --commit                            COMMIT
   --api-host                          API_HOST
   --splash-image                      SPLASH_IMAGE
-  --dont-check-device-type            DONT_CHECK_DEVICE_TYPE
+  --dont-check-arch                   DONT_CHECK_ARCH
 
 Example:
 
