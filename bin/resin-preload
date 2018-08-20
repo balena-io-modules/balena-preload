@@ -25,7 +25,7 @@ const USAGE = `
     --commit         Application commit to preload (default: latest)
     --splash-image   PNG Image for custom splash screen
 
-    --dont-check-device-type          Disables check for matching device types in image and application
+    --dont-check-arch          Disables check for matching architecture in image and application
 
     --help, -h       Display ${info.name} usage
     --version, -v    Display ${info.name} version
@@ -43,7 +43,7 @@ const USAGE = `
     --api-key                           API_KEY
     --commit                            COMMIT
     --splash-image                      SPLASH_IMAGE
-    --dont-check-device-type            DONT_CHECK_DEVICE_TYPE
+    --dont-check-arch                   DONT_CHECK_ARCH
 
   Example:
 
@@ -105,7 +105,7 @@ const options = {
   apiKey: process.env['API_KEY'],
   commit: process.env['COMMIT'],
   splashImage: process.env['SPLASH_IMAGE'],
-  dontCheckDeviceType: !!process.env['DONT_CHECK_DEVICE_TYPE']
+  dontCheckArch: !!process.env['DONT_CHECK_ARCH']
 }
 
 while (argv.length) {
@@ -116,7 +116,7 @@ while (argv.length) {
     case '--api-key': options.apiKey = argv.shift(); break
     case '--commit': options.commit = argv.shift(); break
     case '--splash-image': options.splashImage = argv.shift(); break
-    case '--dont-check-device-type': options.dontCheckDeviceType = true; break
+    case '--dont-check-arch': options.dontCheckArch = true; break
   }
 }
 
@@ -164,7 +164,7 @@ getResinSdk(options)
     options.image,
     options.splashImage,
     options.proxy,
-    options.dontCheckDeviceType
+    options.dontCheckArch
   )
 
   if (process.env.DEBUG) {
