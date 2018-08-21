@@ -516,6 +516,18 @@ def docker_context_manager(storage_driver, mountpoint):
         write_file(local_kv_db_path, local_kv_db_content)
 
 
+def write_resin_device_pinning(app_data, output):
+    """Create resin-device-pinnnig.json to hold pinning information"""
+    if not app_data.get("pinDevice", False):
+        return
+    apps = app_data.get("apps", {})
+    if len(apps) != 1:
+        raise Exception("Malformed apps.json")
+
+    with open(output, "w") as f:
+        f.write("RELEASE_ID={}".format(next(iter(apps.keys()))))
+
+
 def write_apps_json(data, output):
     """Writes data dict to output as json"""
     with open(output, "w") as f:
@@ -749,6 +761,10 @@ def main_preload(app_data, additional_bytes):
     if flasher_root:
         flasher_root.resize(additional_bytes)
         with flasher_root.mount_context_manager() as mountpoint:
+            write_resin_device_pinning(
+                app_data,
+                mountpoint + "/etc/resin-device-pinning.conf"
+            )
             inner_image_path = get_inner_image_path(mountpoint)
             log.info(
                 "This is a flasher image, preloading to /{} on {}".format(
