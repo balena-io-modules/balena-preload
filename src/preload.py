@@ -804,3 +804,4 @@ if __name__ == "__main__":
         method = methods[data["command"]]
         result = method(**data.get("parameters", {}))
         print(json.dumps({"result": result}))
+        sys.stdout.flush()
