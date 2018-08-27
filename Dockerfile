@@ -11,4 +11,4 @@ COPY ./src /usr/src/app
 
 WORKDIR /usr/src/app
 
-CMD /usr/src/app/preload.py
+CMD ["python3", "/usr/src/app/preload.py"]
