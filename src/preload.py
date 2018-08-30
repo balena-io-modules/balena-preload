@@ -525,7 +525,7 @@ def write_resin_device_pinning(app_data, output):
         raise Exception("Malformed apps.json")
 
     with open(output, "w") as f:
-        f.write("RELEASE_ID={}".format(next(iter(apps.keys()))))
+        f.write("RELEASE_ID={}".format(next(iter(apps.values())).get('releaseId')))
 
 
 def write_apps_json(data, output):
