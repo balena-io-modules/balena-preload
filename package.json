@@ -1,19 +1,19 @@
 {
-  "name": "resin-preload",
+  "name": "balena-preload",
   "version": "7.0.6",
-  "description": "Preload resinOS images with a user application container",
+  "description": "Preload balena OS images with a user application container",
   "license": "Apache-2.0",
-  "author": "Resin.io Ltd (https://resin.io)",
+  "author": "Balena Ltd (https://balena.io)",
   "keywords": [
-    "resin",
-    "resinos",
+    "balena",
+    "balenaos",
     "image",
     "docker",
     "container"
   ],
   "main": "lib/preload.js",
   "files": [
-    "bin/resin-preload",
+    "bin/balena-preload",
     "lib/preload.js",
     "src/preload.py",
     "Dockerfile",
@@ -30,7 +30,7 @@
     "lodash": "^4.17.4",
     "node-cleanup": "^2.1.2",
     "resin-cli-visuals": "^1.4.0",
-    "resin-sdk": "9.0.0-beta16",
+    "balena-sdk": "^11.0.0",
     "tar-stream": "^1.5.4",
     "tmp": "0.0.33",
     "unzipper": "^0.8.9"
@@ -40,18 +40,18 @@
   },
   "peerDependencies": {},
   "optionalDependencies": {},
-  "homepage": "https://github.com/resin-io/resin-preload",
+  "homepage": "https://github.com/balena-io/balena-preload",
   "repository": {
     "type": "git",
-    "url": "https://github.com/resin-io/resin-preload.git"
+    "url": "https://github.com/balena-io/balena-preload.git"
   },
   "bugs": {
-    "url": "https://github.com/resin-io/resin-preload/issues"
+    "url": "https://github.com/balena-io/balena-preload/issues"
   },
   "scripts": {
-    "pretest": "standard lib/*.js bin/resin-preload"
+    "pretest": "standard lib/*.js bin/balena-preload"
   },
   "bin": {
-    "resin-preload": "bin/resin-preload"
+    "balena-preload": "bin/balena-preload"
   }
 }
