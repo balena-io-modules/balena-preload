@@ -6,7 +6,7 @@ const Docker = require('dockerode')
 const preload = require('..')
 const info = require('../package.json')
 const Promise = require('bluebird')
-const resinSdk = require('resin-sdk')
+const balenaSdk = require('balena-sdk')
 const tmp = Promise.promisifyAll(require('tmp'))
 const visuals = require('resin-cli-visuals')
 const nodeCleanup = require('node-cleanup')
@@ -32,7 +32,7 @@ const USAGE = `
 
   Environment variables:
 
-    RESINRC_RESIN_URL (defaults to resin.io)
+    BALENARC_BALENA_URL (defaults to balena-cloud.com)
 
     The following option flags can also be set
     via the corresponding environment variables:
@@ -47,7 +47,7 @@ const USAGE = `
 
   Example:
 
-    ${info.name} --app 123456 --api-token "xxxx..." --img /path/to/resin-os.img
+    ${info.name} --app 123456 --api-token "xxxx..." --img /path/to/balena-os.img
 `
 
 const inspect = (value) => {
@@ -80,21 +80,24 @@ if ((argv.indexOf('--version') !== -1) || (argv.indexOf('-v') !== -1)) {
   process.exit(0)
 }
 
-const getResinSdk = (options) => {
-  // Creates a temporary directory for resin sdk so it won't replace any existing token.
-  const resinSdkOptions = { apiKey: options.apiKey }
+const getBalenaSdk = (options) => {
+  // Creates a temporary directory for balena sdk so it won't replace any existing token.
+  const balenaSdkOptions = { apiKey: options.apiKey }
   if (process.env.RESINRC_RESIN_URL !== undefined) {
-    resinSdkOptions.apiUrl = 'https://api.' + process.env.RESINRC_RESIN_URL
+    balenaSdkOptions.apiUrl = 'https://api.' + process.env.RESINRC_RESIN_URL
+  }
+  if (process.env.BALENARC_BALENA_URL !== undefined) {
+    balenaSdkOptions.apiUrl = 'https://api.' + process.env.BALENARC_BALENA_URL
   }
   return tmp.dirAsync({ unsafeCleanup: true })
   .spread((path) => {
-    resinSdkOptions.dataDirectory = path
-    const resin = resinSdk(resinSdkOptions)
+    balenaSdkOptions.dataDirectory = path
+    const balena = balenaSdk(balenaSdkOptions)
     if (options.apiToken) {
-      return resin.auth.loginWithToken(options.apiToken)
-      .return(resin)
+      return balena.auth.loginWithToken(options.apiToken)
+      .return(balena)
     }
-    return resin
+    return balena
   })
 }
 
@@ -154,10 +157,10 @@ const spinnerHandler = (event) => {
 
 let gotSignal = false
 
-getResinSdk(options)
-.then((resin) => {
+getBalenaSdk(options)
+.then((balena) => {
   const preloader = new preload.Preloader(
-    resin,
+    balena,
     new Docker({ Promise }),
     options.appId,
     options.commit,
@@ -204,7 +207,7 @@ getResinSdk(options)
       return preloader.cleanup()
     }
   })
-  .catch(resin.errors.ResinError, (err) => {
+  .catch(balena.errors.BalenaError, (err) => {
     console.error('Error:', err.message)
     process.exitCode = 1
   })
