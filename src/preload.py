@@ -518,6 +518,10 @@ def docker_context_manager(storage_driver, mountpoint):
 
 def write_resin_device_pinning(app_data, output):
     """Create resin-device-pinnnig.json to hold pinning information"""
+    if type(app_data) != dict:
+        # app_data is a list when the supervisor version is < 7.0.0,
+        # pinning is not suported on these.
+        return
     if not app_data.get("pinDevice", False):
         return
     apps = app_data.get("apps", {})
