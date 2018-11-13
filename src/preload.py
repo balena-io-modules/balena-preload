@@ -38,8 +38,8 @@ MBR_SIZE = 512
 GPT_SIZE = SECTOR_SIZE * 34
 MBR_BOOTSTRAP_CODE_SIZE = 446
 
-SPLASH_IMAGE_FROM = "/img/balena-logo.png"
-SPLASH_IMAGE_TO = "/splash/balena-logo.png"
+SPLASH_IMAGE_FROM = "/img/resin-logo.png"
+SPLASH_IMAGE_TO = "/splash/resin-logo.png"
 
 CONFIG_PARTITIONS = [
     "resin-boot",  # resinOS 1.26+
@@ -540,7 +540,7 @@ def write_apps_json(data, output):
 
 def replace_splash_image(image=None):
     """
-    Replaces the balena-logo.png used on boot splash to allow a more branded
+    Replaces the resin-logo.png used on boot splash to allow a more branded
     experience.
     """
     if os.path.isfile(SPLASH_IMAGE_FROM):
