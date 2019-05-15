@@ -655,6 +655,7 @@ def _get_images_and_supervisor_version(image=None):
                 if match(SUPERVISOR_REPOSITORY_RE, repository):
                     if version != "latest":
                         supervisor_version = version.lstrip("v")
+                        supervisor_version = version.rstrip("_logstream")
                 else:
                     images.add(repository)
             return list(images), supervisor_version
