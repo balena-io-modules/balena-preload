@@ -1,6 +1,7 @@
 #!/usr/bin/python3 -u
 import json
 import os
+import re
 import sys
 
 from contextlib import contextmanager
@@ -654,7 +655,11 @@ def _get_images_and_supervisor_version(image=None):
                 repository, version = line.strip().split()
                 if match(SUPERVISOR_REPOSITORY_RE, repository):
                     if version != "latest":
-                        supervisor_version = version.lstrip("v")
+                        version_search = re.search(r"^v?(?P<semver>\d+\.\d+\.\d+).*", version)
+                        if version_search:
+                            supervisor_version = version_search.group('semver')
+                        else:
+                            raise Exception("Could not extract supervisor version.")
                 else:
                     images.add(repository)
             return list(images), supervisor_version
