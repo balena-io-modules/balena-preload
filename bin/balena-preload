@@ -27,6 +27,8 @@ const USAGE = `
 
     --dont-check-arch          Disables check for matching architecture in image and application
 
+    --add-certificate <filename.crt> Adds the given file to /etc/ssl/certs in the preloading container
+
     --help, -h       Display ${info.name} usage
     --version, -v    Display ${info.name} version
 
@@ -108,7 +110,8 @@ const options = {
   apiKey: process.env['API_KEY'],
   commit: process.env['COMMIT'],
   splashImage: process.env['SPLASH_IMAGE'],
-  dontCheckArch: !!process.env['DONT_CHECK_ARCH']
+  dontCheckArch: !!process.env['DONT_CHECK_ARCH'],
+  certificates: []
 }
 
 while (argv.length) {
@@ -120,6 +123,7 @@ while (argv.length) {
     case '--commit': options.commit = argv.shift(); break
     case '--splash-image': options.splashImage = argv.shift(); break
     case '--dont-check-arch': options.dontCheckArch = true; break
+    case '--add-certificate': options.certificates.push(argv.shift()); break
   }
 }
 
@@ -167,7 +171,9 @@ getBalenaSdk(options)
     options.image,
     options.splashImage,
     options.proxy,
-    options.dontCheckArch
+    options.dontCheckArch,
+    false,
+    options.certificates
   )
 
   if (process.env.DEBUG) {
