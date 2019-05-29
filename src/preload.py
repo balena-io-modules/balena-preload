@@ -24,6 +24,7 @@ from sh import (
     sfdisk,
     sgdisk,
     umount,
+    update_ca_certificates,
     ErrorReturnCode,
 )
 from shutil import copyfile, rmtree
@@ -824,6 +825,7 @@ methods = {
 
 
 if __name__ == "__main__":
+    update_ca_certificates()
     for line in sys.stdin:
         data = json.loads(line)
         method = methods[data["command"]]
