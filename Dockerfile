@@ -1,7 +1,7 @@
-FROM docker:17.10.0-ce-dind
+FROM docker:17.12.0-ce-dind
 
 # coreutils so we have the real dd, not the busybox one
-RUN apk update && apk add --no-cache python3 parted btrfs-progs docker util-linux sfdisk file coreutils sgdisk
+RUN apk update && apk add --no-cache python3 parted btrfs-progs util-linux sfdisk file coreutils sgdisk
 
 COPY ./requirements.txt /tmp/
 

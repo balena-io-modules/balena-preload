@@ -4,11 +4,13 @@ import os
 import re
 import sys
 
+
 from contextlib import contextmanager
 from functools import partial
 from logging import getLogger, INFO, StreamHandler
 from math import ceil, floor
 from re import match, search
+from retry.api import retry_call
 from sh import (
     btrfs,
     dd,
@@ -86,7 +88,16 @@ def losetup_context_manager(image, offset=None, size=None):
     if size is not None:
         args.extend(["--sizelimit", size])
     args.append(image)
-    device = losetup(*args).stdout.decode("utf8").strip()
+    # In the case of slow hardware the kernel might be in the middle of
+    # tearing down internal structure
+    device = retry_call(
+        losetup,
+        fargs=args,
+        tries=5,
+        delay=1,
+        max_delay=10,
+        backoff=2
+    ).stdout.decode("utf8").strip()
     yield device
     losetup("-d", device)
 
