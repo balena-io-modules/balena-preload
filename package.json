@@ -20,20 +20,20 @@
     "requirements.txt"
   ],
   "dependencies": {
-    "archiver": "^2.0.3",
-    "balena-sdk": "^11.0.0",
-    "bluebird": "^3.5.0",
-    "compare-versions": "^3.1.0",
-    "docker-progress": "^3.0.1",
-    "dockerode": "^2.5.0",
-    "get-folder-size": "^1.0.0",
+    "archiver": "^2.1.1",
+    "balena-sdk": "^12.21.0",
+    "bluebird": "^3.7.2",
+    "compare-versions": "^3.5.1",
+    "docker-progress": "^3.0.5",
+    "dockerode": "^2.5.8",
+    "get-folder-size": "^1.0.1",
     "get-port": "^3.2.0",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.15",
     "node-cleanup": "^2.1.2",
-    "resin-cli-visuals": "^1.4.0",
+    "resin-cli-visuals": "^1.4.4",
     "tar-fs": "^2.0.0",
     "tmp": "0.0.33",
-    "unzipper": "^0.8.9"
+    "unzipper": "^0.8.14"
   },
   "devDependencies": {
     "standard": "^10.0.2"
