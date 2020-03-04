@@ -20,23 +20,23 @@
     "requirements.txt"
   ],
   "dependencies": {
-    "archiver": "^2.1.1",
-    "balena-sdk": "^12.21.0",
+    "archiver": "^3.1.1",
+    "balena-sdk": "^12.27.0",
     "bluebird": "^3.7.2",
-    "compare-versions": "^3.5.1",
+    "compare-versions": "^3.6.0",
     "docker-progress": "^3.0.5",
     "dockerode": "^2.5.8",
     "get-folder-size": "^1.0.1",
     "get-port": "^3.2.0",
     "lodash": "^4.17.15",
     "node-cleanup": "^2.1.2",
-    "resin-cli-visuals": "^1.4.4",
+    "resin-cli-visuals": "^1.4.7",
     "tar-fs": "^2.0.0",
     "tmp": "0.0.33",
     "unzipper": "^0.8.14"
   },
   "devDependencies": {
-    "standard": "^10.0.2"
+    "standard": "^10.0.3"
   },
   "peerDependencies": {},
   "optionalDependencies": {},
