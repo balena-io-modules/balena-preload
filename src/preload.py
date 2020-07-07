@@ -79,6 +79,33 @@ def prepare_global_partitions():
         return result
     return get_partitions(IMAGE)
 
+class RetryCounter:
+    def __init__(self):
+        self.counter = {}
+
+    @staticmethod
+    def key(*args):
+        return " ".join(str(e) for e in args)
+
+    def clear(self, *args):
+        del self.counter[self.key(*args)]
+
+    def inc(self, *args):
+        key = self.key(*args)
+        self.counter[key] = self.counter.setdefault(key, 0) + 1
+        return self.counter[key]
+
+retry_counter = RetryCounter()
+
+def losetup_wrap(*args, **kwargs):
+    count = retry_counter.inc(*args)
+    if count > 1:
+        msg = """
+Retrying (count={}) losetup {}
+Hint: if using a Virtual Machine, consider increasing the CPU count.
+""".format(count, retry_counter.key(*args))
+        print(msg, file=sys.stderr, flush=True)
+    return losetup(*args, **kwargs)
 
 @contextmanager
 def losetup_context_manager(image, offset=None, size=None):
@@ -91,13 +118,14 @@ def losetup_context_manager(image, offset=None, size=None):
     # In the case of slow hardware the kernel might be in the middle of
     # tearing down internal structure
     device = retry_call(
-        losetup,
+        losetup_wrap,
         fargs=args,
-        tries=5,
-        delay=1,
-        max_delay=10,
+        tries=10,
+        delay=3,
+        max_delay=30,
         backoff=2
     ).stdout.decode("utf8").strip()
+    retry_counter.clear(*args)
     yield device
     losetup("-d", device)
 
