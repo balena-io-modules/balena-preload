@@ -38,7 +38,9 @@
   "devDependencies": {
     "standard": "^10.0.3"
   },
-  "peerDependencies": {},
+  "peerDependencies": {
+    "balena-sdk": "^14.0.0"
+  },
   "optionalDependencies": {},
   "homepage": "https://github.com/balena-io/balena-preload",
   "repository": {
