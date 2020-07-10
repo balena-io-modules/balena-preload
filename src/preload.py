@@ -542,7 +542,11 @@ def write_resin_device_pinning(app_data, output):
         raise Exception("Malformed apps.json")
 
     with open(output, "w") as f:
-        f.write("RELEASE_ID={}".format(next(iter(apps.values())).get('releaseId')))
+        f.write(
+            "RELEASE_ID={}".format(
+                next(iter(apps.values())).get('releaseId'),
+            ),
+        )
 
 
 def write_apps_json(data, output):
@@ -557,7 +561,10 @@ def replace_splash_image(image=None):
     experience.
     """
     if os.path.isfile(SPLASH_IMAGE_FROM):
-        boot = get_partition("flash-boot") or get_partition("resin-boot", image)
+        boot = (
+            get_partition("flash-boot") or
+            get_partition("resin-boot", image)
+        )
         with boot.mount_context_manager() as mpoint:
             path = mpoint + SPLASH_IMAGE_TO
             if os.path.isdir(os.path.dirname(path)):
@@ -667,11 +674,16 @@ def _get_images_and_supervisor_version(image=None):
                 repository, version = line.strip().split()
                 if match(SUPERVISOR_REPOSITORY_RE, repository):
                     if version != "latest":
-                        version_search = re.search(r"^v?(?P<semver>\d+\.\d+\.\d+).*", version)
+                        version_search = re.search(
+                            r"^v?(?P<semver>\d+\.\d+\.\d+).*",
+                            version,
+                        )
                         if version_search:
                             supervisor_version = version_search.group('semver')
                         else:
-                            raise Exception("Could not extract supervisor version.")
+                            raise Exception(
+                                "Could not extract supervisor version.",
+                            )
                 else:
                     images.add(repository)
             return list(images), supervisor_version
