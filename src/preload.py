@@ -65,6 +65,52 @@ log.addHandler(StreamHandler())
 PARTITIONS_CACHE = {}
 
 
+class RetryCounter:
+    """Counter and logger for the number of times that a function is retried.
+    Usage:
+        retry_counter = RetryCounter()
+        hint = "Try reducing the system entropy"
+        wrapped_func, wrap_key = retry_counter.wrap(my_func, hint, *args)
+        retry_call(wrapped_func, fargs=args, ...)
+        retry_counter.clear(wrap_key)
+    """
+
+    def __init__(self):
+        self.counter = {}
+
+    @staticmethod
+    def key(func_name, *args):
+        return " ".join(str(e) for e in (func_name,) + args)
+
+    def clear(self, key, *args):
+        del self.counter[key]
+
+    def inc(self, key, *args):
+        self.counter[key] = self.counter.setdefault(key, 0) + 1
+        return self.counter[key]
+
+    def wrap(self, func, hint, *args, **kwargs):
+        """Return a function that wraps the given func, counting its usage"""
+        key = self.key(func.__name__, *args)
+
+        def wrapped(*args, **kwargs):
+            count = self.inc(key, *args)
+            if count > 1:
+                log.info(
+                    "\nRetrying (count={}) {}\n{}".format(
+                        count,
+                        key,
+                        hint,
+                    ),
+                )
+            return func(*args, **kwargs)
+
+        return (wrapped, key)
+
+
+retry_counter = RetryCounter()
+
+
 def get_partitions(image):
     return {p.label: p for p in PartitionTable(image).partitions if p.label}
 
@@ -88,16 +134,20 @@ def losetup_context_manager(image, offset=None, size=None):
     if size is not None:
         args.extend(["--sizelimit", size])
     args.append(image)
+    hint = "Hint: if using a Virtual Machine, consider increasing the \
+number of processors."
+    losetup_wrap, wrap_key = retry_counter.wrap(losetup, hint, *args)
     # In the case of slow hardware the kernel might be in the middle of
     # tearing down internal structure
     device = retry_call(
-        losetup,
+        losetup_wrap,
         fargs=args,
-        tries=5,
-        delay=1,
-        max_delay=10,
+        tries=10,
+        delay=3,
+        max_delay=30,
         backoff=2
     ).stdout.decode("utf8").strip()
+    retry_counter.clear(wrap_key)
     yield device
     losetup("-d", device)
 
@@ -489,8 +539,16 @@ def start_docker_daemon(storage_driver, docker_dir):
         if running_dockerd.process.exit_code is not None:
             # There is no reason for dockerd to exit with a 0 status now.
             assert running_dockerd.process.exit_code != 0
-            # This will raise an sh.ErrorReturnCode_X exception.
-            running_dockerd.wait()
+            try:
+                # This will raise an sh.ErrorReturnCode_X exception.
+                running_dockerd.wait()
+            except ErrorReturnCode as e:
+                log.info(
+                    "An error has occurred executing 'dockerd':\n{}".format(
+                        e.stderr.decode("utf8"),
+                    ),
+                )
+                raise e
         # Check that we can connect to dockerd.
         output = docker("version", _ok_code=[0, 1])
         ok = output.exit_code == 0
