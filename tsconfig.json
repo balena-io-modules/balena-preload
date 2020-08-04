@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es2018",
+		"outDir": "build",
+		"strict": true,
+		"noImplicitAny": false,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"preserveConstEnums": true,
+		"removeComments": true,
+		"sourceMap": true,
+		"skipLibCheck": true,
+		"preserveSymlinks": true,
+		"allowJs": true,
+		"checkJs": true,
+		"resolveJsonModule": true
+	},
+	"include": [
+		"./lib/**/*",
+		"./bin/**/*"
+	]
+}
