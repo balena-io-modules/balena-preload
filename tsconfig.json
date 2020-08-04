@@ -13,8 +13,7 @@
 		"skipLibCheck": true,
 		"preserveSymlinks": true,
 		"allowJs": true,
-		"checkJs": true,
-		"resolveJsonModule": true
+		"checkJs": true
 	},
 	"include": [
 		"./lib/**/*",
