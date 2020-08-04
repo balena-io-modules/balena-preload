@@ -11,10 +11,9 @@
     "docker",
     "container"
   ],
-  "main": "lib/preload.js",
+  "main": "build/preload.js",
   "files": [
-    "bin/balena-preload",
-    "lib/preload.js",
+    "build/",
     "src/preload.py",
     "Dockerfile",
     "requirements.txt"
@@ -26,17 +25,24 @@
     "compare-versions": "^3.6.0",
     "docker-progress": "^3.0.5",
     "dockerode": "^2.5.8",
-    "get-folder-size": "^1.0.1",
+    "get-folder-size": "^2.0.1",
     "get-port": "^3.2.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "node-cleanup": "^2.1.2",
-    "resin-cli-visuals": "^1.4.7",
-    "tar-fs": "^2.0.0",
+    "resin-cli-visuals": "^1.7.0",
+    "tar-fs": "^2.1.0",
     "tmp": "0.0.33",
     "unzipper": "^0.8.14"
   },
   "devDependencies": {
-    "standard": "^10.0.3"
+    "@types/bluebird": "^3.5.32",
+    "@types/dockerode": "^2.5.34",
+    "@types/get-folder-size": "^2.0.0",
+    "@types/node": "^10.17.28",
+    "@types/tmp": "0.0.34",
+    "@types/unzipper": "^0.8.4",
+    "standard": "^10.0.3",
+    "typescript": "^3.9.7"
   },
   "peerDependencies": {
     "balena-sdk": "^14.0.0"
@@ -51,9 +57,10 @@
     "url": "https://github.com/balena-io/balena-preload/issues"
   },
   "scripts": {
-    "pretest": "standard lib/*.js bin/balena-preload"
+    "pretest": "standard lib/*.js lib/bin/balena-preload",
+    "prepare": "tsc"
   },
   "bin": {
-    "balena-preload": "bin/balena-preload"
+    "balena-preload": "build/bin/balena-preload.js"
   }
 }
