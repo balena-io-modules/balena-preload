@@ -35,13 +35,13 @@
     "unzipper": "^0.8.14"
   },
   "devDependencies": {
+    "@balena/lint": "^5.1.0",
     "@types/bluebird": "^3.5.32",
     "@types/dockerode": "^2.5.34",
     "@types/get-folder-size": "^2.0.0",
     "@types/node": "^10.17.28",
     "@types/tmp": "0.0.34",
     "@types/unzipper": "^0.8.4",
-    "standard": "^10.0.3",
     "typescript": "^3.9.7"
   },
   "peerDependencies": {
@@ -57,7 +57,9 @@
     "url": "https://github.com/balena-io/balena-preload/issues"
   },
   "scripts": {
-    "pretest": "standard lib/*.js lib/bin/balena-preload",
+    "lint": "balena-lint -e js --typescript lib",
+    "lint-fix": "balena-lint -e js --typescript --fix lib",
+    "test": "npm run lint",
     "prepare": "tsc"
   },
   "bin": {
