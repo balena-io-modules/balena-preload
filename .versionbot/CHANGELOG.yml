@@ -1,0 +1,1066 @@
+- commits:
+  - author: Pagan Gazzard
+    body: ""
+    footers:
+      change-type: major
+    hash: 2e2b81d70aec051a4f099a7f8f033caeae7e71d9
+    subject: Update to balena-sdk 13.x
+  date: "2020-06-30T18:21:08Z"
+  version: 9.0.0
+- commits:
+  - author: Pagan Gazzard
+    body: ""
+    footers:
+      change-type: minor
+    hash: 9888515499d41ce15a8bf592e9b9a4abf1ba4789
+    subject: Update dependencies
+  date: "2020-03-04T13:35:25Z"
+  version: 8.4.0
+- commits:
+  - author: Scott Lowe
+    body: ""
+    footers:
+      change-type: patch
+      signed-off-by: Scott Lowe <scott@balena.io>
+    hash: 7261a6a632897de93822bcf9735ad11c789a86fd
+    subject: Update .gitignore
+  - author: Scott Lowe
+    body: ""
+    footers:
+      change-type: patch
+      signed-off-by: Scott Lowe <scott@balena.io>
+    hash: fe900f829dd6c09a458dc69f3be8a6c888632b52
+    subject: Check os/app architecture compatibility rather than equvalence.
+  date: "2020-02-05T13:38:36Z"
+  version: 8.3.1
+- commits:
+  - author: Pagan Gazzard
+    body: ""
+    footers:
+      change-type: minor
+    hash: 5ec6f38d53f038eb0dcdfe7874859eb841437856
+    subject: Update dependencies
+  date: "2020-01-24T18:26:23Z"
+  version: 8.3.0
+- commits:
+  - author: Theodor Gherzan
+    body: This upgrades enables the preloader to run on arm architectures
+    footers:
+      change-type: patch
+      signed-off-by: Theodor Gherzan <theodor@balena.io>
+    hash: 1be05b8a49f1372c47be56f1860a672d48ff8753
+    subject: Upgrade docker version to 17.12.0-ce
+  - author: Theodor Gherzan
+    body: ""
+    footers:
+      signed-off-by: Theodor Gherzan <theodor@balena.io>
+    hash: b6dea424785b49fae590048f46cb997bb239d9df
+    subject: The base image already includes the docker package
+  - author: Theodor Gherzan
+    body: |-
+      On slow machines the kernel might not be done tearing down
+      the loop's internal structure. Retrying a few times should give
+      it enough time to clean everything up.
+    footers:
+      signed-off-by: Theodor Gherzan <theodor@balena.io>
+    hash: 0c3b4b985c7d16fe9fc50109d227a310d5b658ac
+    subject: Retry the loop attachment
+  - author: Theodor Gherzan
+    body: ""
+    footers:
+      signed-off-by: Theodor Gherzan <theodor@balena.io>
+    hash: b94b57ce9a4ae6fb2cb3f399a5f942603fddc069
+    subject: The image we are trying to preload might be on a remote machine
+  date: "2019-12-17T12:45:34Z"
+  version: 8.2.2
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+    hash: 4e0e295a80c7ac5d41a434d9817684c35adedd37
+    subject: Fix certificates path in the preloader container
+  date: "2019-07-18T14:16:23Z"
+  version: 8.2.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+    hash: 0386cfa91ac880ce296b1ac955dd9bab4b821b63
+    subject: Replace tar-stream with tar-fs
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+    hash: 6bf70baf4d768eb4927f9da3e2769b50665cae4d
+    subject: Stop mounting host's /etc/ssl/certs on Linux
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: minor
+    hash: cb9c8893272929d3f881cfeb4f43506eb836d5f3
+    subject: Add --add-certificate option
+  date: "2019-05-29T14:40:47Z"
+  version: 8.2.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+    hash: 7aa76b9733e135b1ff3e6818a4dea8203e5ac77c
+    subject: Fetch the app commit if 'latest' is passed
+  date: "2019-05-21T11:51:31Z"
+  version: 8.1.4
+- commits:
+  - author: Gergely Imreh
+    body: ""
+    footers:
+      change-type: patch
+      signed-off-by: Gergely Imreh <gergely@balena.io>
+    hash: f77a0a92720f78827f8774d16cb7a0752e9d595f
+    subject: Use more robust regex to extract supervisor semver
+  date: "2019-05-15T15:19:03Z"
+  version: 8.1.3
+- commits:
+  - author: Pagan Gazzard
+    body: ""
+    footers:
+      change-type: patch
+    hash: fbe363f3ffe8d6a43fe5834c25405bfafd21ceae
+    subject: Filter by commit as part of the query if it's specified
+  date: "2019-05-10T13:35:51Z"
+  version: 8.1.2
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+    hash: c73967e1e31e278471f833cf1ce75a2a8d4d81d1
+    subject: Don't write device name in apps.json
+  date: "2019-02-18T18:05:43Z"
+  version: 8.1.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: minor
+    hash: 0675bf7261efb711c8c53f8d34e817d8dffffb3f
+    subject: Bind mount host's /etc/ssl/certs folder on Linux
+  date: "2019-01-08T13:06:00Z"
+  version: 8.1.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+    hash: 4c88b411e4cbf8b7c31a6c2804cb10f850ad4af1
+    subject: Don't try to get the device type arch with --dontCheckArch
+  date: "2018-11-15T14:31:58Z"
+  version: 8.0.4
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+    hash: e0f0388b57277d1e9e93ec95bf04b3862a36c211
+    subject: The splash image is named resin-logo.png
+  date: "2018-11-13T17:30:04Z"
+  version: 8.0.3
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+    hash: 2eac133c9dcbfe3449b02940523139bcfa779fb0
+    subject: Don't try to pin releases when supervisor is < 7.0.0
+  date: "2018-11-13T09:54:29Z"
+  version: 8.0.2
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      This fixes an issue with loop devices only appearing on the host in some
+      situations. See https://github.com/balena-io/balena-cli/issues/1008 .
+    footers:
+      change-type: patch
+    hash: 694f4a6eb50d62c45663426e771b6619429ccaa0
+    subject: Bind mount host's /dev to container's /dev
+  date: "2018-11-09T05:03:17Z"
+  version: 8.0.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: major
+      signed-off-by: Alexis Svinartchouk <alexis@resin.io>
+    hash: db3d8a4e6fb02de3414e1674f179e4a2a7d83ebd
+    subject: Rename to balena-preload
+  date: "2018-10-29T20:41:44Z"
+  version: 8.0.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+      signed-off-by: Alexis Svinartchouk <alexis@balena.io>
+    hash: 7a9f45b53b5d514354136a5caecc6aaf56d13a94
+    subject: Don't build the Dockerfile on CI
+  - author: Jack Brown
+    body: ""
+    hash: 70cab519b4b559887731bb1ad2b1e470de3137be
+    subject: Update .resinci.yml
+  date: "2018-10-29T20:23:53Z"
+  version: 7.0.6
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+      signed-off-by: Alexis Svinartchouk <alexis@resin.io>
+    hash: e74c24fa529edc96c5025df954f0cc3696cb3ad3
+    subject: Filter out serviceId for supervisors < 7
+  date: "2018-09-06T16:24:20Z"
+  version: 7.0.5
+- commits:
+  - author: Theodor Gherzan
+    body: ""
+    footers:
+      change-type: patch
+      signed-off-by: Theodor Gherzan <theodor@resin.io>
+    hash: 40e9c44b99f0556fe7f845654248262a856b3d55
+    subject: Get the release ID not the application ID
+  date: "2018-08-31T12:18:38Z"
+  version: 7.0.4
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+      signed-off-by: Alexis Svinartchouk <alexis@resin.io>
+    hash: 540ea0c49e13fbdd5401098a254925a7e535a587
+    subject: Use localhost instead of 0.0.0.0 to connect to Docker on win32
+  date: "2018-08-29T17:13:35Z"
+  version: 7.0.3
+- commits:
+  - author: Gergely Imreh
+    body: |-
+      The preloader container is built on the user's system. On
+      Windows, the files don't retain their executable flags,
+      thus the preloader Python script can't be started just
+      by running the script. Now explicitly running the script
+      with `python3`, so whether or not the script is executable,
+      it will run.
+    footers:
+      change-type: patch
+      signed-off-by: Gergely Imreh <gergely@resin.io>
+    hash: d0f260b41abc7686aefe1386e280425ff45a541f
+    subject: 'dockerfile: Do not rely on script being executable'
+  - author: Gergely Imreh
+    body: |-
+      When attaching to a docker container, docker will buffer
+      the standard input/output. On Windows the script seemed to hang
+      as the reply from the preloader container might be quite small,
+      thus docker just keeps waiting for more data before giving it
+      to the program that attached to it. Flushing stdout seems to
+      have the desired effect and the caller receives the reply
+      from the preloader.
+    footers:
+      change-type: patch
+      signed-off-by: Gergely Imreh <gergely@resin.io>
+    hash: 82f6f7b75e998a3d0671bbf4fd4f0ef586000d51
+    subject: 'preload.py: Flush output buffer when data''s ready'
+  date: "2018-08-28T09:09:54Z"
+  version: 7.0.2
+- commits:
+  - author: Theodor Gherzan
+    body: ""
+    footers:
+      change-type: patch
+      signed-off-by: Theodor Gherzan <theodor@resin.io>
+    hash: a4dd539930207edb3b4a0d779cd09fbe41625443
+    subject: Pinning information should also be available for the resin-image-flasher
+  date: "2018-08-21T15:39:33Z"
+  version: 7.0.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: major
+      signed-off-by: Alexis Svinartchouk <alexis@resin.io>
+    hash: 5b48247d6735b68b7739b012016e55c93e9c8cd5
+    subject: Check device architecture instead of device type
+  date: "2018-08-20T16:01:32Z"
+  version: 7.0.0
+- commits:
+  - author: Theodor Gherzan
+    body: ""
+    footers:
+      change-type: patch
+      signed-off-by: Theodor Gherzan <theodor@resin.io>
+    hash: 39553ae62996af2e709e14ab2e4738b9eb995acd
+    subject: In the case of a flasher OS copy splash image to its boot partition
+  date: "2018-08-09T15:07:41Z"
+  version: 6.3.2
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      Docker images use more space on disk than their actual size, the 1.1
+      multiplier wasn't enough for some images.
+      Connects-To: #176
+    footers:
+      change-type: patch
+    hash: c2d86a9ff6abf7714afb808f49eb297383e0c525
+    subject: Increase size multiplier from 1.1 to 1.4
+  date: "2018-05-30T16:50:45Z"
+  version: 6.3.1
+- commits:
+  - author: Cameron Diver
+    body: ""
+    footers:
+      change-type: minor
+      closes: '#174'
+      signed-off-by: Cameron Diver <cameron@resin.io>
+    hash: 0d043420c22c300ad26811d225612e90cb24ae90
+    subject: Allow devices to be pinned following a preload provision
+  - author: Cameron Diver
+    body: ""
+    footers:
+      change-type: minor
+      signed-off-by: Cameron Diver <cameron@resin.io>
+    hash: cfeac0138085232ec75be8f8275a3906b990d928
+    subject: Add circleci auto-deploy to npm
+  date: "2018-05-30T13:17:15Z"
+  version: 6.3.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #170'
+    footers:
+      change-type: minor
+    hash: 6d0ee9f7d7285bb66370dda896333b72629960cf
+    subject: Update resin-sdk to 9.0.0-beta16, use $ before expand
+  date: "2018-03-23T13:36:31Z"
+  version: 6.2.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #168'
+    footers:
+      change-type: patch
+    hash: a2f51ae7022bbab8ddacce4fca1d8564f9c74e15
+    subject: Add appId to each app in apps.json for supertvisors < 7 (apps.json is
+      from state v1)
+  date: "2018-03-20T15:19:28Z"
+  version: 6.1.2
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #166'
+    footers:
+      change-type: patch
+    hash: 265a316f2d865cf7be778448e6a92edc7603f219
+    subject: Fix preloading images with supervisor version < 7
+  date: "2018-03-19T19:05:08Z"
+  version: 6.1.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #164'
+    footers:
+      change-type: patch
+    hash: 6fe7b4b945fa25c23d235889f32b4e2daece7ac3
+    subject: Fix specifying commit
+  - author: Alexis Svinartchouk
+    body: |-
+      Instead of recreating the v1 state from the v2 endpoint response.
+      Also pull images using their repo from the state.
+      Connects-To: #164
+    footers:
+      change-type: minor
+    hash: 381d9e159b6c2d1cf03610964079683108450c67
+    subject: Use state v1 endpoint when the supervisor version is < 7
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #164'
+    footers:
+      change-type: patch
+    hash: 743a8e945251653921979498cbf9cd80f22f963e
+    subject: Preload the release with the highest id if an app has no commit specified.
+  date: "2018-03-19T17:41:37Z"
+  version: 6.1.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      * use the new multicontainer resin-sdk
+      * resize disk image only if it lacks space
+      * preload multicontainer apps if the ismage supervisor version is >= 7.0.0
+      * simplify api
+      * drop request and request-promise requirements
+      * get docker images size from the api, no longer query the registry
+      Connects-To: #154
+    footers:
+      change-type: major
+    hash: 02736ac093e34297fdfaa9c1ba5eef1c77120146
+    subject: Multicontainer preload
+  date: "2018-03-09T21:51:58Z"
+  version: 6.0.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #162'
+    footers:
+      change-type: patch
+    hash: 7ca9aa37ed17ea4829768fa917fa99bf46d662dc
+    subject: get_inner_image_path falls back to the first file in /opt if no deviceType.json
+      file is found.
+  date: "2018-02-28T12:28:46Z"
+  version: 5.2.2
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #160'
+    footers:
+      change-type: patch
+    hash: a6816e33fca55cb4f16878085a8008f28c319fba
+    subject: Get the inner image name from device_type.json
+  date: "2018-02-22T16:51:48Z"
+  version: 5.2.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #157'
+    footers:
+      change-type: minor
+    hash: 3dcfd7b3568bb25bc66628e5d7dfb1e0bc816609
+    subject: Preserve bootstrap code in MBR when resizing
+  date: "2018-02-06T14:51:39Z"
+  version: 5.2.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      This fixes the losetup problem on Fedora 25
+      Connects-To: #152
+    footers:
+      change-type: patch
+    hash: 52b491fb70470cf5d7c7929ba33241dd6c86de7d
+    subject: Bind mount /dev on linux hosts
+  date: "2018-01-12T10:58:26Z"
+  version: 5.1.2
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #150'
+    footers:
+      change-type: patch
+    hash: 131bad095cfaf11c456c4424a05c279378464c41
+    subject: Minor fixes in preload.py
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #150'
+    footers:
+      change-type: patch
+    hash: b43c197ae27129d17760215a09f6f1d176c8f908
+    subject: Remove all references to --dont-detect-flasher-type-images
+  date: "2017-12-12T15:18:44Z"
+  version: 5.1.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #148'
+    footers:
+      change-type: minor
+    hash: 18ddbdcfda45ea45866ed6d99b1ee8fd738f37f8
+    subject: Preload images that use Balena instead of Docker
+  date: "2017-12-12T12:20:13Z"
+  version: 5.1.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #146'
+    footers:
+      change-type: patch
+    hash: dc17ed23c5a5e2b970f175d28ddfd5c795fc015e
+    subject: Wait for loop device to be detached before killing the container
+  date: "2017-11-17T18:12:16Z"
+  version: 5.0.4
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #144'
+    footers:
+      change-type: patch
+    hash: 905fed49cd6524a117b9d0eafe2b45abdb33c5ef
+    subject: Fix confusion between bytes and sectors on partition resize
+  date: "2017-11-16T22:07:56Z"
+  version: 5.0.3
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #142'
+    footers:
+      change-type: patch
+    hash: f63834ca3224b2cf1ea9bdf2d4baf2538cc9e9ae
+    subject: Fix filesystem expansion after resize
+  date: "2017-11-16T21:19:52Z"
+  version: 5.0.2
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #140'
+    footers:
+      change-type: patch
+    hash: 8fb7928638593ebb0366cfe56d1e5f635307c61c
+    subject: 'Update README: docker-toolbox is not supported, aufs module is required.'
+  date: "2017-11-08T19:09:03Z"
+  version: 5.0.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      * use partition labels instead of hardcoding partition numbers
+      * better flasher image detection, remove the no longer needed --dont-detect-flasher-type-images option
+      * fix preloading resinOS 1.8 flasher images
+      Connects-To: #120
+    footers:
+      change-type: major
+    hash: 46dac406ef7fff54692d5ec57b78ea769c8cc90a
+    subject: Preload GPT disk images, remove --dont-detect-flasher-type-images option
+  date: "2017-10-26T19:31:14Z"
+  version: 5.0.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      The commit may change later, use getImageRepo eac time we need imageRepo
+      instead.
+      Connects-To: #136
+    footers:
+      change-type: patch
+    hash: 6f73ee74531b7b5c83c87842adc0851f94139598
+    subject: Don't set Preloader.imageRepo in setApplication.
+  date: "2017-10-25T10:08:20Z"
+  version: 4.0.9
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+    hash: 417735fa22267ee7acaffa119b145734ab304afb
+    subject: Fix incompatibility with Docker 1.12.6 (api version 1.24)
+  date: "2017-10-24T20:15:31Z"
+  version: 4.0.8
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #131'
+    footers:
+      change-type: patch
+    hash: a43b6cb33b5d8cff391dd5d2d248e5d3422e3e87
+    subject: Fix the --dont-detect-flasher-type-images option.
+  date: "2017-10-24T10:21:46Z"
+  version: 4.0.7
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #127'
+    footers:
+      change-type: patch
+    hash: 2e275c677ffddd82cdcf32a72e21c9f3e58af53e
+    subject: Copy data between the MBR and the first partition when resizing a preloader
+      image.
+  date: "2017-10-20T11:27:56Z"
+  version: 4.0.6
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #129'
+    footers:
+      change-type: patch
+    hash: 6dab5d3ef8834eb0a302d55bcce3ae2657e06665
+    subject: Don't crash if data/docker/network/files/local-kv.db doesn't exist
+  date: "2017-10-20T09:17:33Z"
+  version: 4.0.5
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #112'
+    footers:
+      change-type: patch
+    hash: 06b5663b498d80c5d42e2da75de8d97ce1beb3e6
+    subject: Print a newline after each spinner
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #112'
+    footers:
+      change-type: patch
+    hash: e75e2931c71f4b46599cb71a2feaf8410833d2b5
+    subject: Support preloading 2.6+ resinOS images when hostapps use aufs or overlay2
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #112'
+    footers:
+      change-type: patch
+    hash: 4e8a23db1309262b703ff47808b79722f8b23965
+    subject: Fix preloading edison images 2.6+ (root partition filename changed)
+  date: "2017-10-18T19:08:01Z"
+  version: 4.0.4
+- commits:
+  - author: Pablo Carranza Velez
+    body: '`fs.constants` is not present on node v4, so in that case we use fs.R_OK
+      and fs.W_OK directly.'
+    footers:
+      change-type: patch
+      signed-off-by: Pablo Carranza Velez <pablo@resin.io>
+    hash: 3e970500eee1274e554a0afea1bb8a7e878df8df
+    subject: Get R_OK and W_OK constants from wherever they're available, to keep
+      supporting node v4 for the time being
+  date: "2017-10-16T10:56:58Z"
+  version: 4.0.2
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      Like in the devenv
+      All this would not be necessary if the request library was not forwarding Authorization headers on 307 responses even if the Host is different.
+      See https://github.com/request/request/issues/2455
+      Connects-To: #113
+    footers:
+      change-type: patch
+    hash: 11dfd5aade175a5088fe2759c7d6d561711fb6b8
+    subject: Handle cases where we are not redirected when making a request to the
+      registry.
+  date: "2017-10-13T16:05:46Z"
+  version: 4.0.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      * Also use registry2 host from resin-sdk
+      * Refactor allowing easy creation of progress bars and spinners
+      Connects-To: #116
+    footers:
+      change-type: major
+    hash: 75addc2a291674d92250da495cc56f3db167026a
+    subject: Allow preloading of Edison zip archives.
+  - author: Alexis Svinartchouk
+    body: ""
+    hash: 013c1c712f1eed610b979e6bcad997da833ba625
+    subject: use /tmp instead of default  on macos
+  - author: Alexis Svinartchouk
+    body: ""
+    hash: fe50b97d41b9b1ce832f0671a4092d91f2c58f8a
+    subject: exit if the application has no successful builds
+  - author: Alexis Svinartchouk
+    body: ""
+    hash: 890d16c66b903f4380a3e314d9e476067c471779
+    subject: fix error handling in bin/resin-preload
+  - author: Alexis Svinartchouk
+    body: ""
+    hash: 4241379dfede9c5bc477dc2348c7c7f6daa9285e
+    subject: remove --api-host option, use RESINRC_RESIN_URL instead
+  date: "2017-10-13T10:58:24Z"
+  version: 4.0.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #118'
+    footers:
+      change-type: patch
+    hash: b8b11b1bc29497900395b4e3062c517d2f16537d
+    subject: Don't use Array.includes, it is not supported in node4.
+  date: "2017-10-06T11:36:10Z"
+  version: 3.1.9
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #110'
+    footers:
+      change-type: patch
+    hash: 76378bf0d9df9fa3c20b6e25d7202d60041f7872
+    subject: Use Docker bridged networking on platforms other than Linux.
+  date: "2017-09-28T10:14:58Z"
+  version: 3.1.8
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #107'
+    footers:
+      change-type: patch
+    hash: ddaf92ead0c5de78941745b2940a280e2aea5014
+    subject: Don't use docker's PortBindings as we run it with `--net=host`
+  date: "2017-09-05T09:11:35Z"
+  version: 3.1.7
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #104'
+    footers:
+      change-type: patch
+    hash: 02bb36130ea7cd658fa3f4d53df187b1ca2345cc
+    subject: Detect when the overlay module is not loaded and show an appropriate
+      error.
+  date: "2017-08-31T10:35:03Z"
+  version: 3.1.6
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      This allows us to have a progress bar for the docker pull.
+      Connects-To: #101
+    footers:
+      change-type: patch
+    hash: 6a2bab65bd1368234c4007eac9add9a8e561e293
+    subject: The python script no longer pulls the build, instead it exposes dockerd
+      to the js script.
+  date: "2017-08-30T17:26:43Z"
+  version: 3.1.5
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      With this change we no longer need to extract the resinOS version and make decisions based on it.
+      overlay2 storage driver works (nvidia jetson devices for example)
+      Connects-To: #94
+    footers:
+      change-type: patch
+    hash: 1ab35d93a188494d23f2101054b64b52e04e91c0
+    subject: Use the docker storage driver from /<rootfs>/lib/systemd/system/docker.service
+      ExecStart key.
+  date: "2017-08-25T12:55:56Z"
+  version: 3.1.4
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+    hash: 58c34e1faa49c8be99fbd15e6b9c82d5c682ab4d
+    subject: Fix js style (standard js)
+  date: "2017-08-25T12:53:49Z"
+  version: 3.1.3
+- commits:
+  - author: Sven Schwermer
+    body: ""
+    footers:
+      change-type: patch
+    hash: 0d5344ebdb488244b2ddf66298de54bef6c21a9e
+    subject: Add flag for ignoring mismatching device types
+  date: "2017-08-25T10:04:36Z"
+  version: 3.1.2
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #88'
+    footers:
+      change-type: minor
+    hash: 6129bd943f1f5c9bb647bf5ffc91e6bb78873f36
+    subject: Add progress bars and spinners.
+  date: "2017-08-22T16:32:19Z"
+  version: 3.1.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects to #86'
+    footers:
+      change-type: major
+    hash: 97b6dade30ec09f102caff9636274112a749736f
+    subject: Don't preload the same build twice.
+  date: "2017-08-21T17:05:48Z"
+  version: 3.0.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      Connects-To: #92
+      Connects-To: https://github.com/resin-io/resin-cli/issues/637
+    footers:
+      change-type: patch
+    hash: f1c89d23d7ca91f0678daa2c715ef2edd1e3a986
+    subject: Don't call stdin.setRawMode if it doesn't exist.
+  date: "2017-08-21T12:27:36Z"
+  version: 2.0.3
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-To: #90'
+    footers:
+      change-type: patch
+    hash: 922befe6eab3218e153c19120bc8e74aa499ea27
+    subject: Use only lower case for the preloaded image repository.
+  date: "2017-08-18T17:10:35Z"
+  version: 2.0.2
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects to #84'
+    footers:
+      change-type: patch
+    hash: 0c205facd18b7a1ad77940d9827eeefb8f22bbbc
+    subject: Correctly set the resin api token.
+  date: "2017-08-16T15:26:25Z"
+  version: 2.0.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      * use dockerode instead of starting docker sub-processes;
+      * interactive menu for selecting the app and commit to preload (in resin-cli);
+      * ask user and disable automatic app updates if he chooses to preload a commit that is not the latest;
+      * detect device-type from the image and allow preloading only apps that have the same device type;
+      * pass the RESINRC_PROXY env var to the preload container as HTTP(S)_PROXY;
+      * use 'delegated' mode for docker bind mounts instead of 'cached', it should be faster on macOS;
+      * fix typos;
+      * don't use console.error if there is no error;
+      * remove use of fs.*Sync functions;
+      * preload.run now returns { statusCodePromise, stdout, stderr };
+      * add a deprecation warning to the README;
+      * move container size calculation from python inside docker to js;
+      * use a configured resin-sdk object for resin api connection options;
+      * download layer sizes in parallel + avoid downloading layer sizes more than once => significant speed-up;
+      * transfer appData from js to python inside Docker via an env var => python no longer needs to talk to the api, less requests.
+      Connects to #71
+    footers:
+      change-type: major
+    hash: 2724b711a8ed8283c790a53e94fbab0bed26ed94
+    subject: Integrate with resin-cli
+  date: "2017-08-11T13:28:45Z"
+  version: 2.0.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects to #82'
+    footers:
+      change-type: patch
+    hash: f02e488fd9b2beee00ca21c647b637d8a6d66885
+    subject: Use --net=host for host's Docker.
+  date: "2017-08-09T10:15:22Z"
+  version: 1.4.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects to #74'
+    footers:
+      change-type: minor
+    hash: 233651107731924c60ca4e2ae9d6faa64332460e
+    subject: Allow relative paths for the --image parameter.
+  date: "2017-08-04T12:33:35Z"
+  version: 1.4.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects to #79'
+    footers:
+      change-type: patch
+    hash: cf7504d5ef68bc01cb5761ce0f2c02caa8b7960a
+    subject: Update the README about --dont-detect-flasher-type-images
+  date: "2017-08-04T10:16:30Z"
+  version: 1.3.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects to #75'
+    footers:
+      change-type: minor
+    hash: c991f928b28443de2ec87b9539570fae0ee60d6a
+    subject: Add a --dont-detect-flasher-type-images flag.
+  date: "2017-08-04T10:05:58Z"
+  version: 1.3.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: 'Connects-to: #63'
+    footers:
+      change-type: patch
+    hash: 4bc43a15a81acc19584ef55e0f562505e9eeec5a
+    subject: Add CHANGELOG to allow VersionBot commits.
+  date: "2017-07-27T17:01:38Z"
+  version: 1.2.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    hash: 120b322a4b295e6411967e4b8fd5bb0008825dc1
+    subject: Allow specifying an app commit to preload.
+  - author: Alexis Svinartchouk
+    body: ""
+    hash: 64b3ac295f12cc9ad0e9315e4b807efec7438b9c
+    subject: Add a 'Contributing' section to the README.
+  date: "2017-07-25T18:42:11Z"
+  version: 1.2.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: |-
+      * detect flasher type images by looking for "-flasher-" in the "deployArtifact" key of device-type.json
+      * resize the rootfs of the outer image for flasher type images
+      * resize and preload into the inner image
+      * Use docker cached volumes if Docker API Version is >= 1.28 to speed up preloading on macOS
+    hash: acfe0b26271e768d3a449ce42cff1f21a87866d9
+    subject: '* Support flasher type images'
+  - author: Alexis Svinartchouk
+    body: ""
+    hash: 273a2646759f61d7c771ca85298ff6d1dd6d9ff2
+    subject: Switch preload script from bash to python3.
+  date: "2017-07-25T13:25:09Z"
+  version: 1.1.0
+- commits:
+  - author: Pagan Gazzard
+    body: ""
+    footers:
+      change-type: patch
+    hash: fd2b0cd8d6855cd6dfcf496e82153ef8cf269e88
+    subject: Fix build dir paths
+  date: "2020-08-04T14:34:09Z"
+  version: 10.2.3
+- commits:
+  - author: Pagan Gazzard
+    body: Update balena-sdk from 14.0.0 to 15.2.1
+    footers:
+      change-type: patch
+    hash: 1b6bf2e9d6eefe425280187483a6478f1b464a47
+    subject: Update balena-sdk to 15.x
+  date: "2020-08-04T14:07:15Z"
+  version: 10.2.2
+- commits:
+  - author: Pagan Gazzard
+    body: ""
+    footers:
+      change-type: patch
+    hash: af7f077d67c6a572a2b2b5d6cebf7fdc822901ae
+    subject: Add type checking
+  - author: Pagan Gazzard
+    body: ""
+    footers:
+      change-type: patch
+    hash: fc217a3b7de757d51d55aa09445b09e62da1958d
+    subject: Use @balena/lint for linting
+  date: "2020-08-04T11:46:29Z"
+  version: 10.2.1
+- commits:
+  - author: Paulo Castro
+    body: ""
+    footers:
+      change-type: patch
+    hash: 896d3df02a53908cd828c2ce2a4fdd7aebe693d9
+    subject: Print full stderr in the event of failure executing dockerd
+  - author: Paulo Castro
+    body: ""
+    footers:
+      change-type: patch
+    hash: b663745864c140d18ec4e39d1299261d978048b2
+    subject: Increase losetup retry delay and count and print hint message on error
+  - author: Paulo Castro
+    body: ""
+    footers:
+      change-type: minor
+    hash: 20d20e2eaf7ba6c8ee6067269eb14b34d4e261cf
+    subject: Add 'setAppIdAndCommit()' method to help decouple balena-cli and balena-preload
+  date: "2020-07-15T13:34:42Z"
+  version: 10.2.0
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+    hash: 2ac197ec06cf2db9c0e1a5988343356e7e1b15b8
+    subject: Make sure --img argument is a file accessible for reading and writing
+      before preloading.
+  - author: Jonas Hermsmeier
+    body: ""
+    footers:
+      change-type: patch
+    hash: 3b9f6f59664aba978ba59ab45ce005a15c6082a8
+    subject: 'doc(README): Add splash image usage documentation'
+  - author: Jonas Hermsmeier
+    body: ""
+    hash: 25f28ffc0fa4c8d6f077fdae0fd68f12e15aebfc
+    subject: 'src/preload.sh: Double-quote vars to prevent globbing / word splitting'
+  - author: Jonas Hermsmeier
+    body: |-
+      As the uncompressed image layer size cannot be obtained through the
+      docker registry (because the layers' identity encoding is a tarball),
+      and the registry exposes no methods to otherwise do so, we needed to
+      come up with a way to estimate the full container size.
+      This calculates the container size by fetching each layers' blob's last
+      4 bytes, which are the ISIZE field of the gzip stream, denoting the
+      uncompressed size of the stream, and adds up all layer sizes.
+      NOTE: This method is not reliable for containers with image layers
+      that are 4GB or larger in size, as the gzip ISIZE field is a uint32,
+      and the uncompressed size is thus storead as `mod 2^32`, which in turn
+      will result in the size of a 4GB layer being calculated as being zero.
+    footers:
+      change-type: minor
+    hash: 1c6ba470901511e31033ae5614763ad3aca2d45c
+    subject: 'src/preload.sh: Estimate container size by reading gzip sizes'
+  - author: Jonas Hermsmeier
+    body: |-
+      This enables e2fsck to automatically repair issues that can safely
+      be fixed without human interaction, allowing the preloader to fail
+      properly if the file system is corrupted.
+      Previously e2fsck would print that it needs human interaction and
+      allow the preloader to continue, causing out-of-disk-space errors
+      if subsequently, the filesystem could not be expanded.
+    hash: 1e2a79125f78f716f2552a264813dee3ff026cc7
+    subject: 'src/preload.sh: Enable auto-repair for e2fsck'
+  - author: Jonas Hermsmeier
+    body: |-
+      This fixes a condition checking for a legacy rce setup,
+      which would've caused those to not be properly cleaned up.
+    footers:
+      change-type: patch
+    hash: 71a053b2e9ad07f0c0876484fd3265d4a1f83f1d
+    subject: 'src/preload.sh: Fix condition checking for /rce dir'
+  - author: Christian Csar
+    body: |-
+      Add commandline option --splash-image to support changing the boot
+      splash image.
+    hash: 044d35f2dc4d3ae59c2f939e432e769770a03b0a
+    subject: Support changing the boot splash image.
+  - author: Jonas Hermsmeier
+    body: |-
+      This makes the preloader use the registry v2 to fix
+      the supervisor downloading preloaded applications again
+      on first boot.
+    footers:
+      change-type: major
+    hash: fef0426f097f87c806cd9baa61310a0fb8d59c7a
+    subject: 'src/preload.sh: Move to registry2'
+  - author: Jonas Hermsmeier
+    body: |-
+      This uses the registry2 host in the imageId written into the `apps.json`
+      preventing the supervisor downloading the app again on first boot.
+    footers:
+      change-type: patch
+    hash: d9813c8c2a8a8d00219ac64614fa5e1dae6aa2aa
+    subject: 'src/preload.sh: Use registry2 in imageId'
+  - author: Pablo Carranza Velez
+    body: ""
+    footers:
+      change-type: patch
+      signed-off-by: Pablo Carranza Velez <pablo@resin.io>
+    hash: 239093aed5dda63bf979a26c556fa69745b18f7f
+    subject: Include app name in the generated apps.json to avoid an unnecessary restart
+  - author: Jonas Hermsmeier
+    body: |-
+      This makes the image preloader available as a npm package,
+      enabling easier programmatic use, and reduces external dependencies to
+      run on Windows.
+    hash: f3f2828a6090400ad2de8d065c5f8e3dcca27adb
+    subject: 'chore(package): Create npm package'
+  - author: Jonas Hermsmeier
+    body: ""
+    hash: bece378b2f9ebe5bace9e89d2d0c59b5722149bd
+    subject: 'doc(README): Use registry2, update known issues'
+  - author: Jonas Hermsmeier
+    body: ""
+    hash: 950399d51e29e5c4c814e630a9880885a15f2749
+    subject: 'fix(resin-preload): Fix check for missing required opts'
+  - author: Jonas Hermsmeier
+    body: ""
+    hash: 6845cb430f7aa7790645fb3457cc3550d3a24d06
+    subject: 'refactor(resin-preload): Dedupe child proc error handling'
+  - author: Jonas Hermsmeier
+    body: ""
+    hash: 48d960efeaac8f51b924065a78e9ff3ca3ed0930
+    subject: 'doc: Fix missing registry2 updates'
+  - author: Jonas Hermsmeier
+    body: ""
+    hash: 61f3beeef0d29bb236de1a7ee1a501cccac401b2
+    subject: 'doc(README): Expand on what flasher images are'
+  - author: Jonas Hermsmeier
+    body: ""
+    hash: e830b3631ae4e45df1381897f76da30c6b702dc7
+    subject: 'feat: Backport splash image support'
+  date: "2017-07-07T15:08:50Z"
+  version: 1.0.1
+- commits:
+  - author: Alexis Svinartchouk
+    body: ""
+    footers:
+      change-type: patch
+    hash: d3bdc31ad12ffbe64a4f5d83e432a3381ac501eb
+    subject: Flake8 on src/preload.py
+  date: "2020-07-10T12:10:31Z"
+  version: 10.1.1
+- commits:
+  - author: Thodoris Greasidis
+    body: ""
+    footers:
+      change-type: minor
+      signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+    hash: e617e3cf5fc4308bb481fd5e0b025c6acaaf2f7c
+    subject: Make the balena-sdk instance an optional parameter
+  - author: Thodoris Greasidis
+    body: ""
+    footers:
+      change-type: patch
+      signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+    hash: 8eafdaf6c1b30818fabc0259d1c5585684e60e59
+    subject: Add balena-sdk as a peer dependency since DI is also supported
+  date: "2020-07-09T16:09:40Z"
+  version: 10.1.0
+- commits:
+  - author: Thodoris Greasidis
+    body: ""
+    footers:
+      change-type: major
+      signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+    hash: 3a6104887a7058ee5ca72175efd615f73b82e472
+    subject: Update to balena-sdk 14.x
+  date: "2020-07-01T21:11:57Z"
+  version: 10.0.0
