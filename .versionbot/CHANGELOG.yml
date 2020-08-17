@@ -1,4 +1,65 @@
 - commits:
+    - subject: Update docker-progress to 4.x
+      hash: eb418f80a68193065f982f93448899cfc4e6a088
+      body: |
+        Update docker-progress from 3.0.5 to 4.0.3
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested:
+        - commits:
+            - subject: Update to balena-lint 5.x
+              hash: 9563bf5150c39c6d6f298a9ed24f7969650273f7
+              body: ''
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+          version: docker-progress-4.0.3
+          date: 2020-08-17T12:03:45.249Z
+        - commits:
+            - subject: Add .versionbot/CHANGELOG.yml for nested changelogs
+              hash: 2cec0f2ef1eb24797b650024873c91c942e74017
+              body: ''
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+          version: docker-progress-4.0.2
+          date: 2020-08-17T11:47:14.543Z
+        - commits:
+            - author: Pagan Gazzard
+              body: ''
+              footers:
+                change-type: patch
+              hash: 9bb049ea3be13fb1362e39b057f78b19d8e3153d
+              subject: Update dependencies
+          date: '2020-03-04T14:17:04Z'
+          version: docker-progress-4.0.1
+        - commits:
+            - author: Paulo Castro
+              body: >-
+                The change type is considered 'major' because, by default,
+                errors are
+
+                now thrown for relatively common occurrences such as
+                authentication
+
+                failures when pulling from private registries, and library users
+                may
+
+                have to adapt.
+              footers:
+                change-type: major
+                signed-off-by: Paulo Castro <paulo@balena.io>
+              hash: 3eef3685262e6bae8de064b9c50129e5597f4318
+              subject: Detect error events in push/pull progress streams
+          date: '2019-03-26T16:03:31Z'
+          version: docker-progress-4.0.0
+  version: 10.3.0
+  date: 2020-08-17T12:15:49.673Z
+- commits:
     - subject: Add .versionbot/CHANGELOG.yml for nested changelogs
       hash: d14612c9b81ab0d2b69cb6d8b44b94fc0b90336a
       body: ''
