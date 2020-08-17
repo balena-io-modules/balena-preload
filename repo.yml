@@ -2,3 +2,5 @@ type: 'node'
 upstream:
   - repo: 'balena-sdk'
     url: 'https://github.com/balena-io/balena-sdk'
+  - repo: 'docker-progress'
+    url: 'https://github.com/balena-io-modules/docker-progress'
