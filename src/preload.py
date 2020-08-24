@@ -42,8 +42,7 @@ MBR_SIZE = 512
 GPT_SIZE = SECTOR_SIZE * 34
 MBR_BOOTSTRAP_CODE_SIZE = 446
 
-SPLASH_IMAGE_FROM = "/img/resin-logo.png"
-SPLASH_IMAGE_TO = "/splash/resin-logo.png"
+SPLASH_IMAGE_FROM = "/img/balena-logo.png"
 
 CONFIG_PARTITIONS = [
     "resin-boot",  # resinOS 1.26+
@@ -613,9 +612,9 @@ def write_apps_json(data, output):
         json.dump(data, f, indent=4, sort_keys=True)
 
 
-def replace_splash_image(image=None):
+def replace_splash_image(splash_image_path, image=None):
     """
-    Replaces the resin-logo.png used on boot splash to allow a more branded
+    Replaces the balena logo used on boot splash to allow a more branded
     experience.
     """
     if os.path.isfile(SPLASH_IMAGE_FROM):
@@ -624,7 +623,7 @@ def replace_splash_image(image=None):
             get_partition("resin-boot", image)
         )
         with boot.mount_context_manager() as mpoint:
-            path = mpoint + SPLASH_IMAGE_TO
+            path = mpoint + splash_image_path
             if os.path.isdir(os.path.dirname(path)):
                 log.info("Replacing splash image")
                 copyfile(SPLASH_IMAGE_FROM, path)
@@ -638,7 +637,10 @@ def replace_splash_image(image=None):
 
 
 def start_dockerd_and_wait_for_stdin(app_data, image=None):
-    driver = get_docker_storage_driver(image)
+    rootA_file_contents = get_rootA_file_contents(image)
+    driver = get_docker_storage_driver(
+        rootA_file_contents.get("docker_service", ""),
+    )
     part = get_partition("resin-data", image)
     with part.mount_context_manager() as mpoint:
         write_apps_json(app_data, mpoint + "/apps.json")
@@ -691,8 +693,8 @@ def get_config(image=None):
             return data
 
 
-def preload(additional_bytes, app_data, image=None):
-    replace_splash_image(image)
+def preload(additional_bytes, app_data, splash_image_path, image=None):
+    replace_splash_image(splash_image_path, image)
     part = get_partition("resin-data", image)
     part.resize(additional_bytes)
     start_dockerd_and_wait_for_stdin(app_data, image)
@@ -715,8 +717,20 @@ def get_inner_image_path(root_mountpoint):
         )
 
 
+def _get_balena_os_version(etc_issue_contents):
+    """
+    Return a balenaOS version string such as "2.53.0", given the contents
+    of the "/etc/issue" file in the etc_issue_contents argument.
+    """
+    m = match('balenaOS (.+?) ', etc_issue_contents)
+    return m[1] if m is not None else ""
+
+
 def _get_images_and_supervisor_version(image=None):
-    driver = get_docker_storage_driver(image=image)
+    rootA_file_contents = get_rootA_file_contents(image)
+    driver = get_docker_storage_driver(
+        rootA_file_contents.get("docker_service", ""),
+    )
     part = get_partition("resin-data", image)
     with part.mount_context_manager() as mountpoint:
         with docker_context_manager(driver, mountpoint):
@@ -744,7 +758,13 @@ def _get_images_and_supervisor_version(image=None):
                             )
                 else:
                     images.add(repository)
-            return list(images), supervisor_version
+            return (
+                list(images),
+                supervisor_version,
+                _get_balena_os_version(
+                    rootA_file_contents.get("/etc/issue", ""),
+                ),
+            )
 
 
 def get_images_and_supervisor_version():
@@ -814,18 +834,30 @@ def get_docker_service_file_path(folder):
             return fpath
 
 
-def get_docker_service_file_content(image=None):
+def get_rootA_file_contents(image=None):
+    file_contents = {
+        "docker_service": "",
+        "/etc/issue": "",
+    }
     part = get_partition("resin-rootA", image)
     with part.mount_context_manager() as mountpoint:
         docker_root = find_docker_aufs_root(mountpoint)
         if docker_root is None:
             docker_root = find_docker_overlay2_root(mountpoint)
-        if docker_root is not None:
-            path = get_docker_service_file_path(docker_root)
-        else:
-            path = get_docker_service_file_path(mountpoint)
-        with open(path) as f:
-            return f.read()
+        root_folder = docker_root if docker_root is not None else mountpoint
+        docker_service_path = get_docker_service_file_path(root_folder) or ""
+        etc_issue_path = os.path.join(root_folder, "etc", "issue")
+        with open(docker_service_path) as f:
+            file_contents["docker_service"] = f.read()
+        try:
+            with open(etc_issue_path) as f:
+                file_contents["/etc/issue"] = f.read()
+        except OSError:
+            # If very old or custom images don't have an '/etc/issue' file,
+            # simply return an empty string for it.
+            pass
+
+    return file_contents
 
 
 def find_one_of(lst, *args):
@@ -836,8 +868,8 @@ def find_one_of(lst, *args):
     return -1
 
 
-def get_docker_storage_driver(image=None):
-    for line in get_docker_service_file_content(image).strip().split("\n"):
+def get_docker_storage_driver(docker_service_file_contents):
+    for line in docker_service_file_contents.strip().split("\n"):
         if line.startswith("ExecStart="):
             words = line.split()
             position = find_one_of(words, "-s", "--storage-driver")
@@ -846,7 +878,7 @@ def get_docker_storage_driver(image=None):
     assert False, "Docker storage driver could not be found"
 
 
-def main_preload(app_data, additional_bytes):
+def main_preload(app_data, additional_bytes, splash_image_path):
     additional_bytes = round_to_sector_size(ceil(additional_bytes))
     flasher_root = get_partition("flash-rootA")
     if flasher_root:
@@ -863,18 +895,27 @@ def main_preload(app_data, additional_bytes):
                     flasher_root.str(),
                 )
             )
-            preload(additional_bytes, app_data, inner_image_path)
+            preload(
+                additional_bytes,
+                app_data,
+                splash_image_path,
+                inner_image_path,
+            )
     else:
-        preload(additional_bytes, app_data)
+        preload(additional_bytes, app_data, splash_image_path)
 
 
 def get_image_info():
-    images, supervisor_version = get_images_and_supervisor_version()
+    images, supervisor_version, balena_os_version = (
+        get_images_and_supervisor_version()
+    )
     return {
         "preloaded_builds": images,
         "supervisor_version": supervisor_version,
         "free_space": free_space(),
         "config": get_config(),
+        # balena_os_version will be "" if "balenaOS" not found in /etc/issue
+        "balena_os_version": balena_os_version,
     }
 
 
