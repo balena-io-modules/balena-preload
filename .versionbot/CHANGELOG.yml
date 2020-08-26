@@ -1,4 +1,27 @@
 - commits:
+    - subject: Fix splash image file name for balenaOS >= 2.53.0 (resin -> balena)
+      hash: 87e71c21a08497d126e3bcdca0aa48a542fe8f83
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Paulo Castro
+      nested: []
+    - subject: Don't produce (and ignore) a package-lock.json file
+      hash: 391249dd5b45bbb1af03f16e7277eb7cde072ce3
+      body: |
+        'package-lock.json' and 'npm-shrinkwrap.json' files are not recommended
+        for libraries, as the former is not publishabled in the npm registry
+        and the latter interferes with dependency updates and optimisations in
+        downstream applications (e.g. balena CLI).
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Paulo Castro
+      nested: []
+  version: 10.3.1
+  date: 2020-08-26T01:31:49.955Z
+- commits:
     - subject: Update docker-progress to 4.x
       hash: eb418f80a68193065f982f93448899cfc4e6a088
       body: |
