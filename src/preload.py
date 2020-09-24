@@ -957,6 +957,12 @@ if __name__ == "__main__":
     for line in sys.stdin:
         data = json.loads(line)
         method = methods[data["command"]]
-        result = method(**data.get("parameters", {}))
+        try:
+            result = method(**data.get("parameters", {}))
+        except BaseException as e:
+            result = {
+                "StatusCode": 1,
+                "Error": str(e),
+            }
         print(json.dumps({"result": result}))
         sys.stdout.flush()

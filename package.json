@@ -60,6 +60,7 @@
   "scripts": {
     "lint": "balena-lint -e js --typescript lib",
     "lint-fix": "balena-lint -e js --typescript --fix lib",
+    "lint-python": "flake8 src/preload.py",
     "test": "npm run lint",
     "prepare": "tsc"
   },
