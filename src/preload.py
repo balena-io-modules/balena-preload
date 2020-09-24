@@ -53,13 +53,17 @@ CONFIG_PARTITIONS = [
 
 SUPERVISOR_REPOSITORY_RE = "^resin(playground)?/[a-z0-9]+-supervisor$"
 
+# 'sh' module '_truncate_exc' option:
+# http://amoffat.github.io/sh/sections/special_arguments.html#truncate-exc
+# https://github.com/amoffat/sh/blob/1.12.14/sh.py#L1151
+SH_OPTS = {"_truncate_exc": False}
+
 DOCKER_HOST = "tcp://0.0.0.0:{}".format(os.environ.get("DOCKER_PORT") or 8000)
-docker = partial(_docker, "--host", DOCKER_HOST)
+docker = partial(_docker, "--host", DOCKER_HOST, **SH_OPTS)
 
 log = getLogger(__name__)
 log.setLevel(INFO)
 log.addHandler(StreamHandler())
-
 
 PARTITIONS_CACHE = {}
 
@@ -135,30 +139,31 @@ def losetup_context_manager(image, offset=None, size=None):
     if size is not None:
         args.extend(["--sizelimit", size])
     args.append(image)
-    hint = "Hint: if using a Virtual Machine, consider increasing the \
-number of processors."
-    losetup_wrap, wrap_key = retry_counter.wrap(losetup, hint, *args)
+    hint = """\
+Hint: If using a Virtual Machine, consider increasing the number of processors.
+If using Docker Desktop for Windows or macOS, it may require restarting."""
+    lo_wrap, lo_wrap_key = retry_counter.wrap(losetup, hint, *args, **SH_OPTS)
     # In the case of slow hardware the kernel might be in the middle of
     # tearing down internal structure
     device = retry_call(
-        losetup_wrap,
+        lo_wrap,
         fargs=args,
         tries=10,
         delay=3,
         max_delay=30,
         backoff=2
     ).stdout.decode("utf8").strip()
-    retry_counter.clear(wrap_key)
+    retry_counter.clear(lo_wrap_key)
     yield device
-    losetup("-d", device)
+    losetup("-d", device, **SH_OPTS)
 
 
 @contextmanager
 def device_mount_context_manager(device):
     mountpoint = mkdtemp()
-    mount(device, mountpoint)
+    mount(device, mountpoint, **SH_OPTS)
     yield mountpoint
-    umount(mountpoint)
+    umount(mountpoint, **SH_OPTS)
     os.rmdir(mountpoint)
 
 
@@ -193,12 +198,13 @@ class FilePartition(object):
             fs = get_filesystem(device)
             with mount_context_manager(device) as mountpoint:
                 if fs == 'btrfs':
-                    for line in btrfs("fi", "usage", "--raw", mountpoint):
+                    out = btrfs("fi", "usage", "--raw", mountpoint, **SH_OPTS)
+                    for line in out:
                         line = line.strip()
                         if line.startswith("Free (estimated):"):
                             return int(line[line.rfind(" ") + 1:-1])
                 else:
-                    output = df("-B1", "--output=avail", mountpoint)
+                    output = df("-B1", "--output=avail", mountpoint, **SH_OPTS)
                     return int(output.split("\n")[1].strip())
 
 
@@ -230,7 +236,7 @@ class Partition(FilePartition):
 
     def _get_label(self):
         with self.losetup_context_manager() as device:
-            out = file("-s", device).stdout.decode("utf8").strip()
+            out = file("-s", device, **SH_OPTS).stdout.decode("utf8").strip()
             # "label:" is for fat partitions,
             # "volume name" is for ext partitions
             # "BTRFS Filesystem label" is for btrfs partitions
@@ -323,7 +329,7 @@ class Partition(FilePartition):
         if self.partition_table.label == "gpt":
             # Move backup GPT data structures to the end of the disk.
             # This is required because we resized the image.
-            sgdisk("-e", self.image)
+            sgdisk("-e", self.image, **SH_OPTS)
         parted_args = [self.image]
         if self.parent is not None:
             log.info("Expanding extended {}".format(self.parent.str()))
@@ -338,7 +344,7 @@ class Partition(FilePartition):
             )
         )
         parted_args.extend(["resizepart", self.number, "100%"])
-        parted(*parted_args, _in="fix\n")
+        parted(*parted_args, _in="fix\n", **SH_OPTS)
         self.size += additional_sectors
 
     def _resize_partition_on_disk_image(self, additional_bytes):
@@ -364,7 +370,7 @@ class Partition(FilePartition):
         # update last lba
         if partition_table.lastlba is not None:
             partition_table.lastlba += additional_sectors
-        sfdisk(tmp.name, _in=partition_table.get_sfdisk_script())
+        sfdisk(tmp.name, _in=partition_table.get_sfdisk_script(), **SH_OPTS)
         # Now we copy the data from the image to the temporary file
         copy = partial(
             ddd,
@@ -429,7 +435,7 @@ class PartitionTable(object):
     def __init__(self, image):
         self.image = image
         data = json.loads(
-            sfdisk("--dump", "--json", image).stdout.decode("utf8")
+            sfdisk("--dump", "--json", image, **SH_OPTS).stdout.decode("utf8")
         )["partitiontable"]
         self.label = data["label"]
         assert self.label in ("dos", "gpt")
@@ -471,7 +477,8 @@ class PartitionTable(object):
 
 
 def get_filesystem(device):
-    line = fsck("-N", device).stdout.decode("utf8").strip().split("\n")[1]
+    result = fsck("-N", device, **SH_OPTS)
+    line = result.stdout.decode("utf8").strip().split("\n")[1]
     return line.rsplit(" ", 2)[-2].split(".")[1]
 
 
@@ -489,18 +496,19 @@ def expand_filesystem(partition):
         )
         if fs.startswith("ext"):
             try:
-                status = fsck("-p", "-f", device, _ok_code=[0, 1, 2])
+                kwargs = {"_ok_code": [0, 1, 2], **SH_OPTS}
+                status = fsck("-p", "-f", device, **kwargs)
                 if status.exit_code == 0:
                     log.info("File system OK")
                 else:
                     log.warning("File system errors corrected")
             except ErrorReturnCode:
                 raise Exception("File system errors could not be corrected")
-            resize2fs("-f", device)
+            resize2fs("-f", device, **SH_OPTS)
         elif fs == "btrfs":
             # For btrfs we need to mount the fs for resizing.
             with mount_context_manager(device) as mountpoint:
-                btrfs("filesystem", "resize", "max", mountpoint)
+                btrfs("filesystem", "resize", "max", mountpoint, **SH_OPTS)
 
 
 def expand_file(path, additional_bytes):
@@ -532,6 +540,7 @@ def start_docker_daemon(storage_driver, docker_dir):
         data_root=docker_dir,
         host=DOCKER_HOST,
         _bg=True,
+        **SH_OPTS,
     )
     log.info("Waiting for Docker to start...")
     ok = False
@@ -540,16 +549,8 @@ def start_docker_daemon(storage_driver, docker_dir):
         if running_dockerd.process.exit_code is not None:
             # There is no reason for dockerd to exit with a 0 status now.
             assert running_dockerd.process.exit_code != 0
-            try:
-                # This will raise an sh.ErrorReturnCode_X exception.
-                running_dockerd.wait()
-            except ErrorReturnCode as e:
-                log.info(
-                    "An error has occurred executing 'dockerd':\n{}".format(
-                        e.stderr.decode("utf8"),
-                    ),
-                )
-                raise e
+            # This will raise an sh.ErrorReturnCode_X exception.
+            running_dockerd.wait()
         # Check that we can connect to dockerd.
         output = docker("version", _ok_code=[0, 1])
         ok = output.exit_code == 0
@@ -667,7 +668,10 @@ def file_size(path):
 
 def ddd(**kwargs):
     # dd helper
-    return dd(*("{}={}".format(k.lstrip("_"), v) for k, v in kwargs.items()))
+    return dd(
+        *("{}={}".format(k.lstrip("_"), v) for k, v in kwargs.items()),
+        **SH_OPTS,
+    )
 
 
 def get_json(partition_name, path, image=None):
@@ -949,7 +953,7 @@ methods = {
 
 
 if __name__ == "__main__":
-    update_ca_certificates()
+    update_ca_certificates(**SH_OPTS)
     for line in sys.stdin:
         data = json.loads(line)
         method = methods[data["command"]]
