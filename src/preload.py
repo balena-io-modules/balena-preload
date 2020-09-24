@@ -78,22 +78,24 @@ class RetryCounter:
         self.counter = {}
 
     @staticmethod
-    def key(func_name, *args):
-        return " ".join(str(e) for e in (func_name,) + args)
+    def key(func_name, *args, **kwargs):
+        return " ".join(
+            str(e) for e in (func_name,) + args + tuple(kwargs.values())
+        )
 
-    def clear(self, key, *args):
+    def clear(self, key):
         del self.counter[key]
 
-    def inc(self, key, *args):
+    def inc(self, key):
         self.counter[key] = self.counter.setdefault(key, 0) + 1
         return self.counter[key]
 
     def wrap(self, func, hint, *args, **kwargs):
         """Return a function that wraps the given func, counting its usage"""
-        key = self.key(func.__name__, *args)
+        key = self.key(func.__name__, *args, **kwargs)
 
         def wrapped(*args, **kwargs):
-            count = self.inc(key, *args)
+            count = self.inc(key)
             if count > 1:
                 log.info(
                     "\nRetrying (count={}) {}\n{}".format(
