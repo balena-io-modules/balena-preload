@@ -1,4 +1,23 @@
 - commits:
+    - subject: Add additionalSpace option to override additional space calculation
+      hash: b43b03760d7d3212f0f312d37909200d63875628
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Alexis Svinartchouk
+      nested: []
+    - subject: Sum unique layers sizes instead of image sizes for size estimation
+      hash: 49c56376ed450509fb18666c030fa78233279a02
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Alexis Svinartchouk
+      nested: []
+  version: 10.4.0
+  date: 2020-09-24T14:36:15.780Z
+- commits:
     - subject: Fix splash image file name for balenaOS >= 2.53.0 (resin -> balena)
       hash: 87e71c21a08497d126e3bcdca0aa48a542fe8f83
       body: ''
