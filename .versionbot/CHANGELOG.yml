@@ -1,4 +1,25 @@
 - commits:
+    - subject: Store temporary docker pull files in a separate volume
+      hash: 2dc46493b4301e598d3f69d4116ddfa3b73f88f9
+      body: |
+        This avoids running out of space in the data partition while pulling
+        images
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Alexis Svinartchouk
+      nested: []
+    - subject: Round the additional required bytes
+      hash: 007f170134b01bb5daed1acbac491d2fda6ee41a
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Alexis Svinartchouk
+      nested: []
+  version: 10.4.1
+  date: 2020-12-28T15:12:53.432Z
+- commits:
     - subject: Add additionalSpace option to override additional space calculation
       hash: b43b03760d7d3212f0f312d37909200d63875628
       body: ''
