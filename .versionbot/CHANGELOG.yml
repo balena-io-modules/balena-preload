@@ -1,4 +1,20 @@
 - commits:
+    - subject: Bump Docker version to 20.10.6
+      hash: 7560b572fd0489cf8ec9825ddd3eebc6ab1df26c
+      body: |
+        Docker 20.10 supports cgroup v2 and works on Fedora by default.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Changelog-entry: Bump Docker version to 20.10.6
+        changelog-entry: Bump Docker version to 20.10.6
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 10.4.2
+  date: 2021-04-26T19:38:11.237Z
+- commits:
     - subject: Store temporary docker pull files in a separate volume
       hash: 2dc46493b4301e598d3f69d4116ddfa3b73f88f9
       body: |
