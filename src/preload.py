@@ -959,10 +959,9 @@ if __name__ == "__main__":
         method = methods[data["command"]]
         try:
             result = method(**data.get("parameters", {}))
-        except BaseException as e:
+        except Exception as e:
             result = {
-                "StatusCode": 1,
-                "Error": str(e),
+                "error": str(e),
             }
         print(json.dumps({"result": result}))
         sys.stdout.flush()
