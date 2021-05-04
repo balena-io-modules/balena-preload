@@ -1,5 +1,18 @@
 - commits:
     - subject: >-
+        Catch more errors and reinforce JSON interprocess communication on
+        errors
+      hash: c463e38d1a512d25c8245244b59c9f9944e09fc9
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Paulo Castro
+      nested: []
+  version: 10.4.4
+  date: 2021-05-04T20:50:41.237Z
+- commits:
+    - subject: >-
         Don't truncate error logs (add _truncate_exc option to python sh
         commands)
       hash: fb4dbe26eccae10a555d6f88244f5e940fa9348b
