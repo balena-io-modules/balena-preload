@@ -3,7 +3,7 @@ import json
 import os
 import re
 import sys
-
+import traceback
 
 from contextlib import contextmanager
 from functools import partial
@@ -649,7 +649,8 @@ def start_dockerd_and_wait_for_stdin(app_data, image=None):
         write_apps_json(app_data, mpoint + "/apps.json")
         with docker_context_manager(driver, mpoint):
             # Signal that Docker is ready.
-            print(json.dumps({}))
+            print(json.dumps({"statusCode": 0}))
+            sys.stdout.flush()
             # Wait for the js to finish its job.
             input()
 
@@ -955,8 +956,20 @@ methods = {
 if __name__ == "__main__":
     update_ca_certificates(**SH_OPTS)
     for line in sys.stdin:
-        data = json.loads(line)
-        method = methods[data["command"]]
-        result = method(**data.get("parameters", {}))
-        print(json.dumps({"result": result}))
+        try:
+            data = json.loads(line)
+            method = methods[data["command"]]
+            result = method(**data.get("parameters", {}))
+            response = {
+                "result": result,
+                "statusCode": 0,
+            }
+        except BaseException:
+            response = {
+                "error": traceback.format_exc(),
+                "statusCode": 1,
+            }
+        print(json.dumps(response))
         sys.stdout.flush()
+        if response["statusCode"]:
+            break
