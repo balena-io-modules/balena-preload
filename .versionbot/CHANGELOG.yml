@@ -1,4 +1,25 @@
 - commits:
+    - subject: >-
+        Don't truncate error logs (add _truncate_exc option to python sh
+        commands)
+      hash: fb4dbe26eccae10a555d6f88244f5e940fa9348b
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Paulo Castro
+      nested: []
+    - subject: Add keyword args to RetryCounter key computation. Remove unused args.
+      hash: 7633628293b0fb463de68653abb82c5b57ab5b6a
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Paulo Castro
+      nested: []
+  version: 10.4.3
+  date: 2021-05-04T12:42:11.746Z
+- commits:
     - subject: Bump Docker version to 20.10.6
       hash: 7560b572fd0489cf8ec9825ddd3eebc6ab1df26c
       body: |
