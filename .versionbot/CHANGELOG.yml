@@ -1,4 +1,31 @@
 - commits:
+    - subject: Fix unhandled exception on container.wait()
+      hash: cce395e588f066c6ef968119be0f39a76005ccb9
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Paulo Castro
+      nested: []
+    - subject: Emit error on container status code '137' too (OOM SIGKILL)
+      hash: c9286e1fb9e4e69c197cbfaadb21d3126cf99563
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Paulo Castro
+      nested: []
+    - subject: Add flake8 npm script
+      hash: 7f49e975263c6d701d2c57108de46b0cdcaf32e1
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Paulo Castro
+      nested: []
+  version: 10.4.4
+  date: 2021-05-05T00:07:20.081Z
+- commits:
     - subject: >-
         Don't truncate error logs (add _truncate_exc option to python sh
         commands)
