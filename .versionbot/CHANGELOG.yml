@@ -1,4 +1,15 @@
 - commits:
+    - subject: Enhance comms between CLI process and Python process in container
+      hash: dbd60732b5eab238475bcb34157856f783678edb
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Paulo Castro
+      nested: []
+  version: 10.4.5
+  date: 2021-05-05T00:29:11.127Z
+- commits:
     - subject: Fix unhandled exception on container.wait()
       hash: cce395e588f066c6ef968119be0f39a76005ccb9
       body: ''
