@@ -1,4 +1,23 @@
 - commits:
+    - subject: 'Update dependencies (dockerode, docker-progress)'
+      hash: efb8f4699c8988f5b9c1a4a04b53249837c10aeb
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Paulo Castro
+      nested: []
+    - subject: Don't assume that 'docker' argument uses Bluebird promises
+      hash: 35ae62f855412f80c0fa92ed0217ad41f5afcdc7
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Paulo Castro
+      nested: []
+  version: 10.4.6
+  date: 2021-05-06T20:44:51.420Z
+- commits:
     - subject: Enhance comms between CLI process and Python process in container
       hash: dbd60732b5eab238475bcb34157856f783678edb
       body: ''
