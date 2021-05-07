@@ -609,8 +609,62 @@ def write_resin_device_pinning(app_data, output):
         )
 
 
+# Remove once supervisor is part of the hostapp
+def isSupervisor(app, images):
+    if len(app['services']) != 1:
+        # Supervisor is single service
+        return False
+
+    # Fetch image name from state app
+    for service in app['services']:
+        image_name = app['services'][service]['image']
+
+    for image in images:
+        if image in image_name:
+            return True
+    return False
+
+
 def write_apps_json(data, output):
-    """Writes data dict to output as json"""
+    """Updates or creates preloaded state"""
+    if os.path.isfile(output):
+        with open(output, "r") as f:
+            current_state = json.load(f)
+
+        # Fetch container image details from image
+        images, supervisor_version, balena_os_version = (
+            get_images_and_supervisor_version()
+        )
+
+        for uuid in list(current_state['apps'].keys()):
+            # Check state version consistency
+            if len(uuid) != len(list(data['apps'].keys())[0]):
+                log.error("The preloaded app state and the current state in"
+                          "the image have a version mismatch. Please use a"
+                          "fresh, not previously preloaded image file")
+                raise Exception("State version mismatch")
+
+            # Halt if user apps are present in current state
+            app = current_state['apps'][uuid]
+            # Skip the hostOS app
+            if 'isHost' in app:
+                if app['isHost'] == 'true':
+                    continue
+            # Skip the supervisor
+            if isSupervisor(app, images):
+                continue
+            log.error("Error: this image file has been preloaded before.\n"
+                      "Please use a fresh, not-previously-preloaded"
+                      "image file.")
+            raise Exception("Preloading already preloaded images not"
+                            "supported")
+
+        # Add provided apps
+        for uuid in data['apps'].keys():
+            current_state['apps'][uuid] = data['apps'][uuid]
+        current_state['pinDevice'] = data['pinDevice']
+        current_state['config'] = data['config']
+        data = current_state
     with open(output, "w") as f:
         json.dump(data, f, indent=4, sort_keys=True)
 
