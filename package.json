@@ -43,6 +43,7 @@
     "@types/node": "^10.17.28",
     "@types/tmp": "0.0.34",
     "@types/unzipper": "^0.8.4",
+    "catch-uncommitted": "^2.0.0",
     "typescript": "^3.9.7"
   },
   "peerDependencies": {
@@ -58,10 +59,9 @@
     "url": "https://github.com/balena-io/balena-preload/issues"
   },
   "scripts": {
-    "lint": "balena-lint -e js --typescript lib",
-    "lint-fix": "balena-lint -e js --typescript --fix lib",
+    "lint": "balena-lint -e js --typescript --fix lib",
     "lint-python": "flake8 src/preload.py",
-    "test": "npm run lint",
+    "test": "npm run lint && catch-uncommitted --skip-node-versionbot-changes",
     "prepare": "tsc"
   },
   "bin": {
