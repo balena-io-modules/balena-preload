@@ -1,4 +1,40 @@
 - commits:
+    - subject: 'CI: limit tests to one platform since we are only linting'
+      hash: 99f16d5c033c2c2e7790bc00670755d27b6f4f03
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+    - subject: Fixup linting by disabling editorconfig for .js files
+      hash: f524aa8da8a68161884e5c24015268b8095ef2ba
+      body: |
+        Instead we should rely on `npm run lint` for .js files.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+    - subject: Avoid hardcoded registry2 url
+      hash: f6d864a665558d7cf8bb5801350dd95e7b2b849d
+      body: |
+        Instead we can extract the registry URL from the image location
+        as we do for the manifest and layer endpoints.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 10.4.7
+  date: 2021-05-17T17:29:41.160Z
+- commits:
     - subject: 'Update dependencies (dockerode, docker-progress)'
       hash: efb8f4699c8988f5b9c1a4a04b53249837c10aeb
       body: ''
