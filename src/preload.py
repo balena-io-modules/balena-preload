@@ -51,7 +51,7 @@ CONFIG_PARTITIONS = [
     "flash-boot",  # flasher images
 ]
 
-SUPERVISOR_REPOSITORY_RE = "^resin(playground)?/[a-z0-9]+-supervisor$"
+SUPERVISOR_REPOSITORY_RE = "^(balena|resin)?(playground)?/?[a-z0-9]+-supervisor$"
 
 # 'sh' module '_truncate_exc' option:
 # http://amoffat.github.io/sh/sections/special_arguments.html#truncate-exc
