@@ -1,4 +1,50 @@
 - commits:
+    - subject: Adapt to v3 device target state
+      hash: e9a611b8f0835d50955abe112ac8410e480aef42
+      body: |
+        Newer supervisors support v3 target state that support multiple apps in
+        the target state and use a uuid as index.
+
+        Fixes #245
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: Append to existing apps.json preload state instead of overwriting
+      hash: fd266ff564311f1e415201f9fc6e8419d2f343ba
+      body: >
+        If the image we are preloading to contains an existing `apps.json`
+        append
+
+        the preloaded app to it instead of overwriting it.
+
+
+        Fixes balena-io/balena-cli#2262
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+    - subject: Fix supervisor repository regex
+      hash: 623f73dc45cdba9b54ccccdaea2e5554b033a58b
+      body: |
+        Update the supervisor repository regex so the supervisor version can be
+        correctly extracted from the images.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+  version: 10.4.8
+  date: 2021-06-07T09:07:28.130Z
+- commits:
     - subject: 'CI: limit tests to one platform since we are only linting'
       hash: 99f16d5c033c2c2e7790bc00670755d27b6f4f03
       body: ''
