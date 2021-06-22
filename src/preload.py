@@ -886,6 +886,7 @@ def get_docker_storage_driver(docker_service_file_contents):
 
 
 def main_preload(app_data, additional_bytes, splash_image_path):
+    init()
     additional_bytes = round_to_sector_size(ceil(additional_bytes))
     flasher_root = get_partition("flash-rootA")
     if flasher_root:
@@ -913,6 +914,7 @@ def main_preload(app_data, additional_bytes, splash_image_path):
 
 
 def get_image_info():
+    init()
     images, supervisor_version, balena_os_version = (
         get_images_and_supervisor_version()
     )
@@ -925,9 +927,13 @@ def get_image_info():
         "balena_os_version": balena_os_version,
     }
 
+is_initialized = False
 
-PARTITIONS_CACHE[None] = prepare_global_partitions()
-
+def init():
+    global is_initialized
+    if not is_initialized:
+        PARTITIONS_CACHE[None] = prepare_global_partitions()
+        is_initialized = True
 
 def get_partition(name, image=None):
     partitions = PARTITIONS_CACHE.get(image)
