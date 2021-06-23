@@ -1,4 +1,19 @@
 - commits:
+    - subject: Delay populating global partitions cache until methods call
+      hash: fce288a0e8ca5aecc6b13d97cabba2b78db4e318
+      body: |
+        In case the sfdisk command fails we need it to be in a method
+        that can handle failures, not the container startup cmd.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 10.4.8
+  date: 2021-06-23T13:45:50.523Z
+- commits:
     - subject: 'CI: limit tests to one platform since we are only linting'
       hash: 99f16d5c033c2c2e7790bc00670755d27b6f4f03
       body: ''
