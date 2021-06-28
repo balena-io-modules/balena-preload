@@ -1,4 +1,19 @@
 - commits:
+    - subject: Fix supervisor repository regex
+      hash: 7d6f20c6227e29d82a7625e491ae10c343dce765
+      body: |
+        Update the supervisor repository regex so the supervisor version can be
+        correctly extracted from the images.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Alex Gonzalez <alexg@balena.io>
+        signed-off-by: Alex Gonzalez <alexg@balena.io>
+      author: Alex Gonzalez
+      nested: []
+  version: 10.4.9
+  date: 2021-06-28T15:47:10.267Z
+- commits:
     - subject: Delay populating global partitions cache until methods call
       hash: fce288a0e8ca5aecc6b13d97cabba2b78db4e318
       body: |
