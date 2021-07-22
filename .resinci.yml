@@ -1,6 +1,11 @@
 ---
 docker:
-  publish: false
+  builds:
+    - path: .
+      dockerfile: Dockerfile
+      docker_repo: balena/balena-preload
+      publish: true
+
 npm:
   platforms:
     - name: linux
