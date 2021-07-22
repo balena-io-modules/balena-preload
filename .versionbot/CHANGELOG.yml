@@ -1,4 +1,17 @@
 - commits:
+    - subject: Catch errors during build of preload image
+      hash: 4828423923e547c58d3c8e811d7d2ddbe258241b
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 10.4.16
+  date: 2021-07-22T21:07:46.267Z
+- commits:
     - subject: Make use of async/await to simplify the code
       hash: 4da2ce03fb9cab2b16aae37f7e70caeb18d6a450
       body: ''
