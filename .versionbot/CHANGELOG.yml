@@ -1,4 +1,15 @@
 - commits:
+    - subject: Switch to tmp-promise instead of tmp
+      hash: 5d8062f08702795848b881929e11f8fde9dcee36
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.4.13
+  date: 2021-07-22T19:59:25.879Z
+- commits:
     - subject: Prefer `this.appId` to `this.application.id`
       hash: e9482adef6a685d72b0ac80a1ebe3925ae5f5016
       body: ''
