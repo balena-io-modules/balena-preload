@@ -1,4 +1,15 @@
 - commits:
+    - subject: 'Update balena-lint to 6.x, typescript to 4.x'
+      hash: d22cd96d850061bcb601535f7b61fb6f32f987af
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.4.11
+  date: 2021-07-22T15:57:36.052Z
+- commits:
     - subject: Support new storage-driver location in balena.service
       hash: bcd208af8873895020fe5751e89797984eb455a5
       body: |
