@@ -1,4 +1,15 @@
 - commits:
+    - subject: Remove unnecessary fetching of balena settings and token
+      hash: 7307dfd111af5a7187017fcfe277e2dbda1d9f7c
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.4.14
+  date: 2021-07-22T20:12:55.908Z
+- commits:
     - subject: Switch to tmp-promise instead of tmp
       hash: 5d8062f08702795848b881929e11f8fde9dcee36
       body: ''
