@@ -1,4 +1,20 @@
 - commits:
+    - subject: Support new storage-driver location in balena.service
+      hash: bcd208af8873895020fe5751e89797984eb455a5
+      body: |
+        Starting in balenaOS v2.80.9 the balena.service file was
+        refactored and the storage-driver is defined by an environment
+        variable.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 10.4.10
+  date: 2021-07-22T15:08:35.595Z
+- commits:
     - subject: Fix supervisor repository regex
       hash: 7d6f20c6227e29d82a7625e491ae10c343dce765
       body: |
