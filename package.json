@@ -20,31 +20,31 @@
   ],
   "dependencies": {
     "archiver": "^3.1.1",
-    "balena-sdk": "^15.3.1",
+    "balena-sdk": "^15.44.0",
     "bluebird": "^3.7.2",
     "compare-versions": "^3.6.0",
     "docker-progress": "^5.0.0",
     "dockerode": "^3.3.0",
     "get-folder-size": "^2.0.1",
     "get-port": "^3.2.0",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "node-cleanup": "^2.1.2",
     "request-promise": "^4.2.6",
-    "resin-cli-visuals": "^1.7.0",
-    "tar-fs": "^2.1.0",
+    "resin-cli-visuals": "^1.8.0",
+    "tar-fs": "^2.1.1",
     "tmp": "0.0.33",
     "unzipper": "^0.8.14"
   },
   "devDependencies": {
-    "@balena/lint": "^5.1.0",
-    "@types/bluebird": "^3.5.32",
+    "@balena/lint": "^6.1.1",
+    "@types/bluebird": "^3.5.36",
     "@types/dockerode": "^3.2.3",
     "@types/get-folder-size": "^2.0.0",
-    "@types/node": "^10.17.28",
+    "@types/node": "^10.17.60",
     "@types/tmp": "0.0.34",
     "@types/unzipper": "^0.8.4",
     "catch-uncommitted": "^2.0.0",
-    "typescript": "^3.9.7"
+    "typescript": "^4.3.5"
   },
   "peerDependencies": {
     "balena-sdk": "^15.2.1"
@@ -59,7 +59,7 @@
     "url": "https://github.com/balena-io/balena-preload/issues"
   },
   "scripts": {
-    "lint": "balena-lint -e js --typescript --fix lib",
+    "lint": "balena-lint -e js --fix lib",
     "lint-python": "flake8 src/preload.py",
     "test": "npm run lint && catch-uncommitted --skip-node-versionbot-changes",
     "prepare": "tsc"
