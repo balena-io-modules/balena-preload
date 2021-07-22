@@ -1,4 +1,15 @@
 - commits:
+    - subject: Prefer `this.appId` to `this.application.id`
+      hash: e9482adef6a685d72b0ac80a1ebe3925ae5f5016
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.4.12
+  date: 2021-07-22T19:16:39.844Z
+- commits:
     - subject: 'Update balena-lint to 6.x, typescript to 4.x'
       hash: d22cd96d850061bcb601535f7b61fb6f32f987af
       body: ''
