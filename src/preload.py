@@ -882,6 +882,8 @@ def get_docker_storage_driver(docker_service_file_contents):
             position = find_one_of(words, "-s", "--storage-driver")
             if position != -1 and position < len(words) - 1:
                 return words[position + 1]
+        if line.startswith("Environment=BALENAD_STORAGEDRIVER="):
+            return line.split('=')[-1]
     assert False, "Docker storage driver could not be found"
 
 
