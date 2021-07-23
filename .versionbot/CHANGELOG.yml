@@ -1,4 +1,15 @@
 - commits:
+    - subject: Start fetching image info sooner and run in parallel with api calls
+      hash: 49a25f57a14997f1e343cb866a4f9f7aa04a6734
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.4.19
+  date: 2021-07-23T15:29:00.566Z
+- commits:
     - subject: Fix missing await
       hash: 9d6de7d0ffbca78cfad330a83d346f25eb21a094
       body: ''
