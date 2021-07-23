@@ -12,12 +12,12 @@ from math import ceil, floor
 from re import match, search
 from retry.api import retry_call
 from sh import (
+    blkid,
     btrfs,
     dd,
     df,
     docker as _docker,
     dockerd,
-    file,
     fsck,
     losetup,
     mount,
@@ -235,17 +235,16 @@ class Partition(FilePartition):
         self.label = self._get_label()
 
     def _get_label(self):
-        with self.losetup_context_manager() as device:
-            out = file("-s", device, **SH_OPTS).stdout.decode("utf8").strip()
-            # "label:" is for fat partitions,
-            # "volume name" is for ext partitions
-            # "BTRFS Filesystem label" is for btrfs partitions
-            match = search(
-                '(BTRFS Filesystem label|label:|volume name) "(.*)"',
-                out,
-            )
-            if match is not None:
-                return match.groups()[1].strip()
+        # Extract the first 4kb of the current partition from the image
+        ddd(_if=self.image, of="temp.img", iflag="skip_bytes", skip=self.start*512, bs=4096, count=1, status="noxfer")
+        # Use blkid to get the partition label from the extracted 4kb
+        out = blkid("temp.img", "-o", "export").stdout.decode("utf8")
+        match = search(
+            'LABEL=(.*)',
+            out,
+        )
+        if match is not None:
+            return match.groups()[0].strip()
 
     def set_parent(self, parent):
         # For logical partitions on MBR disks we store the parent extended
