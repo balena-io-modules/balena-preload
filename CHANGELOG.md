@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## 10.4.19 - 2021-07-23
 
+* Use dd and blkid to get the partition label at an offset into the image [Pagan Gazzard]
 * Start fetching image info sooner and run in parallel with api calls [Pagan Gazzard]
 
 ## 10.4.18 - 2021-07-23
