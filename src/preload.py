@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import traceback
+import time
 
 from contextlib import contextmanager
 from functools import partial
@@ -15,8 +16,9 @@ from sh import (
     btrfs,
     dd,
     df,
-    docker as _docker,
-    dockerd,
+    # docker as _docker,
+    # dockerd,
+    img,
     file,
     fsck,
     losetup,
@@ -51,21 +53,36 @@ CONFIG_PARTITIONS = [
     "flash-boot",  # flasher images
 ]
 
-SUPERVISOR_REPOSITORY_RE = "^((balena|resin|balenaplayground)/)?(armel|rpi|armv7hf|aarch64|i386|amd64|i386-nlp)-supervisor$"
+SUPERVISOR_REPOSITORY_RE = "^resin(playground)?/[a-z0-9]+-supervisor$"
 
 # 'sh' module '_truncate_exc' option:
 # http://amoffat.github.io/sh/sections/special_arguments.html#truncate-exc
 # https://github.com/amoffat/sh/blob/1.12.14/sh.py#L1151
 SH_OPTS = {"_truncate_exc": False}
 
-DOCKER_HOST = "tcp://0.0.0.0:{}".format(os.environ.get("DOCKER_PORT") or 8000)
-docker = partial(_docker, "--host", DOCKER_HOST, **SH_OPTS)
+# DOCKER_HOST = "tcp://0.0.0.0:{}".format(os.environ.get("DOCKER_PORT") or 8000)
+# docker = partial(_docker, "--host", DOCKER_HOST, **SH_OPTS)
 
 log = getLogger(__name__)
 log.setLevel(INFO)
 log.addHandler(StreamHandler())
 
 PARTITIONS_CACHE = {}
+
+def timeit(method):
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+        if 'log_time' in kw:
+            name = kw.get('log_name', method.__name__.upper())
+            kw['log_time'][name] = int((te - ts) * 1000)
+        else:
+            log.info('%r  %2.2f ms' % \
+                  (method.__name__, (te - ts) * 1000))
+        return result
+    return timed
+
 
 
 class RetryCounter:
@@ -78,22 +95,27 @@ class RetryCounter:
         retry_counter.clear(wrap_key)
     """
 
+    @timeit
     def __init__(self):
         self.counter = {}
 
     @staticmethod
+    @timeit
     def key(func_name, *args, **kwargs):
         return " ".join(
             str(e) for e in (func_name,) + args + tuple(kwargs.values())
         )
 
+    @timeit
     def clear(self, key):
         del self.counter[key]
 
+    @timeit
     def inc(self, key):
         self.counter[key] = self.counter.setdefault(key, 0) + 1
         return self.counter[key]
 
+    @timeit
     def wrap(self, func, hint, *args, **kwargs):
         """Return a function that wraps the given func, counting its usage"""
         key = self.key(func.__name__, *args, **kwargs)
@@ -115,11 +137,11 @@ class RetryCounter:
 
 retry_counter = RetryCounter()
 
-
+@timeit
 def get_partitions(image):
     return {p.label: p for p in PartitionTable(image).partitions if p.label}
 
-
+@timeit
 def prepare_global_partitions():
     partitions = os.environ.get("PARTITIONS")
     if partitions is not None:
@@ -132,6 +154,7 @@ def prepare_global_partitions():
 
 
 @contextmanager
+@timeit
 def losetup_context_manager(image, offset=None, size=None):
     args = ["-f", "--show"]
     if offset is not None:
@@ -159,6 +182,7 @@ If using Docker Desktop for Windows or macOS, it may require restarting."""
 
 
 @contextmanager
+@timeit
 def device_mount_context_manager(device):
     mountpoint = mkdtemp()
     mount(device, mountpoint, **SH_OPTS)
@@ -168,31 +192,39 @@ def device_mount_context_manager(device):
 
 
 @contextmanager
+@timeit
 def mount_context_manager(image, offset=None, size=None):
+    log.info (f"mount_context_manager image {image}, offset {offset}, size {size}")
     with losetup_context_manager(image, offset, size) as device:
         with device_mount_context_manager(device) as mountpoint:
             yield mountpoint
 
 
 class FilePartition(object):
+    @timeit
     def __init__(self, image, label):
         self.image = image
         self.label = label
 
+    @timeit
     def losetup_context_manager(self):
         return losetup_context_manager(self.image)
 
+    @timeit
     def mount_context_manager(self):
         return mount_context_manager(self.image)
 
+    @timeit
     def resize(self, additional_bytes):
         if additional_bytes > 0:
             expand_file(self.image, additional_bytes)
             expand_filesystem(self)
 
+    @timeit
     def str(self):
         return self.image
 
+    @timeit
     def free_space(self):
         with self.losetup_context_manager() as device:
             fs = get_filesystem(device)
@@ -209,6 +241,7 @@ class FilePartition(object):
 
 
 class Partition(FilePartition):
+    @timeit
     def __init__(
         self,
         partition_table,
@@ -234,6 +267,7 @@ class Partition(FilePartition):
         # label, not part of the sfdisk script
         self.label = self._get_label()
 
+    @timeit
     def _get_label(self):
         with self.losetup_context_manager() as device:
             out = file("-s", device, **SH_OPTS).stdout.decode("utf8").strip()
@@ -247,6 +281,7 @@ class Partition(FilePartition):
             if match is not None:
                 return match.groups()[1].strip()
 
+    @timeit
     def set_parent(self, parent):
         # For logical partitions on MBR disks we store the parent extended
         # partition
@@ -275,19 +310,23 @@ class Partition(FilePartition):
         # last byte (included)
         return self.start_bytes + self.size_bytes - 1
 
+    @timeit
     def is_included_in(self, other):
         return (
             other.start <= self.start <= other.end and
             other.start <= self.end <= other.end
         )
 
+    @timeit
     def is_extended(self):
         return self.partition_table.label == "dos" and self.type == "f"
 
+    @timeit
     def is_last(self):
         # returns True if this partition is the last on the disk
         return self == self.partition_table.get_partitions_in_disk_order()[-1]
 
+    @timeit
     def get_sfdisk_line(self):
         result = "{} : start={}, size={}, type={}".format(
             self.node,
@@ -303,6 +342,7 @@ class Partition(FilePartition):
             result += ", bootable"
         return result
 
+    @timeit
     def losetup_context_manager(self):
         return losetup_context_manager(
             self.image,
@@ -310,6 +350,7 @@ class Partition(FilePartition):
             self.size_bytes,
         )
 
+    @timeit
     def mount_context_manager(self):
         return mount_context_manager(
             self.image,
@@ -317,9 +358,11 @@ class Partition(FilePartition):
             self.size_bytes,
         )
 
+    @timeit
     def str(self):
         return "partition n°{} of {}".format(self.number, self.image)
 
+    @timeit
     def _resize_last_partition_of_disk_image(self, additional_bytes):
         # This is the simple case: expand the partition and its parent extended
         # partition if it is a logical one.
@@ -347,6 +390,7 @@ class Partition(FilePartition):
         parted(*parted_args, _in="fix\n", **SH_OPTS)
         self.size += additional_sectors
 
+    @timeit
     def _resize_partition_on_disk_image(self, additional_bytes):
         # This function expects the partitions to be in disk order: it will
         # fail if there are primary partitions after an extended one containing
@@ -421,6 +465,7 @@ class Partition(FilePartition):
         # Replace the original image contents.
         ddd(_if=tmp.name, of=image, bs=1024 ** 2)
 
+    @timeit
     def resize(self, additional_bytes):
         if additional_bytes > 0:
             # Is it the last partition on the disk?
@@ -432,6 +477,7 @@ class Partition(FilePartition):
 
 
 class PartitionTable(object):
+    @timeit
     def __init__(self, image):
         self.image = image
         data = json.loads(
@@ -454,12 +500,14 @@ class PartitionTable(object):
                 part.set_parent(extended_partition)
             self.partitions.append(part)
 
+    @timeit
     def get_partitions_in_disk_order(self):
         # Returns the partitions in the same order that they are on the disk
         # This excludes extended partitions.
         partitions = (p for p in self.partitions if not p.is_extended())
         return sorted(partitions, key=lambda p: p.start)
 
+    @timeit
     def get_sfdisk_script(self):
         result = (
             "label: {}\n"
@@ -475,13 +523,13 @@ class PartitionTable(object):
         result += "\n".join(p.get_sfdisk_line() for p in self.partitions)
         return result
 
-
+@timeit
 def get_filesystem(device):
     result = fsck("-N", device, **SH_OPTS)
     line = result.stdout.decode("utf8").strip().split("\n")[1]
     return line.rsplit(" ", 2)[-2].split(".")[1]
 
-
+@timeit
 def expand_filesystem(partition):
     with partition.losetup_context_manager() as device:
         # Detects the partition filesystem (ext{2,3,4} or btrfs) and uses the
@@ -510,13 +558,13 @@ def expand_filesystem(partition):
             with mount_context_manager(device) as mountpoint:
                 btrfs("filesystem", "resize", "max", mountpoint, **SH_OPTS)
 
-
+@timeit
 def expand_file(path, additional_bytes):
     with open(path, "a") as f:
         size = f.tell()
         f.truncate(size + additional_bytes)
 
-
+@timeit
 def fix_rce_docker(mountpoint):
     """
     Removes the /rce folder if a /docker folder exists.
@@ -532,63 +580,69 @@ def fix_rce_docker(mountpoint):
     else:
         return _rce_dir
 
-
-def start_docker_daemon(storage_driver, docker_dir):
+@timeit
+def start_docker_daemon(storage_driver, mountpoint):
     """Starts the docker daemon and waits for it to be ready."""
-    running_dockerd = dockerd(
-        storage_driver=storage_driver,
-        data_root=docker_dir,
-        host=DOCKER_HOST,
-        _bg=True,
-        **SH_OPTS,
-    )
+    docker_dir = fix_rce_docker(mountpoint)
+    # running_dockerd = dockerd(
+    #     storage_driver=storage_driver,
+    #     data_root=docker_dir,
+    #     host=DOCKER_HOST,
+    #     _bg=True,
+    #     **SH_OPTS,
+    # )
     log.info("Waiting for Docker to start...")
     ok = False
     while not ok:
         # dockerd should not exit, if it does, we'll throw an exception.
-        if running_dockerd.process.exit_code is not None:
-            # There is no reason for dockerd to exit with a 0 status now.
-            assert running_dockerd.process.exit_code != 0
-            # This will raise an sh.ErrorReturnCode_X exception.
-            running_dockerd.wait()
+        # if running_dockerd.process.exit_code is not None:
+        #     # There is no reason for dockerd to exit with a 0 status now.
+        #     assert running_dockerd.process.exit_code != 0
+        #     # This will raise an sh.ErrorReturnCode_X exception.
+        #     running_dockerd.wait()
         # Check that we can connect to dockerd.
-        output = docker("version", _ok_code=[0, 1])
+        output = img("version", "-d", "-s", docker_dir, _ok_code=[0, 1])
         ok = output.exit_code == 0
-    log.info("Docker started")
-    return running_dockerd
+    log.info(f"Docker started: {output}")
+    return docker_dir
 
-
+@timeit
 def read_file(name):
     with open(name, "rb") as f:
         return f.read()
 
-
+@timeit
 def write_file(name, content):
     with open(name, "wb") as f:
         f.write(content)
 
 
 @contextmanager
+@timeit
 def docker_context_manager(storage_driver, mountpoint):
+    log.info(f"storage_driver: ${storage_driver} mountpoint: ${mountpoint}")
     docker_dir = fix_rce_docker(mountpoint)
     # If we don't remove <part6>/<docker|rce>/network/files/local-kv.db and the
     # preload container was started with bridged networking, the following
     # dockerd is not reachable from the host.
-    local_kv_db_path = "{}/network/files/local-kv.db".format(docker_dir)
-    kv_file_existed = (
-        os.path.exists(local_kv_db_path) and os.path.isfile(local_kv_db_path)
-    )
-    if kv_file_existed:
-        local_kv_db_content = read_file(local_kv_db_path)
-        os.remove(local_kv_db_path)
-    running_dockerd = start_docker_daemon(storage_driver, docker_dir)
-    yield
-    running_dockerd.terminate()
-    running_dockerd.wait()
-    if kv_file_existed:
-        write_file(local_kv_db_path, local_kv_db_content)
+    # local_kv_db_path = "{}/network/files/local-kv.db".format(docker_dir)
+    # kv_file_existed = (
+    #     os.path.exists(local_kv_db_path) and os.path.isfile(local_kv_db_path)
+    # )
+    # if kv_file_existed:
+    #     local_kv_db_content = read_file(local_kv_db_path)
+    #     os.remove(local_kv_db_path)
+    # running_dockerd = 
+    # return docker_dir
+    return start_docker_daemon(storage_driver, mountpoint)
+    # yield
+    # running_dockerd.terminate()
+    # running_dockerd.wait()
+    # if kv_file_existed:
+        # write_file(local_kv_db_path, local_kv_db_content)
 
 
+@timeit
 def write_resin_device_pinning(app_data, output):
     """Create resin-device-pinnnig.json to hold pinning information"""
     if type(app_data) != dict:
@@ -608,13 +662,13 @@ def write_resin_device_pinning(app_data, output):
             ),
         )
 
-
+@timeit
 def write_apps_json(data, output):
     """Writes data dict to output as json"""
     with open(output, "w") as f:
         json.dump(data, f, indent=4, sort_keys=True)
 
-
+@timeit
 def replace_splash_image(splash_image_path, image=None):
     """
     Replaces the balena logo used on boot splash to allow a more branded
@@ -638,7 +692,7 @@ def replace_splash_image(splash_image_path, image=None):
     else:
         log.info("Leaving splash image alone")
 
-
+@timeit
 def start_dockerd_and_wait_for_stdin(app_data, image=None):
     rootA_file_contents = get_rootA_file_contents(image)
     driver = get_docker_storage_driver(
@@ -647,26 +701,26 @@ def start_dockerd_and_wait_for_stdin(app_data, image=None):
     part = get_partition("resin-data", image)
     with part.mount_context_manager() as mpoint:
         write_apps_json(app_data, mpoint + "/apps.json")
-        with docker_context_manager(driver, mpoint):
-            # Signal that Docker is ready.
-            print(json.dumps({"statusCode": 0}))
-            sys.stdout.flush()
-            # Wait for the js to finish its job.
-            input()
+        docker_dir = docker_context_manager(driver, mpoint)
+        # Signal that Docker is ready.
+        print(json.dumps({"statusCode": 0}))
+        sys.stdout.flush()
+        # Wait for the js to finish its job.
+        input()
 
-
+@timeit
 def round_to_sector_size(size, sector_size=SECTOR_SIZE):
     sectors = size / sector_size
     if not sectors.is_integer():
         sectors = floor(sectors) + 1
     return int(sectors * sector_size)
 
-
+@timeit
 def file_size(path):
     with open(path, "a") as f:
         return f.tell()
 
-
+@timeit
 def ddd(**kwargs):
     # dd helper
     return dd(
@@ -674,7 +728,7 @@ def ddd(**kwargs):
         **SH_OPTS,
     )
 
-
+@timeit
 def get_json(partition_name, path, image=None):
     part = get_partition(partition_name, image)
     if part:
@@ -685,28 +739,28 @@ def get_json(partition_name, path, image=None):
             except FileNotFoundError:
                 pass
 
-
+@timeit
 def get_device_type(image=None):
     result = get_json("resin-boot", "device-type.json", image=image)
     if result is None:
         result = get_json("flash-boot", "device-type.json", image=image)
     return result
 
-
+@timeit
 def get_config(image=None):
     for partition_name in CONFIG_PARTITIONS:
         data = get_json(partition_name, "config.json", image=image)
         if data is not None:
             return data
 
-
+@timeit
 def preload(additional_bytes, app_data, splash_image_path, image=None):
     replace_splash_image(splash_image_path, image)
     part = get_partition("resin-data", image)
     part.resize(additional_bytes)
     start_dockerd_and_wait_for_stdin(app_data, image)
 
-
+@timeit
 def get_inner_image_path(root_mountpoint):
     opt = os.path.join(root_mountpoint, "opt")
     device_type = get_device_type()
@@ -723,7 +777,7 @@ def get_inner_image_path(root_mountpoint):
             )
         )
 
-
+@timeit
 def _get_balena_os_version(etc_issue_contents):
     """
     Return a balenaOS version string such as "2.53.0", given the contents
@@ -732,7 +786,7 @@ def _get_balena_os_version(etc_issue_contents):
     m = match('balenaOS (.+?) ', etc_issue_contents)
     return m[1] if m is not None else ""
 
-
+@timeit
 def _get_images_and_supervisor_version(image=None):
     rootA_file_contents = get_rootA_file_contents(image)
     driver = get_docker_storage_driver(
@@ -740,40 +794,49 @@ def _get_images_and_supervisor_version(image=None):
     )
     part = get_partition("resin-data", image)
     with part.mount_context_manager() as mountpoint:
-        with docker_context_manager(driver, mountpoint):
-            output = docker(
-                "images",
-                "--all",
-                "--format",
-                "{{.Repository}} {{.Tag}}"
-            )
-            images = set()
-            supervisor_version = None
-            for line in output:
-                repository, version = line.strip().split()
-                if match(SUPERVISOR_REPOSITORY_RE, repository):
-                    if version != "latest":
-                        version_search = re.search(
-                            r"^v?(?P<semver>\d+\.\d+\.\d+).*",
-                            version,
+        docker_dir = docker_context_manager(driver, mountpoint)
+
+        backend_string="overlayfs"
+
+        log.info(f"docker driver: {driver}")
+        output = img(
+            "ls",
+            "-s",
+            docker_dir,
+            "-d",
+            "-b",
+            backend_string
+            # "--format",
+            # "{{.Repository}} {{.Tag}}"
+        )
+        log.info(f"docker output: {output}")
+        images = set()
+        supervisor_version = None
+        for line in output:
+            repository, version = line.strip().split()
+            if match(SUPERVISOR_REPOSITORY_RE, repository):
+                if version != "latest":
+                    version_search = re.search(
+                        r"^v?(?P<semver>\d+\.\d+\.\d+).*",
+                        version,
+                    )
+                    if version_search:
+                        supervisor_version = version_search.group('semver')
+                    else:
+                        raise Exception(
+                            "Could not extract supervisor version.",
                         )
-                        if version_search:
-                            supervisor_version = version_search.group('semver')
-                        else:
-                            raise Exception(
-                                "Could not extract supervisor version.",
-                            )
-                else:
-                    images.add(repository)
-            return (
-                list(images),
-                supervisor_version,
-                _get_balena_os_version(
-                    rootA_file_contents.get("/etc/issue", ""),
-                ),
-            )
+            else:
+                images.add(repository)
+        return (
+            list(images),
+            supervisor_version,
+            _get_balena_os_version(
+                rootA_file_contents.get("/etc/issue", ""),
+            ),
+        )
 
-
+@timeit
 def get_images_and_supervisor_version():
     flasher_root = get_partition("flash-rootA")
     if flasher_root:
@@ -782,7 +845,7 @@ def get_images_and_supervisor_version():
             return _get_images_and_supervisor_version(inner_image_path)
     return _get_images_and_supervisor_version()
 
-
+@timeit
 def free_space():
     flasher_root = get_partition("flash-rootA")
     if flasher_root:
@@ -791,14 +854,14 @@ def free_space():
             return get_partition("resin-data", inner_image_path).free_space()
     return get_partition("resin-data").free_space()
 
-
+@timeit
 def is_non_empty_folder(folder):
     # True if the folder has at least one file not starting with a dot.
     if not os.path.exists(folder) or not os.path.isdir(folder):
         return False
     return any(f for f in os.listdir(folder) if not f.startswith("."))
 
-
+@timeit
 def find_non_empty_folder_in_path(path, child_dir=""):
     # If child_dir is not given, returns any non empty folder like <path>/...;
     # else, returns any non empty folder like <path>/.../<child_dir>
@@ -809,7 +872,7 @@ def find_non_empty_folder_in_path(path, child_dir=""):
             if is_non_empty_folder(folder_path):
                 return folder_path
 
-
+@timeit
 def find_docker_aufs_root(mountpoint):
     # We're looking for a /<docker|balena>/aufs/diff/<xxxxxxxxxxxxx>/ folder
     # with some files not starting with a '.'
@@ -818,7 +881,7 @@ def find_docker_aufs_root(mountpoint):
         if os.path.isdir(path):
             return find_non_empty_folder_in_path(path)
 
-
+@timeit
 def find_docker_overlay2_root(mountpoint):
     # We're looking for a /<docker|balena>/overlay2/<xxxxxxxxxxxxx>/diff
     # folder with some files not starting with a '.'
@@ -827,7 +890,7 @@ def find_docker_overlay2_root(mountpoint):
         if os.path.isdir(path):
             return find_non_empty_folder_in_path(path, "diff")
 
-
+@timeit
 def get_docker_service_file_path(folder):
     for name in ("docker", "balena"):
         fpath = os.path.join(
@@ -840,7 +903,7 @@ def get_docker_service_file_path(folder):
         if os.path.exists(fpath):
             return fpath
 
-
+@timeit
 def get_rootA_file_contents(image=None):
     file_contents = {
         "docker_service": "",
@@ -866,7 +929,7 @@ def get_rootA_file_contents(image=None):
 
     return file_contents
 
-
+@timeit
 def find_one_of(lst, *args):
     for elem in args:
         index = lst.index(elem)
@@ -874,7 +937,7 @@ def find_one_of(lst, *args):
             return index
     return -1
 
-
+@timeit
 def get_docker_storage_driver(docker_service_file_contents):
     for line in docker_service_file_contents.strip().split("\n"):
         if line.startswith("ExecStart="):
@@ -882,11 +945,9 @@ def get_docker_storage_driver(docker_service_file_contents):
             position = find_one_of(words, "-s", "--storage-driver")
             if position != -1 and position < len(words) - 1:
                 return words[position + 1]
-        if line.startswith("Environment=BALENAD_STORAGEDRIVER="):
-            return line.split('=')[-1]
     assert False, "Docker storage driver could not be found"
 
-
+@timeit
 def main_preload(app_data, additional_bytes, splash_image_path):
     init()
     additional_bytes = round_to_sector_size(ceil(additional_bytes))
@@ -914,7 +975,7 @@ def main_preload(app_data, additional_bytes, splash_image_path):
     else:
         preload(additional_bytes, app_data, splash_image_path)
 
-
+@timeit
 def get_image_info():
     init()
     images, supervisor_version, balena_os_version = (
@@ -930,13 +991,13 @@ def get_image_info():
     }
 
 is_initialized = False
-
+@timeit
 def init():
     global is_initialized
     if not is_initialized:
         PARTITIONS_CACHE[None] = prepare_global_partitions()
         is_initialized = True
-
+@timeit
 def get_partition(name, image=None):
     partitions = PARTITIONS_CACHE.get(image)
     if partitions is None:
