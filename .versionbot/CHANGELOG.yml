@@ -1,4 +1,15 @@
 - commits:
+    - subject: Use class syntax for declaring instance variables
+      hash: edadfeac73343faa89d7e5784e4c51fb39162322
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.4.17
+  date: 2021-07-23T10:35:25.890Z
+- commits:
     - subject: Catch errors during build of preload image
       hash: 4828423923e547c58d3c8e811d7d2ddbe258241b
       body: ''
