@@ -19,6 +19,8 @@ from sh import (
     # docker as _docker,
     # dockerd,
     img,
+    ls,
+    tree,
     file,
     fsck,
     losetup,
@@ -601,7 +603,21 @@ def start_docker_daemon(storage_driver, mountpoint):
         #     # This will raise an sh.ErrorReturnCode_X exception.
         #     running_dockerd.wait()
         # Check that we can connect to dockerd.
-        output = img("version", "-d", "-s", docker_dir, _ok_code=[0, 1])
+
+
+        output = ls("-la", docker_dir+"/runc/overlayfs")
+        log.info(f"\n ls: {output}")
+        output = img("--debug", "--state", docker_dir, "--backend", "overlayfs", "ls")
+        log.info(f"\n img ls: {output}")
+        output = img("--debug", "--state", docker_dir, "--backend", "overlayfs", "pull", "r.j3ss.co/stress")
+        log.info(f"\n pull: {output}")
+        # output = img("--debug", "--state", docker_dir, "--backend", "overlayfs", "ls")
+        # log.info(f"ls: {output}")
+        exit()
+
+        output = img("--debug", "--state", docker_dir, "version", _ok_code=[0, 1])
+        log.info(f"Docker started: {output}")
+
         ok = output.exit_code == 0
     log.info(f"Docker started: {output}")
     return docker_dir
@@ -617,7 +633,7 @@ def write_file(name, content):
         f.write(content)
 
 
-@contextmanager
+# @contextmanager
 @timeit
 def docker_context_manager(storage_driver, mountpoint):
     log.info(f"storage_driver: ${storage_driver} mountpoint: ${mountpoint}")
@@ -798,16 +814,16 @@ def _get_images_and_supervisor_version(image=None):
 
         backend_string="overlayfs"
 
-        log.info(f"docker driver: {driver}")
+        log.info(f"docker driver: {driver} docker_dir: {docker_dir}")
+
+        output = ls("-la", docker_dir)
+        log.info(f"ls output: {output}")
+
         output = img(
-            "ls",
-            "-s",
+            "--debug",
+            "--state",
             docker_dir,
-            "-d",
-            "-b",
-            backend_string
-            # "--format",
-            # "{{.Repository}} {{.Tag}}"
+            "ls"
         )
         log.info(f"docker output: {output}")
         images = set()

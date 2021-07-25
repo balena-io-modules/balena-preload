@@ -1,7 +1,7 @@
 FROM docker:20.10.6-dind
 
 # coreutils so we have the real dd, not the busybox one
-RUN apk update && apk add --no-cache py3-pip parted btrfs-progs util-linux sfdisk file coreutils sgdisk img
+RUN apk update && apk add --no-cache py3-pip parted btrfs-progs util-linux sfdisk file coreutils sgdisk img tree
 
 COPY ./requirements.txt /tmp/
 
