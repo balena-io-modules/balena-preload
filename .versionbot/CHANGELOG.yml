@@ -1,4 +1,17 @@
 - commits:
+    - subject: Avoid TypeError if build output array is empty
+      hash: b12e7e745a4f7cb2d1156ddabcd33d39603db523
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 10.4.20
+  date: 2021-07-26T12:36:00.930Z
+- commits:
     - subject: Start fetching image info sooner and run in parallel with api calls
       hash: 49a25f57a14997f1e343cb866a4f9f7aa04a6734
       body: ''
