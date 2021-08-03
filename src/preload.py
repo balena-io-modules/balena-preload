@@ -60,6 +60,7 @@ SH_OPTS = {"_truncate_exc": False}
 
 DOCKER_HOST = "tcp://0.0.0.0:{}".format(os.environ.get("DOCKER_PORT") or 8000)
 docker = partial(_docker, "--host", DOCKER_HOST, **SH_OPTS)
+DOCKER_TLS = "false"
 
 log = getLogger(__name__)
 log.setLevel(INFO)
@@ -538,6 +539,7 @@ def start_docker_daemon(storage_driver, docker_dir):
     running_dockerd = dockerd(
         storage_driver=storage_driver,
         data_root=docker_dir,
+        tls=DOCKER_TLS,
         host=DOCKER_HOST,
         _bg=True,
         **SH_OPTS,
