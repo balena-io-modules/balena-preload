@@ -436,7 +436,7 @@ class PartitionTable(object):
     def __init__(self, image):
         self.image = image
         data = json.loads(
-            sfdisk("--dump", "--json", image, **SH_OPTS).stdout.decode("utf8")
+            sfdisk("--json", image, **SH_OPTS).stdout.decode("utf8")
         )["partitiontable"]
         self.label = data["label"]
         assert self.label in ("dos", "gpt")
