@@ -1,4 +1,44 @@
 - commits:
+    - subject: Remove mutually exclusive args from sfdisk
+      hash: da4864336db4c148de725449353329f01d872178
+      body: |
+        In sfdisk 2.35.2 both --json and --dump are exclusive
+        args and cannot be used together.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+    - subject: Explicitly disable tls to avoid startup delays
+      hash: d9be2174e1d7b809f876b89ebbc596c30a277022
+      body: |
+        Currently the daemon will slow startup to print some warnings
+        if we don't include this flag. Future releases will require this
+        flag in order to start insecure mode at all.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+    - subject: Use custom dind image based on alpine
+      hash: 264219936aee06e92145f983a3ef75cec549111c
+      body: |
+        This allows us to continue supporting armv7 even though
+        the official dind images stopped at docker v19.
+      footer:
+        Change-type: minor
+        change-type: minor
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 10.5.0
+  date: 2021-08-04T19:51:31.860Z
+- commits:
     - subject: Avoid TypeError if build output array is empty
       hash: b12e7e745a4f7cb2d1156ddabcd33d39603db523
       body: ''
