@@ -1,4 +1,17 @@
 - commits:
+    - subject: Pull prebuilt docker-in-docker image
+      hash: fbd2f1c93961fec22442c3ec3a74bc4c5335181d
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Pagan Gazzard
+      nested: []
+  version: 10.6.0
+  date: 2021-08-18T13:16:31.828Z
+- commits:
     - subject: Remove mutually exclusive args from sfdisk
       hash: da4864336db4c148de725449353329f01d872178
       body: |
