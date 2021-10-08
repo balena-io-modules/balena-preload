@@ -54,7 +54,9 @@ const EDISON_PARTITION_FILE_KEYS = {
 	'resin-data': 'resin-data_file',
 };
 
-const getEdisonPartitions = async (edisonFolder) => {
+async function getEdisonPartitions(
+	edisonFolder,
+): Promise<{ [name: string]: { file: string; image: string } }> {
 	// The replace is needed because this file contains new lines in strings, which is not valid JSON.
 	const data = JSON.parse(
 		(
@@ -73,7 +75,7 @@ const getEdisonPartitions = async (edisonFolder) => {
 		};
 	});
 	return result;
-};
+}
 
 class BufferBackedWritableStream extends streamModule.Writable {
 	chunks: Buffer[] = [];
@@ -180,7 +182,7 @@ const createContainer = async (
 	];
 
 	if (edisonFolder) {
-		const partitions = getEdisonPartitions(edisonFolder);
+		const partitions = await getEdisonPartitions(edisonFolder);
 		env.push(`PARTITIONS=${JSON.stringify(partitions)}`);
 		PARTITION_NAMES.forEach((name) => {
 			const part = partitions[name];
