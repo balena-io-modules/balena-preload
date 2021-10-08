@@ -38,18 +38,17 @@
   },
   "devDependencies": {
     "@balena/lint": "^6.1.1",
+    "@types/archiver": "^5.1.1",
     "@types/bluebird": "^3.5.36",
-    "@types/dockerode": "^3.2.3",
+    "@types/dockerode": "^3.2.7",
     "@types/get-folder-size": "^2.0.0",
     "@types/node": "^10.17.60",
+    "@types/request-promise": "^4.1.48",
+    "@types/tar-fs": "^2.0.1",
     "@types/unzipper": "^0.8.4",
     "catch-uncommitted": "^2.0.0",
     "typescript": "^4.3.5"
   },
-  "peerDependencies": {
-    "balena-sdk": "^15.2.1"
-  },
-  "optionalDependencies": {},
   "homepage": "https://github.com/balena-io/balena-preload",
   "repository": {
     "type": "git",

@@ -2,15 +2,17 @@
 
 'use strict';
 
-const Docker = require('dockerode');
-const preload = require('../preload');
+import { SdkOptions } from "balena-sdk";
+
+import * as Docker from 'dockerode';
+import { Preloader } from '../preload';
 // @ts-expect-error
-const info = require('../../package.json');
-const Bluebird = require('bluebird');
-const balenaSdk = require('balena-sdk');
-const tmp = require('tmp-promise');
-const visuals = require('resin-cli-visuals');
-const nodeCleanup = require('node-cleanup');
+import * as info from '../../package.json';
+import * as Bluebird from 'bluebird';
+import * as balenaSdk from 'balena-sdk';
+import * as tmp from 'tmp-promise';
+import * as visuals from 'resin-cli-visuals';
+import * as nodeCleanup from 'node-cleanup';
 
 tmp.setGracefulCleanup();
 
@@ -89,7 +91,7 @@ if (argv.indexOf('--version') !== -1 || argv.indexOf('-v') !== -1) {
 
 const getBalenaSdk = async (opts) => {
 	// Creates a temporary directory for balena sdk so it won't replace any existing token.
-	const balenaSdkOptions = { apiKey: opts.apiKey };
+	const balenaSdkOptions: SdkOptions & { apiKey: string } = { apiKey: opts.apiKey };
 	if (process.env.RESINRC_RESIN_URL !== undefined) {
 		balenaSdkOptions.apiUrl = 'https://api.' + process.env.RESINRC_RESIN_URL;
 	}
@@ -98,7 +100,6 @@ const getBalenaSdk = async (opts) => {
 	}
 	const { path } = await tmp.dir({ unsafeCleanup: true });
 	balenaSdkOptions.dataDirectory = path;
-	// @ts-expect-error
 	const balena = balenaSdk.getSdk(balenaSdkOptions);
 	if (opts.apiToken) {
 		await balena.auth.loginWithToken(opts.apiToken);
@@ -106,10 +107,22 @@ const getBalenaSdk = async (opts) => {
 	return balena;
 };
 
-const options = {
+const options: {
+	appId: Preloader['appId'];
+	image: Preloader['image'];
+	apiToken: string;
+	apiKey: string;
+	commit: Preloader['commit'];
+	splashImage: Preloader['splashImage'];
+	dontCheckArch: Preloader['dontCheckArch'];
+	certificates: Preloader['certificates'];
+	proxy: Preloader['proxy'];
+} = {
 	appId: process.env['APP_ID'],
 	image: process.env['IMAGE'],
+	// @ts-expect-error
 	apiToken: process.env['API_TOKEN'],
+	// @ts-expect-error
 	apiKey: process.env['API_KEY'],
 	commit: process.env['COMMIT'],
 	splashImage: process.env['SPLASH_IMAGE'],
@@ -127,9 +140,11 @@ while (argv.length) {
 			options.image = argv.shift();
 			break;
 		case '--api-token':
+			// @ts-expect-error
 			options.apiToken = argv.shift();
 			break;
 		case '--api-key':
+			// @ts-expect-error
 			options.apiKey = argv.shift();
 			break;
 		case '--commit':
@@ -183,7 +198,7 @@ const spinnerHandler = (event) => {
 let gotSignal = false;
 
 getBalenaSdk(options).then(async (balena) => {
-	const preloader = new preload.Preloader(
+	const preloader = new Preloader(
 		balena,
 		// @ts-expect-error bluebird and promise types don't quite match 100%
 		new Docker({ Promise: Bluebird }),
