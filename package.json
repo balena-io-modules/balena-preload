@@ -29,6 +29,7 @@
     "get-port": "^3.2.0",
     "lodash": "^4.17.21",
     "node-cleanup": "^2.1.2",
+    "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "resin-cli-visuals": "^1.8.0",
     "tar-fs": "^2.1.1",
