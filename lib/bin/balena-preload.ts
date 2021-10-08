@@ -2,7 +2,7 @@
 
 'use strict';
 
-import { SdkOptions } from "balena-sdk";
+import { SdkOptions } from 'balena-sdk';
 
 import * as Docker from 'dockerode';
 import { Preloader } from '../preload';
@@ -91,7 +91,9 @@ if (argv.indexOf('--version') !== -1 || argv.indexOf('-v') !== -1) {
 
 const getBalenaSdk = async (opts) => {
 	// Creates a temporary directory for balena sdk so it won't replace any existing token.
-	const balenaSdkOptions: SdkOptions & { apiKey: string } = { apiKey: opts.apiKey };
+	const balenaSdkOptions: SdkOptions & { apiKey: string } = {
+		apiKey: opts.apiKey,
+	};
 	if (process.env.RESINRC_RESIN_URL !== undefined) {
 		balenaSdkOptions.apiUrl = 'https://api.' + process.env.RESINRC_RESIN_URL;
 	}

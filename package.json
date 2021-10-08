@@ -58,7 +58,7 @@
     "url": "https://github.com/balena-io/balena-preload/issues"
   },
   "scripts": {
-    "lint": "balena-lint -e js --fix lib",
+    "lint": "balena-lint --fix lib",
     "lint-python": "flake8 src/preload.py",
     "test": "npm run lint && catch-uncommitted --skip-node-versionbot-changes",
     "prepare": "tsc"

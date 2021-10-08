@@ -6,7 +6,12 @@ import * as path from 'path';
 import * as streamModule from 'stream';
 import * as Bluebird from 'bluebird';
 import * as tarfs from 'tar-fs';
-import { promises as fs, constants, createReadStream, createWriteStream } from 'fs';
+import {
+	promises as fs,
+	constants,
+	createReadStream,
+	createWriteStream,
+} from 'fs';
 import * as getPort from 'get-port';
 import * as os from 'os';
 import * as tmp from 'tmp-promise';
@@ -17,8 +22,9 @@ import * as request from 'request-promise';
 import { promisify } from 'util';
 import getFolderSize = require('get-folder-size');
 import { PineFilter, Release } from 'balena-sdk';
-import { DirOptions } from "tmp";
-const getFolderSizeAsync: (arg1: string) => Promise<number> = promisify(getFolderSize);
+import { DirOptions } from 'tmp';
+const getFolderSizeAsync: (arg1: string) => Promise<number> =
+	promisify(getFolderSize);
 
 const preload = module.exports;
 
@@ -51,9 +57,9 @@ const EDISON_PARTITION_FILE_KEYS = {
 const getEdisonPartitions = async (edisonFolder) => {
 	// The replace is needed because this file contains new lines in strings, which is not valid JSON.
 	const data = JSON.parse(
-		(await fs
-			.readFile(path.join(edisonFolder, FLASH_EDISON_FILENAME), 'utf8'))
-			.replace(/\n/g, ''),
+		(
+			await fs.readFile(path.join(edisonFolder, FLASH_EDISON_FILENAME), 'utf8')
+		).replace(/\n/g, ''),
 	);
 	const parameters = data.flash.parameters;
 	const result = {};
@@ -135,7 +141,7 @@ type Manifest = {
 		layers: Layer[];
 	};
 	imageLocation: string;
-}
+};
 
 type Image = {
 	is_stored_at__image_location: string;
@@ -244,7 +250,7 @@ export type PreloaderOptions = {
 	pinDevice;
 	certificates;
 	additionalSpace;
-}
+};
 
 export class Preloader extends EventEmitter {
 	application;
@@ -302,18 +308,16 @@ export class Preloader extends EventEmitter {
 		this.certificates = certificates;
 		this.additionalSpace = additionalSpace;
 
-		this._runWithSpinner(
-			'Creating preloader container',
-			() =>
-				createContainer(
-					this.docker,
-					this.image,
-					this.splashImage,
-					this.dockerPort,
-					this.proxy,
-					this.edisonFolder,
-				),
-		).then((container) => this.container = container);
+		this._runWithSpinner('Creating preloader container', () =>
+			createContainer(
+				this.docker,
+				this.image,
+				this.splashImage,
+				this.dockerPort,
+				this.proxy,
+				this.edisonFolder,
+			),
+		).then((container) => (this.container = container));
 
 		this.stderr.pipe(this.bufferedStderr); // TODO: split stderr and build output ?
 	}
@@ -423,28 +427,25 @@ export class Preloader extends EventEmitter {
 
 	_prepareErrorHandler() {
 		// Emit an error event if the python script exits with an error
-		if (this.container !== null)  {
-			this.container
-				.wait()
-				.then((data) => {
-					if (data.StatusCode !== 0) {
-						const output = this.bufferedStderr.getData().toString('utf8').trim();
-						let error;
-						if (
-							output.indexOf(GRAPHDRIVER_ERROR) !== -1 &&
-							output.indexOf(DOCKERD_USES_OVERLAY) !== -1
-						) {
-							error = new this.balena.errors.BalenaError(OVERLAY_MODULE_MESSAGE);
-						} else {
-							error = new Error(output);
-							// @ts-ignore
-							error.code = data.StatusCode;
-						}
-						this.emit('error', error);
+		this.container
+			?.wait()
+			.then((data) => {
+				if (data.StatusCode !== 0) {
+					const output = this.bufferedStderr.getData().toString('utf8').trim();
+					let error;
+					if (
+						output.indexOf(GRAPHDRIVER_ERROR) !== -1 &&
+						output.indexOf(DOCKERD_USES_OVERLAY) !== -1
+					) {
+						error = new this.balena.errors.BalenaError(OVERLAY_MODULE_MESSAGE);
+					} else {
+						error = new Error(output);
+						error.code = data.StatusCode;
 					}
-				})
-				.catch((error) => this.emit('error', error));
-		}
+					this.emit('error', error);
+				}
+			})
+			.catch((error) => this.emit('error', error));
 	}
 
 	/**
@@ -537,13 +538,13 @@ export class Preloader extends EventEmitter {
 	async _getImageInfo() {
 		// returns Promise<object> (device_type, preloaded_builds, free_space and config)
 		await this._runWithSpinner('Reading image information', async () => {
-			const info = await this._runCommand('get_image_info', {}) as {
-        preloaded_builds: string;
-        supervisor_version: string;
-        free_space: string;
-        config: string;
-        balena_os_version: string;
-    };
+			const info = (await this._runCommand('get_image_info', {})) as {
+				preloaded_builds: string;
+				supervisor_version: string;
+				free_space: string;
+				config: string;
+				balena_os_version: string;
+			};
 			this.freeSpace = info.free_space;
 			this.preloadedBuilds = info.preloaded_builds;
 			this.supervisorVersion = info.supervisor_version;
@@ -571,7 +572,7 @@ export class Preloader extends EventEmitter {
 		return release;
 	}
 
-	_getImages(): Array<Image> {
+	_getImages(): Image[] {
 		// This method lists the images that need to be preloaded.
 		// The is_stored_at__image_location attribute must match the image attribute of the app or app service in the state endpoint.
 		// List images from the release.
@@ -627,7 +628,7 @@ export class Preloader extends EventEmitter {
 		headers['Authorization'] = `Bearer ${registryToken}`;
 		return await request({
 			url: `https://${registryUrl}${endpoint}`,
-			headers: headers,
+			headers,
 			json: decodeJson,
 			simple: false,
 			resolveWithFullResponse: true,
@@ -721,7 +722,7 @@ export class Preloader extends EventEmitter {
 	async _getLayersSizes(manifests: Manifest[], registryToken) {
 		const digests = new Set();
 		const layersSizes = new Map();
-		const sizeRequests: Array<{imageLocation: string, layer: Layer}> = [];
+		const sizeRequests: Array<{ imageLocation: string; layer: Layer }> = [];
 		for (const manifest of manifests) {
 			for (const layer of manifest.manifest.layers) {
 				if (!digests.has(layer.digest)) {
@@ -732,7 +733,13 @@ export class Preloader extends EventEmitter {
 		}
 		await Bluebird.map(
 			sizeRequests,
-			async ({ imageLocation, layer }: { imageLocation: string, layer: Layer }) => {
+			async ({
+				imageLocation,
+				layer,
+			}: {
+				imageLocation: string;
+				layer: Layer;
+			}) => {
 				const size = await this._getLayerSize(
 					registryToken,
 					this._registryUrl(imageLocation),
