@@ -21,7 +21,7 @@ import * as compareVersions from 'compare-versions';
 import * as request from 'request-promise';
 import { promisify } from 'util';
 import getFolderSize = require('get-folder-size');
-import { PineFilter, Release } from 'balena-sdk';
+import { Application, PineFilter, Release } from 'balena-sdk';
 import { DirOptions } from 'tmp';
 const getFolderSizeAsync: (arg1: string) => Promise<number> =
 	promisify(getFolderSize);
@@ -76,7 +76,7 @@ const getEdisonPartitions = async (edisonFolder) => {
 };
 
 class BufferBackedWritableStream extends streamModule.Writable {
-	chunks: any[] = [];
+	chunks: Buffer[] = [];
 
 	_write(chunk, _enc, next) {
 		this.chunks.push(chunk);
@@ -88,19 +88,24 @@ class BufferBackedWritableStream extends streamModule.Writable {
 	}
 }
 
-const bindMount = (source: string, target: string, dockerApiVersion): Docker.MountSettings | string => {
-	source = path.resolve(source);
+function setBindMount(
+	hostConfig: Docker.HostConfig,
+	mounts: Array<[string, string]>,
+	dockerApiVersion: string,
+) {
 	if (compareVersions(dockerApiVersion, '1.25') >= 0) {
-		return {
-			Source: source,
+		hostConfig.Mounts = mounts.map(([source, target]) => ({
+			Source: path.resolve(source),
 			Target: target,
 			Type: 'bind',
 			Consistency: 'delegated',
-		};
+		}));
 	} else {
-		return `${source}:${target}`;
+		hostConfig.Binds = mounts.map(
+			([source, target]) => `${path.resolve(source)}:${target}`,
+		);
 	}
-};
+}
 
 const zipContainsFiles = (archive, files) => {
 	// FIXME: read from the zip directory instead of reading the whole file
@@ -150,23 +155,21 @@ type Image = {
 
 const createContainer = async (
 	docker: Docker,
-	image,
-	splashImage,
-	dockerPort,
-	proxy,
-	edisonFolder,
+	image: string,
+	splashImage: string,
+	dockerPort: number,
+	proxy: string,
+	edisonFolder: string,
 ) => {
-	const mounts: any = [];
+	const mounts: Array<[string, string]> = [];
 	const version = await docker.version();
 	if (os.platform() === 'linux') {
 		// In some situations, devices created by `losetup -f` in the container only appear on the host and not in the container.
 		// See https://github.com/balena-io/balena-cli/issues/1008
-		mounts.push(bindMount('/dev', '/dev', version.ApiVersion));
+		mounts.push(['/dev', '/dev']);
 	}
 	if (splashImage) {
-		mounts.push(
-			bindMount(splashImage, SPLASH_IMAGE_PATH_IN_DOCKER, version.ApiVersion),
-		);
+		mounts.push([splashImage, SPLASH_IMAGE_PATH_IN_DOCKER]);
 	}
 
 	const env = [
@@ -181,12 +184,10 @@ const createContainer = async (
 		env.push(`PARTITIONS=${JSON.stringify(partitions)}`);
 		PARTITION_NAMES.forEach((name) => {
 			const part = partitions[name];
-			mounts.push(bindMount(part.file, part.image, version.ApiVersion));
+			mounts.push([part.file, part.image]);
 		});
 	} else {
-		mounts.push(
-			bindMount(image, DISK_IMAGE_PATH_IN_DOCKER, version.ApiVersion),
-		);
+		mounts.push([image, DISK_IMAGE_PATH_IN_DOCKER]);
 	}
 	const containerOptions: Docker.ContainerCreateOptions = {
 		Image: DOCKER_IMAGE_TAG,
@@ -204,9 +205,7 @@ const createContainer = async (
 	};
 	// Before api 1.25 bind mounts were going to into HostConfig.Binds
 	if (containerOptions.HostConfig !== undefined) {
-		containerOptions.HostConfig[
-			compareVersions(version.ApiVersion, '1.25') >= 0 ? 'Mounts' : 'Binds'
-		] = mounts;
+		setBindMount(containerOptions.HostConfig, mounts, version.ApiVersion);
 		if (os.platform() === 'linux') {
 			containerOptions.HostConfig.NetworkMode = 'host';
 		} else {
@@ -456,11 +455,8 @@ export class Preloader extends EventEmitter {
 	 * zero, the command execution is considered successful, otherwise it is
 	 * assumed to have failed and the returned promise is rejected with an
 	 * error message including the message provided in the `error` field.
-	 *
-	 * @param {string} command
-	 * @param {object} parameters
 	 */
-	_runCommand(command, parameters) {
+	_runCommand(command: string, parameters: { [name: string]: any }) {
 		return new Bluebird((resolve, reject) => {
 			const cmd = JSON.stringify({ command, parameters }) + '\n';
 			this.stdout.once('error', reject);
@@ -1151,7 +1147,7 @@ export class Preloader extends EventEmitter {
 		});
 	}
 
-	setApplication(application) {
+	setApplication(application: Application) {
 		this.appId = application.id;
 		this.application = application;
 	}
