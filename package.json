@@ -63,9 +63,6 @@
     "test": "npm run lint && catch-uncommitted --skip-node-versionbot-changes",
     "prepare": "tsc"
   },
-  "bin": {
-    "balena-preload": "build/bin/balena-preload.js"
-  },
   "versionist": {
     "publishedAt": "2021-08-04T19:51:31.976Z"
   }
