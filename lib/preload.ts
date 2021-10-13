@@ -308,18 +308,6 @@ export class Preloader extends EventEmitter {
 		this.pinDevice = pinDevice;
 		this.certificates = certificates;
 		this.additionalSpace = additionalSpace;
-
-		this._runWithSpinner('Creating preloader container', () =>
-			createContainer(
-				this.docker,
-				this.image,
-				this.splashImage,
-				this.dockerPort,
-				this.proxy,
-				this.edisonFolder,
-			),
-		).then((container) => (this.container = container));
-
 		this.stderr.pipe(this.bufferedStderr); // TODO: split stderr and build output ?
 	}
 
