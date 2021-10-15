@@ -29,6 +29,7 @@
     "get-port": "^3.2.0",
     "lodash": "^4.17.21",
     "node-cleanup": "^2.1.2",
+    "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "resin-cli-visuals": "^1.8.0",
     "tar-fs": "^2.1.1",
@@ -37,18 +38,17 @@
   },
   "devDependencies": {
     "@balena/lint": "^6.1.1",
+    "@types/archiver": "^5.1.1",
     "@types/bluebird": "^3.5.36",
-    "@types/dockerode": "^3.2.3",
+    "@types/dockerode": "^3.2.7",
     "@types/get-folder-size": "^2.0.0",
     "@types/node": "^10.17.60",
+    "@types/request-promise": "^4.1.48",
+    "@types/tar-fs": "^2.0.1",
     "@types/unzipper": "^0.8.4",
     "catch-uncommitted": "^2.0.0",
     "typescript": "^4.3.5"
   },
-  "peerDependencies": {
-    "balena-sdk": "^15.2.1"
-  },
-  "optionalDependencies": {},
   "homepage": "https://github.com/balena-io/balena-preload",
   "repository": {
     "type": "git",
@@ -58,13 +58,10 @@
     "url": "https://github.com/balena-io/balena-preload/issues"
   },
   "scripts": {
-    "lint": "balena-lint -e js --fix lib",
+    "lint": "balena-lint --fix lib",
     "lint-python": "flake8 src/preload.py",
     "test": "npm run lint && catch-uncommitted --skip-node-versionbot-changes",
     "prepare": "tsc"
-  },
-  "bin": {
-    "balena-preload": "build/bin/balena-preload.js"
   },
   "versionist": {
     "publishedAt": "2021-08-04T19:51:31.976Z"

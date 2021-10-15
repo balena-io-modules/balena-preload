@@ -1,24 +1,34 @@
-const _ = require('lodash');
-const EventEmitter = require('events');
-const dockerProgress = require('docker-progress');
-const Docker = require('dockerode');
-const path = require('path');
-const streamModule = require('stream');
-const Bluebird = require('bluebird');
-const tarfs = require('tar-fs');
-const fs = Bluebird.promisifyAll(require('fs'));
-const getPort = require('get-port');
-const os = require('os');
-const tmp = require('tmp-promise');
-const unzipper = require('unzipper');
-const archiver = require('archiver');
-const getFolderSizeAsync = Bluebird.promisify(require('get-folder-size'));
-const compareVersions = require('compare-versions');
-const request = require('request-promise');
+import * as _ from 'lodash';
+import * as EventEmitter from 'events';
+import * as dockerProgress from 'docker-progress';
+import * as Docker from 'dockerode';
+import * as path from 'path';
+import * as streamModule from 'stream';
+import * as Bluebird from 'bluebird';
+import * as tarfs from 'tar-fs';
+import {
+	promises as fs,
+	constants,
+	createReadStream,
+	createWriteStream,
+} from 'fs';
+import * as getPort from 'get-port';
+import * as os from 'os';
+import * as tmp from 'tmp-promise';
+import * as unzipper from 'unzipper';
+import * as archiver from 'archiver';
+import * as compareVersions from 'compare-versions';
+import * as request from 'request-promise';
+import { promisify } from 'util';
+import getFolderSize = require('get-folder-size');
+import { Application, PineFilter, Release } from 'balena-sdk';
+import { DirOptions } from 'tmp';
+const getFolderSizeAsync: (arg1: string) => Promise<number> =
+	promisify(getFolderSize);
 
 const preload = module.exports;
 
-const { R_OK, W_OK } = fs.constants;
+const { R_OK, W_OK } = constants;
 
 const DOCKER_TMPDIR = '/docker_tmpdir';
 const DOCKER_IMAGE_TAG = 'balena/balena-preload';
@@ -44,12 +54,14 @@ const EDISON_PARTITION_FILE_KEYS = {
 	'resin-data': 'resin-data_file',
 };
 
-const getEdisonPartitions = (edisonFolder) => {
+async function getEdisonPartitions(
+	edisonFolder,
+): Promise<{ [name: string]: { file: string; image: string } }> {
 	// The replace is needed because this file contains new lines in strings, which is not valid JSON.
 	const data = JSON.parse(
-		fs
-			.readFileSync(path.join(edisonFolder, FLASH_EDISON_FILENAME), 'utf8')
-			.replace(/\n/g, ''),
+		(
+			await fs.readFile(path.join(edisonFolder, FLASH_EDISON_FILENAME), 'utf8')
+		).replace(/\n/g, ''),
 	);
 	const parameters = data.flash.parameters;
 	const result = {};
@@ -63,10 +75,10 @@ const getEdisonPartitions = (edisonFolder) => {
 		};
 	});
 	return result;
-};
+}
 
 class BufferBackedWritableStream extends streamModule.Writable {
-	chunks = [];
+	chunks: Buffer[] = [];
 
 	_write(chunk, _enc, next) {
 		this.chunks.push(chunk);
@@ -78,19 +90,24 @@ class BufferBackedWritableStream extends streamModule.Writable {
 	}
 }
 
-const bindMount = (source, target, dockerApiVersion) => {
-	source = path.resolve(source);
+function setBindMount(
+	hostConfig: Docker.HostConfig,
+	mounts: Array<[string, string]>,
+	dockerApiVersion: string,
+) {
 	if (compareVersions(dockerApiVersion, '1.25') >= 0) {
-		return {
-			Source: source,
+		hostConfig.Mounts = mounts.map(([source, target]) => ({
+			Source: path.resolve(source),
 			Target: target,
 			Type: 'bind',
 			Consistency: 'delegated',
-		};
+		}));
 	} else {
-		return `${source}:${target}`;
+		hostConfig.Binds = mounts.map(
+			([source, target]) => `${path.resolve(source)}:${target}`,
+		);
 	}
-};
+}
 
 const zipContainsFiles = (archive, files) => {
 	// FIXME: read from the zip directory instead of reading the whole file
@@ -98,7 +115,7 @@ const zipContainsFiles = (archive, files) => {
 	// uncaught error event.
 	const filesCopy = files.slice();
 	return new Promise((resolve, reject) => {
-		fs.createReadStream(archive)
+		createReadStream(archive)
 			.on('error', reject)
 			.pipe(unzipper.Parse())
 			.on('error', reject)
@@ -121,25 +138,40 @@ const isEdisonZipArchive = async (file) => {
 	}
 };
 
+type Layer = {
+	digest: any;
+	size: number;
+};
+
+type Manifest = {
+	manifest: {
+		layers: Layer[];
+	};
+	imageLocation: string;
+};
+
+type Image = {
+	is_stored_at__image_location: string;
+	image_size: number;
+};
+
 const createContainer = async (
-	docker,
-	image,
-	splashImage,
-	dockerPort,
-	proxy,
-	edisonFolder,
+	docker: Docker,
+	image: string,
+	splashImage: string,
+	dockerPort: number,
+	proxy: string,
+	edisonFolder: string,
 ) => {
-	const mounts = [];
+	const mounts: Array<[string, string]> = [];
 	const version = await docker.version();
 	if (os.platform() === 'linux') {
 		// In some situations, devices created by `losetup -f` in the container only appear on the host and not in the container.
 		// See https://github.com/balena-io/balena-cli/issues/1008
-		mounts.push(bindMount('/dev', '/dev', version.ApiVersion));
+		mounts.push(['/dev', '/dev']);
 	}
 	if (splashImage) {
-		mounts.push(
-			bindMount(splashImage, SPLASH_IMAGE_PATH_IN_DOCKER, version.ApiVersion),
-		);
+		mounts.push([splashImage, SPLASH_IMAGE_PATH_IN_DOCKER]);
 	}
 
 	const env = [
@@ -150,20 +182,18 @@ const createContainer = async (
 	];
 
 	if (edisonFolder) {
-		const partitions = getEdisonPartitions(edisonFolder);
+		const partitions = await getEdisonPartitions(edisonFolder);
 		env.push(`PARTITIONS=${JSON.stringify(partitions)}`);
 		PARTITION_NAMES.forEach((name) => {
 			const part = partitions[name];
-			mounts.push(bindMount(part.file, part.image, version.ApiVersion));
+			mounts.push([part.file, part.image]);
 		});
 	} else {
-		mounts.push(
-			bindMount(image, DISK_IMAGE_PATH_IN_DOCKER, version.ApiVersion),
-		);
+		mounts.push([image, DISK_IMAGE_PATH_IN_DOCKER]);
 	}
-	const containerOptions = {
+	const containerOptions: Docker.ContainerCreateOptions = {
 		Image: DOCKER_IMAGE_TAG,
-		Name: preload.CONTAINER_NAME,
+		name: preload.CONTAINER_NAME,
 		AttachStdout: true,
 		AttachStderr: true,
 		OpenStdin: true,
@@ -176,22 +206,22 @@ const createContainer = async (
 		},
 	};
 	// Before api 1.25 bind mounts were going to into HostConfig.Binds
-	containerOptions.HostConfig[
-		compareVersions(version.ApiVersion, '1.25') >= 0 ? 'Mounts' : 'Binds'
-	] = mounts;
-	if (os.platform() === 'linux') {
-		containerOptions.HostConfig.NetworkMode = 'host';
-	} else {
-		containerOptions.HostConfig.NetworkMode = 'bridge';
-		containerOptions.ExposedPorts = {};
-		containerOptions.ExposedPorts[`${dockerPort}/tcp`] = {};
-		containerOptions.HostConfig.PortBindings = {};
-		containerOptions.HostConfig.PortBindings[`${dockerPort}/tcp`] = [
-			{
-				HostPort: `${dockerPort}`,
-				HostIp: '',
-			},
-		];
+	if (containerOptions.HostConfig !== undefined) {
+		setBindMount(containerOptions.HostConfig, mounts, version.ApiVersion);
+		if (os.platform() === 'linux') {
+			containerOptions.HostConfig.NetworkMode = 'host';
+		} else {
+			containerOptions.HostConfig.NetworkMode = 'bridge';
+			containerOptions.ExposedPorts = {};
+			containerOptions.ExposedPorts[`${dockerPort}/tcp`] = {};
+			containerOptions.HostConfig.PortBindings = {};
+			containerOptions.HostConfig.PortBindings[`${dockerPort}/tcp`] = [
+				{
+					HostPort: `${dockerPort}`,
+					HostIp: '',
+				},
+			];
+		}
 	}
 	return await docker.createContainer(containerOptions);
 };
@@ -200,8 +230,8 @@ const isReadWriteAccessibleFile = async (image) => {
 	try {
 		const [, stats] = await Promise.all([
 			// tslint:disable-next-line:no-bitwise
-			fs.promises.access(image, R_OK | W_OK),
-			fs.promises.stat(image),
+			fs.access(image, R_OK | W_OK),
+			fs.stat(image),
 		]);
 		return stats.isFile();
 	} catch {
@@ -209,23 +239,48 @@ const isReadWriteAccessibleFile = async (image) => {
 	}
 };
 
-class Preloader extends EventEmitter {
-	application = null;
-	stdin = null;
+export type PreloaderOptions = {
+	balena;
+	docker;
+	appId;
+	commit;
+	image;
+	splashImage;
+	proxy;
+	dontCheckArch;
+	pinDevice;
+	certificates;
+	additionalSpace;
+};
+
+export class Preloader extends EventEmitter {
+	application;
+	stdin;
 	stdout = new streamModule.PassThrough();
 	stderr = new streamModule.PassThrough();
 	bufferedStderr = new BufferBackedWritableStream();
-	edisonFolder = null;
-	dockerPort = null;
-	container = null;
-	tmpCleanup = null;
-	state = null; // device state from the api
-	freeSpace = null; // space available on the image data partition (in bytes)
-	preloadedBuilds = null; // list of preloaded Docker images in the disk image
-	supervisorVersion = null; // disk image supervisor version
-	balenaOSVersion = null; // OS version from the image's "/etc/issue" file
-	config = null; // config.json data from the disk image
-	deviceTypes = null;
+	edisonFolder;
+	dockerPort;
+	container;
+	tmpCleanup;
+	state; // device state from the api
+	freeSpace; // space available on the image data partition (in bytes)
+	preloadedBuilds; // list of preloaded Docker images in the disk image
+	supervisorVersion; // disk image supervisor version
+	balenaOSVersion; // OS version from the image's "/etc/issue" file
+	config; // config.json data from the disk image
+	deviceTypes;
+	balena;
+	docker;
+	appId;
+	commit;
+	image;
+	splashImage;
+	proxy;
+	dontCheckArch;
+	pinDevice = false;
+	certificates: string[];
+	additionalSpace;
 
 	constructor(
 		balena,
@@ -237,7 +292,7 @@ class Preloader extends EventEmitter {
 		proxy,
 		dontCheckArch,
 		pinDevice = false,
-		certificates = [],
+		certificates: string[] = [],
 		additionalSpace = null,
 	) {
 		super();
@@ -253,7 +308,6 @@ class Preloader extends EventEmitter {
 		this.pinDevice = pinDevice;
 		this.certificates = certificates;
 		this.additionalSpace = additionalSpace;
-
 		this.stderr.pipe(this.bufferedStderr); // TODO: split stderr and build output ?
 	}
 
@@ -314,9 +368,8 @@ class Preloader extends EventEmitter {
 		const name = 'Unzipping Edison zip archive';
 		let position = 0;
 		this._progress(name, 0);
-		const stat = await fs.promises.stat(archive);
-		return fs
-			.createReadStream(archive)
+		const stat = await fs.stat(archive);
+		return createReadStream(archive)
 			.on('data', (buf) => {
 				position += buf.length;
 				this._progress(name, (position / stat.size) * 100);
@@ -335,12 +388,14 @@ class Preloader extends EventEmitter {
 			archive.on('warning', console.warn);
 			archive.on('error', reject);
 			archive.on('entry', (entry) => {
-				position += entry.stats.size;
-				this._progress(name, (position / size) * 100);
+				if (entry !== undefined && entry.stats !== undefined) {
+					position += entry.stats.size;
+					this._progress(name, (position / size) * 100);
+				}
 			});
 			archive.directory(folder, false);
 			archive.finalize();
-			const output = fs.createWriteStream(destination);
+			const output = createWriteStream(destination);
 			output.on('error', reject);
 			output.on('close', () => {
 				this._progress(name, 100);
@@ -362,7 +417,7 @@ class Preloader extends EventEmitter {
 	_prepareErrorHandler() {
 		// Emit an error event if the python script exits with an error
 		this.container
-			.wait()
+			?.wait()
 			.then((data) => {
 				if (data.StatusCode !== 0) {
 					const output = this.bufferedStderr.getData().toString('utf8').trim();
@@ -374,7 +429,6 @@ class Preloader extends EventEmitter {
 						error = new this.balena.errors.BalenaError(OVERLAY_MODULE_MESSAGE);
 					} else {
 						error = new Error(output);
-						// @ts-ignore
 						error.code = data.StatusCode;
 					}
 					this.emit('error', error);
@@ -391,11 +445,8 @@ class Preloader extends EventEmitter {
 	 * zero, the command execution is considered successful, otherwise it is
 	 * assumed to have failed and the returned promise is rejected with an
 	 * error message including the message provided in the `error` field.
-	 *
-	 * @param {string} command
-	 * @param {object} parameters
 	 */
-	_runCommand(command, parameters) {
+	_runCommand(command: string, parameters: { [name: string]: any }) {
 		return new Bluebird((resolve, reject) => {
 			const cmd = JSON.stringify({ command, parameters }) + '\n';
 			this.stdout.once('error', reject);
@@ -406,7 +457,7 @@ class Preloader extends EventEmitter {
 				} catch (_e) {
 					// ignore
 				}
-				let response = {};
+				let response: any = {};
 				try {
 					response = JSON.parse(strData);
 				} catch (error) {
@@ -473,7 +524,13 @@ class Preloader extends EventEmitter {
 	async _getImageInfo() {
 		// returns Promise<object> (device_type, preloaded_builds, free_space and config)
 		await this._runWithSpinner('Reading image information', async () => {
-			const info = await this._runCommand('get_image_info', {});
+			const info = (await this._runCommand('get_image_info', {})) as {
+				preloaded_builds: string;
+				supervisor_version: string;
+				free_space: string;
+				config: string;
+				balena_os_version: string;
+			};
 			this.freeSpace = info.free_space;
 			this.preloadedBuilds = info.preloaded_builds;
 			this.supervisorVersion = info.supervisor_version;
@@ -501,7 +558,7 @@ class Preloader extends EventEmitter {
 		return release;
 	}
 
-	_getImages() {
+	_getImages(): Image[] {
 		// This method lists the images that need to be preloaded.
 		// The is_stored_at__image_location attribute must match the image attribute of the app or app service in the state endpoint.
 		// List images from the release.
@@ -551,13 +608,13 @@ class Preloader extends EventEmitter {
 		headers,
 		decodeJson,
 		followRedirect,
-		encoding,
+		encoding?,
 	) {
 		headers = { ...headers };
 		headers['Authorization'] = `Bearer ${registryToken}`;
 		return await request({
 			url: `https://${registryUrl}${endpoint}`,
-			headers: headers,
+			headers,
 			json: decodeJson,
 			simple: false,
 			resolveWithFullResponse: true,
@@ -633,7 +690,7 @@ class Preloader extends EventEmitter {
 	async _getApplicationImagesManifests(imagesLocations, registryToken) {
 		return await Bluebird.map(
 			imagesLocations,
-			async (imageLocation) => {
+			async (imageLocation: string) => {
 				const { body: manifest } = await this.registry(
 					this._registryUrl(imageLocation),
 					this._imageManifestUrl(imageLocation),
@@ -648,10 +705,10 @@ class Preloader extends EventEmitter {
 		);
 	}
 
-	async _getLayersSizes(manifests, registryToken) {
+	async _getLayersSizes(manifests: Manifest[], registryToken) {
 		const digests = new Set();
 		const layersSizes = new Map();
-		const sizeRequests = [];
+		const sizeRequests: Array<{ imageLocation: string; layer: Layer }> = [];
 		for (const manifest of manifests) {
 			for (const layer of manifest.manifest.layers) {
 				if (!digests.has(layer.digest)) {
@@ -662,7 +719,13 @@ class Preloader extends EventEmitter {
 		}
 		await Bluebird.map(
 			sizeRequests,
-			async ({ imageLocation, layer }) => {
+			async ({
+				imageLocation,
+				layer,
+			}: {
+				imageLocation: string;
+				layer: Layer;
+			}) => {
 				const size = await this._getLayerSize(
 					registryToken,
 					this._registryUrl(imageLocation),
@@ -688,12 +751,12 @@ class Preloader extends EventEmitter {
 		for (const { imageLocation, manifest } of manifests) {
 			const apiSize = _.find(images, {
 				is_stored_at__image_location: imageLocation,
-			}).image_size;
+			})?.image_size;
 			const size = _.sumBy(
 				manifest.layers,
-				(layer) => layersSizes.get(layer.digest).size,
+				(layer: Layer) => layersSizes.get(layer.digest).size,
 			);
-			if (apiSize > size) {
+			if (apiSize !== undefined && apiSize > size) {
 				// This means that at least one of the image layers is larger than 4GiB
 				extra += apiSize - size;
 				// Extra may be too large if several images share one or more layers larger than 4GiB.
@@ -759,7 +822,7 @@ class Preloader extends EventEmitter {
 		return this._runWithSpinner(
 			`Fetching application ${this.appId}`,
 			async () => {
-				const releaseFilter = {
+				const releaseFilter: PineFilter<Release> = {
 					status: 'success',
 				};
 				if (this.commit === 'latest') {
@@ -848,7 +911,7 @@ class Preloader extends EventEmitter {
 			);
 			// If the image is an Edison zip archive extract it to a temporary folder.
 			if (isEdison) {
-				const tmpDirOptions = { unsafeCleanup: true };
+				const tmpDirOptions: DirOptions = { unsafeCleanup: true };
 				if (os.platform() === 'darwin') {
 					// Docker on mac can not access /var/folders/... by default which is where $TMPDIR is on macos.
 					// https://docs.docker.com/docker-for-mac/osxfs/#namespaces
@@ -1074,7 +1137,7 @@ class Preloader extends EventEmitter {
 		});
 	}
 
-	setApplication(application) {
+	setApplication(application: Application) {
 		this.appId = application.id;
 		this.application = application;
 	}

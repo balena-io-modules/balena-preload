@@ -870,11 +870,12 @@ def get_rootA_file_contents(image=None):
 
 
 def find_one_of(lst, *args):
-    for elem in args:
-        index = lst.index(elem)
-        if index != -1:
+    try:
+        for elem in args:
+            index = lst.index(elem)
             return index
-    return -1
+    except:
+        return -1
 
 
 def get_docker_storage_driver(docker_service_file_contents):
