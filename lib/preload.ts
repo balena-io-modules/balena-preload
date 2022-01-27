@@ -360,7 +360,14 @@ export class Preloader extends EventEmitter {
 	}
 
 	async _fetchDeviceTypes() {
-		this.deviceTypes = await this.balena.models.config.getDeviceTypes();
+		this.deviceTypes = await this.balena.models.deviceType.getAll({
+			$select: 'slug',
+			$expand: {
+				is_of__cpu_architecture: {
+					$select: 'slug',
+				},
+			},
+		});
 	}
 
 	async _unzipFiles(archive, folder) {
@@ -845,10 +852,14 @@ export class Preloader extends EventEmitter {
 							},
 							is_for__device_type: {
 								$select: 'slug',
+								$expand: {
+									is_of__cpu_architecture: {
+										$select: 'slug',
+									},
+								},
 							},
 							owns__release: {
 								$select: ['id', 'commit', 'end_timestamp', 'composition'],
-								$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
 								$expand: {
 									contains__image: {
 										$select: ['image'],
@@ -860,6 +871,7 @@ export class Preloader extends EventEmitter {
 									},
 								},
 								$filter: releaseFilter,
+								$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
 							},
 						},
 					},
@@ -880,14 +892,14 @@ export class Preloader extends EventEmitter {
 		return `${count} ${thing}${count !== 1 ? 's' : ''}`;
 	}
 
-	_deviceTypeArch(slug) {
-		const deviceType = _.find(this.deviceTypes, (dt) => {
+	_deviceTypeArch(slug: string) {
+		const deviceType = this.deviceTypes?.find((dt) => {
 			return dt.slug === slug;
 		});
 		if (deviceType === undefined) {
 			throw new this.balena.errors.BalenaError(`No such deviceType: ${slug}`);
 		}
-		return deviceType.arch;
+		return deviceType.is_of__cpu_architecture[0].slug;
 	}
 
 	prepare() {
@@ -1007,9 +1019,8 @@ export class Preloader extends EventEmitter {
 		// Don't preload if the image arch does not match the application arch
 		if (this.dontCheckArch === false) {
 			const imageArch = this._deviceTypeArch(this.config.deviceType);
-			const applicationArch = this._deviceTypeArch(
-				this.application.is_for__device_type[0].slug,
-			);
+			const applicationArch =
+				this.application.is_for__device_type[0].is_of__cpu_architecture[0].slug;
 			if (
 				!this.balena.models.os.isArchitectureCompatibleWith(
 					imageArch,
