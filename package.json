@@ -60,7 +60,7 @@
   "scripts": {
     "lint": "balena-lint --fix lib",
     "lint-python": "flake8 src/preload.py",
-    "test": "npm run lint && catch-uncommitted --skip-node-versionbot-changes",
+    "test": "tsc --noEmit && npm run lint && catch-uncommitted --skip-node-versionbot-changes",
     "prepare": "tsc"
   },
   "versionist": {
