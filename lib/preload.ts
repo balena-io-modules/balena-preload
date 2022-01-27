@@ -21,7 +21,14 @@ import * as compareVersions from 'compare-versions';
 import * as request from 'request-promise';
 import { promisify } from 'util';
 import getFolderSize = require('get-folder-size');
-import { Application, PineFilter, Release } from 'balena-sdk';
+import type {
+	Application,
+	BalenaSDK,
+	DeviceType,
+	PineDeferred,
+	PineFilter,
+	Release,
+} from 'balena-sdk';
 import { DirOptions } from 'tmp';
 const getFolderSizeAsync: (arg1: string) => Promise<number> =
 	promisify(getFolderSize);
@@ -155,6 +162,16 @@ type Image = {
 	image_size: number;
 };
 
+interface ImageInfo {
+	preloaded_builds: string[];
+	supervisor_version: string;
+	free_space: number;
+	config: {
+		deviceType: string;
+	};
+	balena_os_version: string;
+}
+
 const createContainer = async (
 	docker: Docker,
 	image: string,
@@ -264,13 +281,13 @@ export class Preloader extends EventEmitter {
 	container;
 	tmpCleanup;
 	state; // device state from the api
-	freeSpace; // space available on the image data partition (in bytes)
-	preloadedBuilds; // list of preloaded Docker images in the disk image
-	supervisorVersion; // disk image supervisor version
-	balenaOSVersion; // OS version from the image's "/etc/issue" file
-	config; // config.json data from the disk image
-	deviceTypes;
-	balena;
+	freeSpace: number | undefined; // space available on the image data partition (in bytes)
+	preloadedBuilds: string[] | undefined; // list of preloaded Docker images in the disk image
+	supervisorVersion: string | undefined; // disk image supervisor version
+	balenaOSVersion: string | undefined; // OS version from the image's "/etc/issue" file
+	config: ImageInfo['config'] | undefined; // config.json data from the disk image
+	deviceTypes: DeviceType[] | undefined;
+	balena: BalenaSDK;
 	docker;
 	appId;
 	commit;
@@ -360,7 +377,14 @@ export class Preloader extends EventEmitter {
 	}
 
 	async _fetchDeviceTypes() {
-		this.deviceTypes = await this.balena.models.config.getDeviceTypes();
+		this.deviceTypes = await this.balena.models.deviceType.getAll({
+			$select: 'slug',
+			$expand: {
+				is_of__cpu_architecture: {
+					$select: 'slug',
+				},
+			},
+		});
 	}
 
 	async _unzipFiles(archive, folder) {
@@ -514,6 +538,7 @@ export class Preloader extends EventEmitter {
 		});
 		const { body: state } = await this.balena.request.send({
 			headers: { 'User-Agent': SUPERVISOR_USER_AGENT },
+			// @ts-expect-error
 			baseUrl: this.balena.pine.API_URL,
 			url: `device/v${this._supervisorLT7() ? 1 : 2}/${uuid}/state`,
 		});
@@ -524,13 +549,7 @@ export class Preloader extends EventEmitter {
 	async _getImageInfo() {
 		// returns Promise<object> (device_type, preloaded_builds, free_space and config)
 		await this._runWithSpinner('Reading image information', async () => {
-			const info = (await this._runCommand('get_image_info', {})) as {
-				preloaded_builds: string;
-				supervisor_version: string;
-				free_space: string;
-				config: string;
-				balena_os_version: string;
-			};
+			const info = (await this._runCommand('get_image_info', {})) as ImageInfo;
 			this.freeSpace = info.free_space;
 			this.preloadedBuilds = info.preloaded_builds;
 			this.supervisorVersion = info.supervisor_version;
@@ -783,12 +802,12 @@ export class Preloader extends EventEmitter {
 			return this.additionalSpace;
 		}
 		const size = Math.round((await this._getSize()) * 1.4);
-		return Math.max(0, size - this.freeSpace);
+		return Math.max(0, size - this.freeSpace!);
 	}
 
 	_supervisorLT7() {
 		try {
-			return compareVersions(this.supervisorVersion, '7.0.0') === -1;
+			return compareVersions(this.supervisorVersion!, '7.0.0') === -1;
 		} catch (e) {
 			// Suppose the supervisor version is >= 7.0.0 when it is not valid semver.
 			return false;
@@ -798,6 +817,7 @@ export class Preloader extends EventEmitter {
 	_getRegistryToken(images) {
 		return Bluebird.resolve(
 			this.balena.request.send({
+				// @ts-expect-error
 				baseUrl: this.balena.pine.API_URL,
 				url: '/auth/v1/token',
 				qs: {
@@ -826,12 +846,13 @@ export class Preloader extends EventEmitter {
 					status: 'success',
 				};
 				if (this.commit === 'latest') {
-					const {
-						should_be_running__release: { __id },
-					} = await this.balena.models.application.get(this.appId, {
-						$select: 'should_be_running__release',
-					});
-					releaseFilter.id = __id;
+					const { should_be_running__release } =
+						await this.balena.models.application.get(this.appId, {
+							$select: 'should_be_running__release',
+						});
+					// TODO: Add a check to error if the application is not tracking any release
+					releaseFilter.id =
+						(should_be_running__release as PineDeferred | null)!.__id;
 				} else if (this.commit != null) {
 					releaseFilter.commit = { $startswith: this.commit };
 				}
@@ -845,10 +866,14 @@ export class Preloader extends EventEmitter {
 							},
 							is_for__device_type: {
 								$select: 'slug',
+								$expand: {
+									is_of__cpu_architecture: {
+										$select: 'slug',
+									},
+								},
 							},
 							owns__release: {
 								$select: ['id', 'commit', 'end_timestamp', 'composition'],
-								$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
 								$expand: {
 									contains__image: {
 										$select: ['image'],
@@ -860,6 +885,7 @@ export class Preloader extends EventEmitter {
 									},
 								},
 								$filter: releaseFilter,
+								$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
 							},
 						},
 					},
@@ -880,14 +906,14 @@ export class Preloader extends EventEmitter {
 		return `${count} ${thing}${count !== 1 ? 's' : ''}`;
 	}
 
-	_deviceTypeArch(slug) {
-		const deviceType = _.find(this.deviceTypes, (dt) => {
+	_deviceTypeArch(slug: string) {
+		const deviceType = this.deviceTypes?.find((dt) => {
 			return dt.slug === slug;
 		});
 		if (deviceType === undefined) {
 			throw new this.balena.errors.BalenaError(`No such deviceType: ${slug}`);
 		}
-		return deviceType.arch;
+		return deviceType.is_of__cpu_architecture[0].slug;
 	}
 
 	prepare() {
@@ -1006,10 +1032,9 @@ export class Preloader extends EventEmitter {
 
 		// Don't preload if the image arch does not match the application arch
 		if (this.dontCheckArch === false) {
-			const imageArch = this._deviceTypeArch(this.config.deviceType);
-			const applicationArch = this._deviceTypeArch(
-				this.application.is_for__device_type[0].slug,
-			);
+			const imageArch = this._deviceTypeArch(this.config!.deviceType);
+			const applicationArch =
+				this.application.is_for__device_type[0].is_of__cpu_architecture[0].slug;
 			if (
 				!this.balena.models.os.isArchitectureCompatibleWith(
 					imageArch,
@@ -1065,7 +1090,7 @@ export class Preloader extends EventEmitter {
 	 */
 	_getSplashImagePath() {
 		try {
-			if (compareVersions(this.balenaOSVersion, '2.53.0') >= 0) {
+			if (compareVersions(this.balenaOSVersion!, '2.53.0') >= 0) {
 				return '/splash/balena-logo.png';
 			}
 		} catch (err) {
@@ -1163,7 +1188,6 @@ preload.CONTAINER_NAME = 'balena-image-preloader';
 preload.applicationExpandOptions = {
 	owns__release: {
 		$select: ['id', 'commit', 'end_timestamp', 'composition'],
-		$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
 		$expand: {
 			contains__image: {
 				$select: ['image'],
@@ -1177,5 +1201,6 @@ preload.applicationExpandOptions = {
 		$filter: {
 			status: 'success',
 		},
+		$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
 	},
 };

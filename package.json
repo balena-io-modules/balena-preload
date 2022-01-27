@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "archiver": "^3.1.1",
-    "balena-sdk": "^15.44.0",
+    "balena-sdk": "^16.0.0",
     "bluebird": "^3.7.2",
     "compare-versions": "^3.6.0",
     "docker-progress": "^5.0.0",
@@ -47,7 +47,7 @@
     "@types/tar-fs": "^2.0.1",
     "@types/unzipper": "^0.8.4",
     "catch-uncommitted": "^2.0.0",
-    "typescript": "^4.3.5"
+    "typescript": "^4.5.5"
   },
   "homepage": "https://github.com/balena-io/balena-preload",
   "repository": {
@@ -60,7 +60,7 @@
   "scripts": {
     "lint": "balena-lint --fix lib",
     "lint-python": "flake8 src/preload.py",
-    "test": "npm run lint && catch-uncommitted --skip-node-versionbot-changes",
+    "test": "tsc --noEmit && npm run lint && catch-uncommitted --skip-node-versionbot-changes",
     "prepare": "tsc"
   },
   "versionist": {
