@@ -1,4 +1,1027 @@
 - commits:
+    - subject: Improve types
+      hash: fdebfb95ef6f7087c22e77ccedeb418de7655e87
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+        signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Stop relying on the /device-types/v1 endpoints
+      hash: 017d2fdea5b68cb481f3d405f3d20e866a7c24a6
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+        See: https://jel.ly.fish/improvement-stop-relying-device-types-v1-device-type-json-unrelated-things-4fbac3c
+        see: https://jel.ly.fish/improvement-stop-relying-device-types-v1-device-type-json-unrelated-things-4fbac3c
+        Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+        signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Bump TypeScript to v4.5
+      hash: 99fe71c34ada3664b55aa81994b5861ad66a2db1
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+        Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+        signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Bump balena-sdk to v16
+      hash: c205e41ce6c0c724592923388c35220e0882703b
+      body: |
+        Update balena-sdk from 15.44.0 to 16.0.0
+      footer:
+        Change-type: major
+        change-type: major
+        Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+        signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+      author: Thodoris Greasidis
+      nested:
+        - commits:
+            - subject: "**BREAKING**: Merge the hostApp model into the OS model"
+              hash: fa3ffa3fa24f9d8459e7b03fbce4fdd28efac1ab
+              body: ""
+              footer:
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "**BREAKING** Drop os.getSupportedVersions() method in favor of
+                hostapp.getAvailableOsVersions()"
+              hash: a2f31ed9937aec7e2f3ec637ce8c484c5ea4af7c
+              body: ""
+              footer:
+                Change-type: major
+                change-type: major
+                Changelog-entry: "**BREAKING** Drop os.getSupportedVersions() method in favor of
+                  hostapp.getAvailableOsVersions()"
+                changelog-entry: "**BREAKING** Drop os.getSupportedVersions() method in favor of
+                  hostapp.getAvailableOsVersions()"
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "os.getMaxSatisfyingVersion: Add optional param to choose OS line type"
+              hash: 3efd1abf1d9143b017df7247c6c8cc0c00057139
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "os.getMaxSatisfyingVersion: Include ESR versions"
+              hash: cc3e7b2121281ccd0757ad58906e28d001765170
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "os.getMaxSatisfyingVersion: Switch to use hostApps"
+              hash: d033ef176eca308a4df0bd03d2246880e430b5d4
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "hostapp.getAvailableOsVersions: Add single device type argument
+                overload"
+              hash: fdddc72b033724c3248c94e0b49fc3bbf6a47586
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "hostapp.getAllOsVersions: Add single device type argument overload"
+              hash: 533996307d5486ee56552e0d66ae3095299dde8e
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "models.hostapp: Add a getAvailableOsVersions() convenience method"
+              hash: 11db481db7e066d625bdcd4d7a899792e4f961a6
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: Support optional extra PineOptions in hostapp.getAllOsVersions()
+              hash: 3294ee4a3d9caf5474bfc11dde94541ec72a4190
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "**BREAKING** Include invalidated versions in
+                hostapp.getAllOsVersions()"
+              hash: fe811497d01c030ac33921c45f54bb0e5fbf58e0
+              body: ""
+              footer:
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "models/application: Add getDirectlyAccessible &
+                getAllDirectlyAccessible"
+              hash: 924d5f7bdbffd8ae9b602b75a38d6a9d5835b70c
+              body: ""
+              footer:
+                Connects-to: "#1068"
+                connects-to: "#1068"
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "application.get: Add 'directly_accessible' convenience filter param"
+              hash: f5b10be0f30b30a7f0eeb3996ccebfaf8d3577cb
+              body: ""
+              footer:
+                Connects-to: "#1068"
+                connects-to: "#1068"
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "application.getAll: Add 'directly_accessible' convenience filter
+                param"
+              hash: 89e926e80499ab2445c4855fea8724a63a1f887b
+              body: ""
+              footer:
+                Connects-to: "#1068"
+                connects-to: "#1068"
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "**BREAKING** Change application.getAll to include public apps"
+              hash: cf57bc2ae5375fa52d03f6722250de0cbbf31222
+              body: ""
+              footer:
+                Resolves: "#1067"
+                resolves: "#1067"
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "**BREAKING** Drop targeting/retrieving apps by name in favor of slugs"
+              hash: 8d32d94b6f494703debfdaf12180bd29c4f6cdcb
+              body: ""
+              footer:
+                Resolves: "#1030"
+                resolves: "#1030"
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: Bump minimum supported Typescript to v4.5.2
+              hash: 193bd312e6a4010bb6a411c496125aae76c25bad
+              body: ""
+              footer:
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "**BREAKING**: Stop actively supporting node 10"
+              hash: 3a97c6adb6e16b11a4a9aafff05ed01d5fedfe36
+              body: |
+                Node 10 may well still work with the SDK for quite a
+                while, but we'll no longer actively test against them
+                since they are now characterized as EOL, and it's
+                quite possible that it may stop working entirely in any
+                future release.
+              footer:
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "**BREAKING** Drop application.getAllWithDeviceServiceDetails()"
+              hash: 53cea5082a80ea18bda1b9e2793dddd1a809ac4d
+              body: ""
+              footer:
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "**BREAKING** Change apiKey.getAll() to return all key variants"
+              hash: bc9fe542ad788c0793b1035273073298a73a9337
+              body: |
+                The apiKeys.getAllNamedUserApiKeys will be offering
+                the old behavior.
+              footer:
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "types: Drop is_in_local_mode from the Device model"
+              hash: 50f7f895b8c590d3d7f8be5ec028fab54b331126
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "types: Drop user__is_member_of__application in favor of the term form"
+              hash: fbfc2d6fea941edd37eaa095616b0c619aec081e
+              body: |
+                Dropping the resource mapping & the properties
+                from the User & Team, in favor of its Term Form,
+                user_application_membership.
+              footer:
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "typings: Drop Subscription's discounts__plan_addon property"
+              hash: a6788dc35e223eb8a81955d5dcc34c8ac124382a
+              body: |
+                Dropping the deprecated property in favor of
+                Subscripton's subscription_addon_discount.
+              footer:
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "typings: Stop extending the JWTUser type in the User model"
+              hash: 947f7f427be6f638bc12c330499a2b223f04d4ec
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                See: https://github.com/balena-io/balena-sdk/issues/966
+                see: https://github.com/balena-io/balena-sdk/issues/966
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "models/config: Change the BETA device type state to NEW"
+              hash: 3b06f2bd9b2a8da2da7d7e94f578d89a4ae1598d
+              body: ""
+              footer:
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "typings: Drop the PineWithSelectOnGet type"
+              hash: 41815b8499bf13fddd60ff91c41332346364a914
+              body: ""
+              footer:
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: Remove my_application from the supported resources
+              hash: 579052f75d9f6c7f512f320d7c6e66e8b11c80a3
+              body: ""
+              footer:
+                Change-type: major
+                change-type: major
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "typings: Properly type some Device properties"
+              hash: 6406f75080eb7e194271792a970d177df7cdbaf3
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "typings: Drop the DeviceWithImageInstalls type"
+              hash: a14e6a2f4f212cea70b0cdad5b0b9d5643ca337c
+              body: ""
+              footer:
+                Resolves: "#923"
+                resolves: "#923"
+                Change-type: major
+                change-type: major
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-16.0.0
+          date: 2021-11-28T18:48:49.341Z
+        - commits:
+            - subject: Update balena-request to 11.5.0
+              hash: cae3aa1f30194beeba40e1398cdaef3dc37ff1e6
+              body: |
+                Update balena-request from 11.4.2 to 11.5.0
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested:
+                - commits:
+                    - subject: Convert tests to JavaScript and drop coffeescript
+                      hash: 0098dcd5be16c1eebbe722fd29d4a7597a8411bb
+                      body: ""
+                      footer:
+                        Change-type: patch
+                        change-type: patch
+                      author: Thodoris Greasidis
+                    - subject: Fix the jsdoc generation
+                      hash: a8779e0bf665f29493afa16aea41a140b02e133d
+                      body: ""
+                      footer:
+                        Change-type: patch
+                        change-type: patch
+                        Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                        signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                      author: Thodoris Greasidis
+                    - subject: Convert to typescript and publish typings
+                      hash: 44106facfa8b770e786c04bdb01b1071fa737b45
+                      body: ""
+                      footer:
+                        Change-type: minor
+                        change-type: minor
+                        Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                        signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                      author: Thodoris Greasidis
+                  version: balena-request-11.5.0
+                  date: 2021-11-28T13:07:15.557Z
+          version: balena-sdk-15.59.2
+          date: 2021-11-28T13:22:51.063Z
+        - commits:
+            - subject: Fix the typings of the Image contract field
+              hash: 8ffb7462892a75d0d5b17bd2563634c4321b5291
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: Fix the typings for the Release contract field
+              hash: 1caca3e7a1c4a319d0ba2344fc50d7498d1e3353
+              body: ""
+              footer:
+                Resolves: "#1153"
+                resolves: "#1153"
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.59.1
+          date: 2021-11-28T08:56:49.333Z
+        - commits:
+            - subject: Add release setIsInvalidated function
+              hash: 670b0229be2871a3aaa174fcd08fc2eb90e1a7bd
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Matthew Yarmolinsky <matthew-timothy@balena.io>
+                signed-off-by: Matthew Yarmolinsky <matthew-timothy@balena.io>
+              author: Matthew Yarmolinsky
+              nested: []
+          version: balena-sdk-15.59.0
+          date: 2021-11-24T20:45:35.254Z
+        - commits:
+            - subject: Update typescript to 4.5.2
+              hash: 5f227908d03881df0128db97f3e488977a17be50
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.58.1
+          date: 2021-11-17T22:57:14.101Z
+        - commits:
+            - subject: "models/release: Add note() method"
+              hash: 65cebcb1376a2b21c3db32a13b272ce5d3bed076
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "typings: Add the release.invalidation_reason property"
+              hash: 41e69d929b6863b0dc015608a265ce157cebf9b0
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "typings: Add the release.note property"
+              hash: 439d9f5b2287ef8a55a2b5603d4f12de311d2564
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.58.0
+          date: 2021-11-16T10:26:45.167Z
+        - commits:
+            - subject: "tests/logs: Increase the wait time for retrieving the subscribed logs"
+              hash: 7de82b1528354675c54c99bb9df2d88223370966
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "tests/logs: Refactor to async-await"
+              hash: b4264957fd69b0950c7d39e9f32ab0e0a346e893
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.57.2
+          date: 2021-11-15T23:37:53.479Z
+        - commits:
+            - subject: "typings: Fix $filters for resources with non numeric ids"
+              hash: 15e6d9ba017637bae52fbe02b32b7ed067c99c69
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "typings: Add application.can_use__application_as_host
+                ReverseNavigation"
+              hash: cb08802404bab2d7533b87233046a377877f0c45
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: Add missing apiKey.getDeviceApiKeysByDevice docs
+              hash: 65d8ae845671017172b841af8abe009152749909
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.57.1
+          date: 2021-11-11T22:48:29.201Z
+        - commits:
+            - subject: "models/api-key: Change update() & revoke() to work with all key
+                variants"
+              hash: 842c6ce182fbcfc0e75f2a0b7cfd24818ae777b7
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.57.0
+          date: 2021-11-05T13:18:24.149Z
+        - commits:
+            - subject: "models/apiKey: Add getDeviceApiKeysByDevice() method"
+              hash: da00e1ab4c72da4f48e7aa2ad2c27024bca22b3e
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Depends-on: https://github.com/balena-io/balena-api/pull/3399
+                depends-on: https://github.com/balena-io/balena-api/pull/3399
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.56.0
+          date: 2021-11-04T22:14:22.839Z
+        - commits:
+            - subject: "typings: Add the release.raw_version property"
+              hash: 368c96284c0687750321135f8e3264c8370dd3e2
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Depends-on: https://github.com/balena-io/balena-api/pull/3398
+                depends-on: https://github.com/balena-io/balena-api/pull/3398
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.55.0
+          date: 2021-11-01T13:03:07.198Z
+        - commits:
+            - subject: "application/create: Rely on the hostApps for detecting discontinued
+                DTs"
+              hash: e06bcd7cba5d3933e3f31d19c9525d238605daf2
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                See: https://www.flowdock.com/app/rulemotion/r-resinos/threads/9HOl8Dk1KV_anW-oMlTzzDDXy3H
+                see: https://www.flowdock.com/app/rulemotion/r-resinos/threads/9HOl8Dk1KV_anW-oMlTzzDDXy3H
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.54.2
+          date: 2021-10-25T14:43:38.402Z
+        - commits:
+            - subject: "tests/device: Async-await conversions & abstraction on multi-field
+                tests"
+              hash: 6f8163fec2162f1f575c26882c84928f9582be56
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.54.1
+          date: 2021-10-22T12:29:19.360Z
+        - commits:
+            - subject: "tests: Register devices in chunks of 10 to avoid uuid conflicts in
+                node"
+              hash: acb6c922176eedda4cc6bef4f28c4bd28a49bcf8
+              body: |
+                The "given 55 registered offline device" was failing
+                on node with "uuid" must be unique.
+              footer:
+                Change-type: patch
+                change-type: patch
+                See: https://ci.appveyor.com/project/resin-io/balena-sdk/build/job/dmjscnj3u43kwyhk
+                see: https://ci.appveyor.com/project/resin-io/balena-sdk/build/job/dmjscnj3u43kwyhk
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: Add known issue check on release isReccomanded logic
+              hash: fcd5c5d3d02d03093761499de87a76c33c215c19
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Andrea Rosci <andrear@balena.io>
+                signed-off-by: Andrea Rosci <andrear@balena.io>
+              author: JSReds
+              nested: []
+            - subject: Add known_issue_list to hostApp.getOsVersions()
+              hash: aa38e638d773ba4cb9ef6f4940c00cc4f4e28145
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Andrea Rosci <andrear@balena.io>
+                signed-off-by: Andrea Rosci <andrear@balena.io>
+              author: JSReds
+              nested: []
+          version: balena-sdk-15.54.0
+          date: 2021-10-20T13:09:45.029Z
+        - commits:
+            - subject: Add support for batch device supervisor updates
+              hash: 0275b6311dcada18b9b11a235576d9f32a263e70
+              body: ""
+              footer:
+                Resolves: "#1134"
+                resolves: "#1134"
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.53.0
+          date: 2021-10-07T13:29:08.492Z
+        - commits:
+            - subject: Add support for batch device pinning to release
+              hash: 81610f8308530e1a0b7f118cf2046da45b70e1a3
+              body: ""
+              footer:
+                Resolves: "#1132"
+                resolves: "#1132"
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.52.0
+          date: 2021-10-06T10:37:58.535Z
+        - commits:
+            - subject: "auth.isLoggedIn: Treat BalenaExpiredToken errors as logged out
+                indicator"
+              hash: 1f70db1ae2a31cf33baa444a869261804088c778
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.51.4
+          date: 2021-09-28T22:02:20.287Z
+        - commits:
+            - subject: Convert application spec to TypeScript
+              hash: 14e34850bd9c362dbee2bf992925d1bbf856c4ca
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.51.3
+          date: 2021-09-28T20:52:19.984Z
+        - commits:
+            - subject: "application.trackLatestRelease: Fix using draft/invalidated releases"
+              hash: d069945cd76db0cafbe335f8c0403ce13dd05b24
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "application.isTrackingLatestRelease: Exclude draft&invalidated
+                releases"
+              hash: 4f3bdd45c88079ac809a5740226a588c6d22f549
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.51.2
+          date: 2021-09-28T15:18:49.974Z
+        - commits:
+            - subject: Update balena-request to v11.4.2
+              hash: 09aeebd00e8d4247d9b961275230f384f5729323
+              body: |
+                Update balena-request from 11.4.1 to 11.4.2
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Kyle Harding <kyle@balena.io>
+                signed-off-by: Kyle Harding <kyle@balena.io>
+              author: Kyle Harding
+              nested:
+                - commits:
+                    - subject: Allow overriding the default zlib flush setting
+                      hash: e3bab85ca37f37aac5e3d84caf91c7884655717d
+                      body: ""
+                      footer:
+                        Change-type: patch
+                        change-type: patch
+                        Signed-off-by: Kyle Harding <kyle@balena.io>
+                        signed-off-by: Kyle Harding <kyle@balena.io>
+                      author: Kyle Harding
+                  version: balena-request-11.4.2
+                  date: 2021-09-20T16:46:49.698Z
+          version: balena-sdk-15.51.1
+          date: 2021-09-20T18:03:51.216Z
+        - commits:
+            - subject: "os.getConfig: Add typings for the provisioningKeyName option"
+              hash: 30374d8f750247f450552e44d34dd75b46df57aa
+              body: ""
+              footer:
+                Change-Type: minor
+                change-type: minor
+                Signed-off-by: Nitish Agarwal 1592163+nitishagar@users.noreply.github.com
+                signed-off-by: Nitish Agarwal 1592163+nitishagar@users.noreply.github.com
+              author: Nitish Agarwal
+              nested: []
+          version: balena-sdk-15.51.0
+          date: 2021-09-16T10:09:05.726Z
+        - commits:
+            - subject: "models/os: Always first normalize the device type slug"
+              hash: 72d597c11a9924ce2be18ee6196933551c28c180
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.50.1
+          date: 2021-09-13T22:09:51.957Z
+        - commits:
+            - subject: Add release.finalize to promote draft releases to final
+              hash: 3ff1a104bb33c7d864aae872ec385df538a38fe2
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Paul Jonathan <pj@balena.io>
+                signed-off-by: Paul Jonathan <pj@balena.io>
+                See: https://github.com/balena-io/balena-sdk/issues/1122
+                see: https://github.com/balena-io/balena-sdk/issues/1122
+              author: toochevere
+              nested: []
+          version: balena-sdk-15.50.0
+          date: 2021-09-10T17:46:20.553Z
+        - commits:
+            - subject: "typings: Drop the v5-model-only application_type.is_host_os"
+              hash: b5ff0ec9888450ae800813fff34d4f62716b1e70
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.49.1
+          date: 2021-09-10T14:32:30.889Z
+        - commits:
+            - subject: "os.getSupportedOsUpdateVersions: Use the hostApp releases"
+              hash: 97727ec085d004022fc167ef1eac74b770b0bc49
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "os.download: Use the hostApp for finding the latest release"
+              hash: 8d1d85c65e6af04886b8de70f149602212353369
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.49.0
+          date: 2021-09-06T17:35:41.134Z
+        - commits:
+            - subject: Update balena-request to 11.4.1
+              hash: de5c18f7b55d25a23ae3b78fda8ea0ee4494e4ad
+              body: |
+                Update balena-request from 11.4.0 to 11.4.1
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Kyle Harding <kyle@balena.io>
+                signed-off-by: Kyle Harding <kyle@balena.io>
+              author: Kyle Harding
+              nested:
+                - commits:
+                    - subject: Allow more lenient gzip decompression
+                      hash: 9c7bc3051b279c9d09ec501a78dbe9f506d65650
+                      body: >
+                        Be more lenient with decoding compressed responses,
+                        since (very rarely)
+
+                        servers send slightly invalid gzip responses that are still accepted
+
+                        by common browsers.
+
+
+                        Always using Z_SYNC_FLUSH is what cURL does.
+                      footer:
+                        Change-type: patch
+                        change-type: patch
+                        Signed-off-by: Kyle Harding <kyle@balena.io>
+                        signed-off-by: Kyle Harding <kyle@balena.io>
+                      author: Kyle Harding
+                  version: balena-request-11.4.1
+                  date: 2021-08-27T19:10:59.811Z
+          version: balena-sdk-15.48.3
+          date: 2021-08-27T19:53:51.776Z
+        - commits:
+            - subject: Improve hostapp.getAllOsVersions performance & reduce fetched data
+              hash: 61307d83ebaa03d69197b5140ddcb5c50c9c4159
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.48.2
+          date: 2021-08-27T10:38:18.157Z
+        - commits:
+            - subject: Update typescript to 4.4.2
+              hash: 5d6e2b69633d8aca0747a64f121bd4b7e670a3c5
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.48.1
+          date: 2021-08-27T07:07:50.896Z
+        - commits:
+            - subject: Deprecate the release.release_version property
+              hash: ad635d40a3682bd80f50263e560ed3031f27e0a7
+              body: |
+                Setting a 3-digit semver to the release.semver field
+                is the suggested approach.
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "typings: Add the release versioning properties"
+              hash: 777f01fb2db9fed304cd6896f8138bd0838d1f72
+              body: |
+                Setting a 3-digit semver to the release.semver field
+                is the suggested approach, instead of setting the
+                release.release_version field. This fixes the unique
+                constraint issue that release_version was often
+                causing to users, since in case a duplicate semver is
+                provided, the backend will auto-increment the
+                revision field of the release. A composite
+                release.version field is also added, which has a raw
+                field with the complete unique version of the release.
+              footer:
+                Change-type: minor
+                change-type: minor
+                Depends-on: https://github.com/balena-io/balena-api/pull/3249
+                depends-on: https://github.com/balena-io/balena-api/pull/3249
+                See: https://www.flowdock.com/app/rulemotion/r-supervisor/threads/JN2-gnspQ-v6WaeWCvm9T8NYDY1
+                see: https://www.flowdock.com/app/rulemotion/r-supervisor/threads/JN2-gnspQ-v6WaeWCvm9T8NYDY1
+                HQ: https://jel.ly.fish/8ea1c390-9a85-402d-978c-4d31dcb0d235
+                hq: https://jel.ly.fish/8ea1c390-9a85-402d-978c-4d31dcb0d235
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.48.0
+          date: 2021-08-15T12:42:50.679Z
+        - commits:
+            - subject: Run browser tests using the minified browser bundle
+              hash: bc8c6c67926bf80d41c8f523bc4e5d2a5f1556b0
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+            - subject: Move to uglify-js to fix const assignment bug in minified build
+              hash: e03bfe3c4e82ed432917c670e7d5ff2f998299d8
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.47.1
+          date: 2021-08-10T12:00:20.993Z
+        - commits:
+            - subject: "typings: Add the release.is_final & is_finalized_at__date properties"
+              hash: d84dc17c3a537d79440924a1d4634177ac18939b
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Depends-on: https://github.com/balena-io/balena-api/pull/3248
+                depends-on: https://github.com/balena-io/balena-api/pull/3248
+                See: https://www.flowdock.com/app/rulemotion/r-supervisor/threads/JN2-gnspQ-v6WaeWCvm9T8NYDY1
+                see: https://www.flowdock.com/app/rulemotion/r-supervisor/threads/JN2-gnspQ-v6WaeWCvm9T8NYDY1
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.47.0
+          date: 2021-08-09T23:00:51.490Z
+        - commits:
+            - subject: "apiKey.getAll: Return only NamedUserApiKeys for backwards
+                compatibility"
+              hash: b95666caf36e65bb0d7a2a14f75824be7188cc36
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+                signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-15.46.1
+          date: 2021-07-28T10:29:40.795Z
+        - commits:
+            - subject: Add email verification & email request methods
+              hash: a5b30a066e87f5c58cd66ff9b27da8384954b079
+              body: ""
+              footer:
+                Change-Type: minor
+                change-type: minor
+                Signed-off-by: Nitish Agarwal 1592163+nitishagar@users.noreply.github.com
+                signed-off-by: Nitish Agarwal 1592163+nitishagar@users.noreply.github.com
+              author: Nitish Agarwal
+              nested: []
+          version: balena-sdk-15.46.0
+          date: 2021-07-27T09:53:47.815Z
+        - commits:
+            - subject: Update generateProvisioningKey to include keyName
+              hash: 5b79ee94aa81496640c2481dbc356207790bbecd
+              body: ""
+              footer:
+                Change-Type: minor
+                change-type: minor
+                Signed-off-by: Nitish Agarwal 1592163+nitishagar@users.noreply.github.com
+                signed-off-by: Nitish Agarwal 1592163+nitishagar@users.noreply.github.com
+              author: Nitish Agarwal
+              nested: []
+          version: balena-sdk-15.45.0
+          date: 2021-07-26T10:16:42.712Z
+  version: 12.0.0
+  title: Stop relying on the /device-types/v1 endpoints
+  date: 2022-01-27T14:42:25.582Z
+- commits:
     - subject: Avoid creating multiple preload containers
       hash: 6b5b6428833ce2cd5c53c2051d6f515f1b3e4c37
       body: |
@@ -15,9 +1038,9 @@
         signed-off-by: Kyle Harding <kyle@balena.io>
       author: Kyle Harding
       nested: []
-    - subject: 'major: Remove balena-preload script in favor of use with CLI'
+    - subject: "major: Remove balena-preload script in favor of use with CLI"
       hash: 7de06434155913b199024683e62c85e94f1d1cb1
-      body: ''
+      body: ""
       footer:
         Signed-off-by: Lorenzo Alberto Maria Ambrosi <lorenzothunder.ambrosi@gmail.com>
         signed-off-by: Lorenzo Alberto Maria Ambrosi <lorenzothunder.ambrosi@gmail.com>
@@ -25,7 +1048,7 @@
       nested: []
     - subject: Fix missing 'await' for getEdisonPartitions()
       hash: 9a2ebfdb2a5375304ee5cf2ba6321b93f93886ed
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -33,7 +1056,7 @@
       nested: []
     - subject: Add extra type information (refactor bind mount array)
       hash: 5b8d21e68d9da902f7304a210cb1abe22420d1d0
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -41,23 +1064,23 @@
       nested: []
     - subject: Run linter
       hash: 456c727e6518317588b31e28ffb734377fb85e76
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
       author: Paulo Castro
       nested: []
-    - subject: 'major: Convert to typescript'
+    - subject: "major: Convert to typescript"
       hash: ce241be0a780bdff87f4513e4d5a0ec63d72ac7e
-      body: ''
+      body: ""
       footer:
         Signed-off-by: Lorenzo Alberto Maria Ambrosi <lorenzothunder.ambrosi@gmail.com>
         signed-off-by: Lorenzo Alberto Maria Ambrosi <lorenzothunder.ambrosi@gmail.com>
       author: Lorenzo Alberto Maria Ambrosi
       nested: []
-    - subject: 'patch: Fix incorrect python List index check'
+    - subject: "patch: Fix incorrect python List index check"
       hash: 85d404000ac6e9b4ac83ce1feed33789deca182b
-      body: ''
+      body: ""
       footer:
         Signed-off-by: Lorenzo Alberto Maria Ambrosi <lorenzothunder.ambrosi@gmail.com>
         signed-off-by: Lorenzo Alberto Maria Ambrosi <lorenzothunder.ambrosi@gmail.com>
@@ -108,7 +1131,7 @@
 - commits:
     - subject: Avoid TypeError if build output array is empty
       hash: b12e7e745a4f7cb2d1156ddabcd33d39603db523
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -121,7 +1144,7 @@
 - commits:
     - subject: Start fetching image info sooner and run in parallel with api calls
       hash: 49a25f57a14997f1e343cb866a4f9f7aa04a6734
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -132,7 +1155,7 @@
 - commits:
     - subject: Fix missing await
       hash: 9d6de7d0ffbca78cfad330a83d346f25eb21a094
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -143,7 +1166,7 @@
 - commits:
     - subject: Use class syntax for declaring instance variables
       hash: edadfeac73343faa89d7e5784e4c51fb39162322
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -154,7 +1177,7 @@
 - commits:
     - subject: Catch errors during build of preload image
       hash: 4828423923e547c58d3c8e811d7d2ddbe258241b
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -167,7 +1190,7 @@
 - commits:
     - subject: Make use of async/await to simplify the code
       hash: 4da2ce03fb9cab2b16aae37f7e70caeb18d6a450
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -178,7 +1201,7 @@
 - commits:
     - subject: Remove unnecessary fetching of balena settings and token
       hash: 7307dfd111af5a7187017fcfe277e2dbda1d9f7c
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -189,7 +1212,7 @@
 - commits:
     - subject: Switch to tmp-promise instead of tmp
       hash: 5d8062f08702795848b881929e11f8fde9dcee36
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -200,7 +1223,7 @@
 - commits:
     - subject: Prefer `this.appId` to `this.application.id`
       hash: e9482adef6a685d72b0ac80a1ebe3925ae5f5016
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -209,9 +1232,9 @@
   version: 10.4.12
   date: 2021-07-22T19:16:39.844Z
 - commits:
-    - subject: 'Update balena-lint to 6.x, typescript to 4.x'
+    - subject: Update balena-lint to 6.x, typescript to 4.x
       hash: d22cd96d850061bcb601535f7b61fb6f32f987af
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -266,9 +1289,9 @@
   version: 10.4.8
   date: 2021-06-23T13:45:50.523Z
 - commits:
-    - subject: 'CI: limit tests to one platform since we are only linting'
+    - subject: "CI: limit tests to one platform since we are only linting"
       hash: 99f16d5c033c2c2e7790bc00670755d27b6f4f03
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -302,9 +1325,9 @@
   version: 10.4.7
   date: 2021-05-17T17:29:41.160Z
 - commits:
-    - subject: 'Update dependencies (dockerode, docker-progress)'
+    - subject: Update dependencies (dockerode, docker-progress)
       hash: efb8f4699c8988f5b9c1a4a04b53249837c10aeb
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -312,7 +1335,7 @@
       nested: []
     - subject: Don't assume that 'docker' argument uses Bluebird promises
       hash: 35ae62f855412f80c0fa92ed0217ad41f5afcdc7
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -323,7 +1346,7 @@
 - commits:
     - subject: Enhance comms between CLI process and Python process in container
       hash: dbd60732b5eab238475bcb34157856f783678edb
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -334,7 +1357,7 @@
 - commits:
     - subject: Fix unhandled exception on container.wait()
       hash: cce395e588f066c6ef968119be0f39a76005ccb9
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -342,7 +1365,7 @@
       nested: []
     - subject: Emit error on container status code '137' too (OOM SIGKILL)
       hash: c9286e1fb9e4e69c197cbfaadb21d3126cf99563
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -350,7 +1373,7 @@
       nested: []
     - subject: Add flake8 npm script
       hash: 7f49e975263c6d701d2c57108de46b0cdcaf32e1
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -359,11 +1382,10 @@
   version: 10.4.4
   date: 2021-05-05T00:07:20.081Z
 - commits:
-    - subject: >-
-        Don't truncate error logs (add _truncate_exc option to python sh
+    - subject: Don't truncate error logs (add _truncate_exc option to python sh
         commands)
       hash: fb4dbe26eccae10a555d6f88244f5e940fa9348b
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -371,7 +1393,7 @@
       nested: []
     - subject: Add keyword args to RetryCounter key computation. Remove unused args.
       hash: 7633628293b0fb463de68653abb82c5b57ab5b6a
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -408,7 +1430,7 @@
       nested: []
     - subject: Round the additional required bytes
       hash: 007f170134b01bb5daed1acbac491d2fda6ee41a
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -419,7 +1441,7 @@
 - commits:
     - subject: Add additionalSpace option to override additional space calculation
       hash: b43b03760d7d3212f0f312d37909200d63875628
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -427,7 +1449,7 @@
       nested: []
     - subject: Sum unique layers sizes instead of image sizes for size estimation
       hash: 49c56376ed450509fb18666c030fa78233279a02
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -438,7 +1460,7 @@
 - commits:
     - subject: Fix splash image file name for balenaOS >= 2.53.0 (resin -> balena)
       hash: 87e71c21a08497d126e3bcdca0aa48a542fe8f83
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -471,7 +1493,7 @@
         - commits:
             - subject: Update to balena-lint 5.x
               hash: 9563bf5150c39c6d6f298a9ed24f7969650273f7
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -481,7 +1503,7 @@
         - commits:
             - subject: Add .versionbot/CHANGELOG.yml for nested changelogs
               hash: 2cec0f2ef1eb24797b650024873c91c942e74017
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -490,12 +1512,12 @@
           date: 2020-08-17T11:47:14.543Z
         - commits:
             - author: Pagan Gazzard
-              body: ''
+              body: ""
               footers:
                 change-type: patch
               hash: 9bb049ea3be13fb1362e39b057f78b19d8e3153d
               subject: Update dependencies
-          date: '2020-03-04T14:17:04Z'
+          date: 2020-03-04T14:17:04Z
           version: docker-progress-4.0.1
         - commits:
             - author: Paulo Castro
@@ -503,11 +1525,9 @@
                 The change type is considered 'major' because, by default,
                 errors are
 
-                now thrown for relatively common occurrences such as
-                authentication
+                now thrown for relatively common occurrences such as authentication
 
-                failures when pulling from private registries, and library users
-                may
+                failures when pulling from private registries, and library users may
 
                 have to adapt.
               footers:
@@ -515,14 +1535,14 @@
                 signed-off-by: Paulo Castro <paulo@balena.io>
               hash: 3eef3685262e6bae8de064b9c50129e5597f4318
               subject: Detect error events in push/pull progress streams
-          date: '2019-03-26T16:03:31Z'
+          date: 2019-03-26T16:03:31Z
           version: docker-progress-4.0.0
   version: 10.3.0
   date: 2020-08-17T12:15:49.673Z
 - commits:
     - subject: Add .versionbot/CHANGELOG.yml for nested changelogs
       hash: d14612c9b81ab0d2b69cb6d8b44b94fc0b90336a
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -532,47 +1552,47 @@
   date: 2020-08-10T10:06:29.183Z
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: major
       hash: 2e2b81d70aec051a4f099a7f8f033caeae7e71d9
       subject: Update to balena-sdk 13.x
-  date: '2020-06-30T18:21:08Z'
+  date: 2020-06-30T18:21:08Z
   version: 9.0.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 9888515499d41ce15a8bf592e9b9a4abf1ba4789
       subject: Update dependencies
-  date: '2020-03-04T13:35:25Z'
+  date: 2020-03-04T13:35:25Z
   version: 8.4.0
 - commits:
     - author: Scott Lowe
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Scott Lowe <scott@balena.io>
       hash: 7261a6a632897de93822bcf9735ad11c789a86fd
       subject: Update .gitignore
     - author: Scott Lowe
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Scott Lowe <scott@balena.io>
       hash: fe900f829dd6c09a458dc69f3be8a6c888632b52
       subject: Check os/app architecture compatibility rather than equvalence.
-  date: '2020-02-05T13:38:36Z'
+  date: 2020-02-05T13:38:36Z
   version: 8.3.1
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 5ec6f38d53f038eb0dcdfe7874859eb841437856
       subject: Update dependencies
-  date: '2020-01-24T18:26:23Z'
+  date: 2020-01-24T18:26:23Z
   version: 8.3.0
 - commits:
     - author: Theodor Gherzan
@@ -583,7 +1603,7 @@
       hash: 1be05b8a49f1372c47be56f1860a672d48ff8753
       subject: Upgrade docker version to 17.12.0-ce
     - author: Theodor Gherzan
-      body: ''
+      body: ""
       footers:
         signed-off-by: Theodor Gherzan <theodor@balena.io>
       hash: b6dea424785b49fae590048f46cb997bb239d9df
@@ -598,115 +1618,115 @@
       hash: 0c3b4b985c7d16fe9fc50109d227a310d5b658ac
       subject: Retry the loop attachment
     - author: Theodor Gherzan
-      body: ''
+      body: ""
       footers:
         signed-off-by: Theodor Gherzan <theodor@balena.io>
       hash: b94b57ce9a4ae6fb2cb3f399a5f942603fddc069
       subject: The image we are trying to preload might be on a remote machine
-  date: '2019-12-17T12:45:34Z'
+  date: 2019-12-17T12:45:34Z
   version: 8.2.2
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 4e0e295a80c7ac5d41a434d9817684c35adedd37
       subject: Fix certificates path in the preloader container
-  date: '2019-07-18T14:16:23Z'
+  date: 2019-07-18T14:16:23Z
   version: 8.2.1
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 0386cfa91ac880ce296b1ac955dd9bab4b821b63
       subject: Replace tar-stream with tar-fs
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 6bf70baf4d768eb4927f9da3e2769b50665cae4d
       subject: Stop mounting host's /etc/ssl/certs on Linux
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: cb9c8893272929d3f881cfeb4f43506eb836d5f3
       subject: Add --add-certificate option
-  date: '2019-05-29T14:40:47Z'
+  date: 2019-05-29T14:40:47Z
   version: 8.2.0
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 7aa76b9733e135b1ff3e6818a4dea8203e5ac77c
       subject: Fetch the app commit if 'latest' is passed
-  date: '2019-05-21T11:51:31Z'
+  date: 2019-05-21T11:51:31Z
   version: 8.1.4
 - commits:
     - author: Gergely Imreh
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Gergely Imreh <gergely@balena.io>
       hash: f77a0a92720f78827f8774d16cb7a0752e9d595f
       subject: Use more robust regex to extract supervisor semver
-  date: '2019-05-15T15:19:03Z'
+  date: 2019-05-15T15:19:03Z
   version: 8.1.3
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: fbe363f3ffe8d6a43fe5834c25405bfafd21ceae
       subject: Filter by commit as part of the query if it's specified
-  date: '2019-05-10T13:35:51Z'
+  date: 2019-05-10T13:35:51Z
   version: 8.1.2
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: c73967e1e31e278471f833cf1ce75a2a8d4d81d1
       subject: Don't write device name in apps.json
-  date: '2019-02-18T18:05:43Z'
+  date: 2019-02-18T18:05:43Z
   version: 8.1.1
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 0675bf7261efb711c8c53f8d34e817d8dffffb3f
       subject: Bind mount host's /etc/ssl/certs folder on Linux
-  date: '2019-01-08T13:06:00Z'
+  date: 2019-01-08T13:06:00Z
   version: 8.1.0
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 4c88b411e4cbf8b7c31a6c2804cb10f850ad4af1
       subject: Don't try to get the device type arch with --dontCheckArch
-  date: '2018-11-15T14:31:58Z'
+  date: 2018-11-15T14:31:58Z
   version: 8.0.4
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: e0f0388b57277d1e9e93ec95bf04b3862a36c211
       subject: The splash image is named resin-logo.png
-  date: '2018-11-13T17:30:04Z'
+  date: 2018-11-13T17:30:04Z
   version: 8.0.3
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 2eac133c9dcbfe3449b02940523139bcfa779fb0
       subject: Don't try to pin releases when supervisor is < 7.0.0
-  date: '2018-11-13T09:54:29Z'
+  date: 2018-11-13T09:54:29Z
   version: 8.0.2
 - commits:
     - author: Alexis Svinartchouk
@@ -717,61 +1737,61 @@
         change-type: patch
       hash: 694f4a6eb50d62c45663426e771b6619429ccaa0
       subject: Bind mount host's /dev to container's /dev
-  date: '2018-11-09T05:03:17Z'
+  date: 2018-11-09T05:03:17Z
   version: 8.0.1
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: major
         signed-off-by: Alexis Svinartchouk <alexis@resin.io>
       hash: db3d8a4e6fb02de3414e1674f179e4a2a7d83ebd
       subject: Rename to balena-preload
-  date: '2018-10-29T20:41:44Z'
+  date: 2018-10-29T20:41:44Z
   version: 8.0.0
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Alexis Svinartchouk <alexis@balena.io>
       hash: 7a9f45b53b5d514354136a5caecc6aaf56d13a94
       subject: Don't build the Dockerfile on CI
     - author: Jack Brown
-      body: ''
+      body: ""
       hash: 70cab519b4b559887731bb1ad2b1e470de3137be
       subject: Update .resinci.yml
-  date: '2018-10-29T20:23:53Z'
+  date: 2018-10-29T20:23:53Z
   version: 7.0.6
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Alexis Svinartchouk <alexis@resin.io>
       hash: e74c24fa529edc96c5025df954f0cc3696cb3ad3
       subject: Filter out serviceId for supervisors < 7
-  date: '2018-09-06T16:24:20Z'
+  date: 2018-09-06T16:24:20Z
   version: 7.0.5
 - commits:
     - author: Theodor Gherzan
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Theodor Gherzan <theodor@resin.io>
       hash: 40e9c44b99f0556fe7f845654248262a856b3d55
       subject: Get the release ID not the application ID
-  date: '2018-08-31T12:18:38Z'
+  date: 2018-08-31T12:18:38Z
   version: 7.0.4
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Alexis Svinartchouk <alexis@resin.io>
       hash: 540ea0c49e13fbdd5401098a254925a7e535a587
       subject: Use localhost instead of 0.0.0.0 to connect to Docker on win32
-  date: '2018-08-29T17:13:35Z'
+  date: 2018-08-29T17:13:35Z
   version: 7.0.3
 - commits:
     - author: Gergely Imreh
@@ -786,7 +1806,7 @@
         change-type: patch
         signed-off-by: Gergely Imreh <gergely@resin.io>
       hash: d0f260b41abc7686aefe1386e280425ff45a541f
-      subject: 'dockerfile: Do not rely on script being executable'
+      subject: "dockerfile: Do not rely on script being executable"
     - author: Gergely Imreh
       body: |-
         When attaching to a docker container, docker will buffer
@@ -800,38 +1820,38 @@
         change-type: patch
         signed-off-by: Gergely Imreh <gergely@resin.io>
       hash: 82f6f7b75e998a3d0671bbf4fd4f0ef586000d51
-      subject: 'preload.py: Flush output buffer when data''s ready'
-  date: '2018-08-28T09:09:54Z'
+      subject: "preload.py: Flush output buffer when data's ready"
+  date: 2018-08-28T09:09:54Z
   version: 7.0.2
 - commits:
     - author: Theodor Gherzan
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Theodor Gherzan <theodor@resin.io>
       hash: a4dd539930207edb3b4a0d779cd09fbe41625443
       subject: Pinning information should also be available for the resin-image-flasher
-  date: '2018-08-21T15:39:33Z'
+  date: 2018-08-21T15:39:33Z
   version: 7.0.1
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: major
         signed-off-by: Alexis Svinartchouk <alexis@resin.io>
       hash: 5b48247d6735b68b7739b012016e55c93e9c8cd5
       subject: Check device architecture instead of device type
-  date: '2018-08-20T16:01:32Z'
+  date: 2018-08-20T16:01:32Z
   version: 7.0.0
 - commits:
     - author: Theodor Gherzan
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Theodor Gherzan <theodor@resin.io>
       hash: 39553ae62996af2e709e14ab2e4738b9eb995acd
       subject: In the case of a flasher OS copy splash image to its boot partition
-  date: '2018-08-09T15:07:41Z'
+  date: 2018-08-09T15:07:41Z
   version: 6.3.2
 - commits:
     - author: Alexis Svinartchouk
@@ -843,58 +1863,57 @@
         change-type: patch
       hash: c2d86a9ff6abf7714afb808f49eb297383e0c525
       subject: Increase size multiplier from 1.1 to 1.4
-  date: '2018-05-30T16:50:45Z'
+  date: 2018-05-30T16:50:45Z
   version: 6.3.1
 - commits:
     - author: Cameron Diver
-      body: ''
+      body: ""
       footers:
         change-type: minor
-        closes: '#174'
+        closes: "#174"
         signed-off-by: Cameron Diver <cameron@resin.io>
       hash: 0d043420c22c300ad26811d225612e90cb24ae90
       subject: Allow devices to be pinned following a preload provision
     - author: Cameron Diver
-      body: ''
+      body: ""
       footers:
         change-type: minor
         signed-off-by: Cameron Diver <cameron@resin.io>
       hash: cfeac0138085232ec75be8f8275a3906b990d928
       subject: Add circleci auto-deploy to npm
-  date: '2018-05-30T13:17:15Z'
+  date: 2018-05-30T13:17:15Z
   version: 6.3.0
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #170'
+      body: "Connects-To: #170"
       footers:
         change-type: minor
       hash: 6d0ee9f7d7285bb66370dda896333b72629960cf
-      subject: 'Update resin-sdk to 9.0.0-beta16, use $ before expand'
-  date: '2018-03-23T13:36:31Z'
+      subject: Update resin-sdk to 9.0.0-beta16, use $ before expand
+  date: 2018-03-23T13:36:31Z
   version: 6.2.0
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #168'
+      body: "Connects-To: #168"
       footers:
         change-type: patch
       hash: a2f51ae7022bbab8ddacce4fca1d8564f9c74e15
-      subject: >-
-        Add appId to each app in apps.json for supertvisors < 7 (apps.json is
+      subject: Add appId to each app in apps.json for supertvisors < 7 (apps.json is
         from state v1)
-  date: '2018-03-20T15:19:28Z'
+  date: 2018-03-20T15:19:28Z
   version: 6.1.2
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #166'
+      body: "Connects-To: #166"
       footers:
         change-type: patch
       hash: 265a316f2d865cf7be778448e6a92edc7603f219
       subject: Fix preloading images with supervisor version < 7
-  date: '2018-03-19T19:05:08Z'
+  date: 2018-03-19T19:05:08Z
   version: 6.1.1
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #164'
+      body: "Connects-To: #164"
       footers:
         change-type: patch
       hash: 6fe7b4b945fa25c23d235889f32b4e2daece7ac3
@@ -909,14 +1928,13 @@
       hash: 381d9e159b6c2d1cf03610964079683108450c67
       subject: Use state v1 endpoint when the supervisor version is < 7
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #164'
+      body: "Connects-To: #164"
       footers:
         change-type: patch
       hash: 743a8e945251653921979498cbf9cd80f22f963e
-      subject: >-
-        Preload the release with the highest id if an app has no commit
+      subject: Preload the release with the highest id if an app has no commit
         specified.
-  date: '2018-03-19T17:41:37Z'
+  date: 2018-03-19T17:41:37Z
   version: 6.1.0
 - commits:
     - author: Alexis Svinartchouk
@@ -925,8 +1943,7 @@
 
         * resize disk image only if it lacks space
 
-        * preload multicontainer apps if the ismage supervisor version is >=
-        7.0.0
+        * preload multicontainer apps if the ismage supervisor version is >= 7.0.0
 
         * simplify api
 
@@ -939,36 +1956,35 @@
         change-type: major
       hash: 02736ac093e34297fdfaa9c1ba5eef1c77120146
       subject: Multicontainer preload
-  date: '2018-03-09T21:51:58Z'
+  date: 2018-03-09T21:51:58Z
   version: 6.0.0
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #162'
+      body: "Connects-To: #162"
       footers:
         change-type: patch
       hash: 7ca9aa37ed17ea4829768fa917fa99bf46d662dc
-      subject: >-
-        get_inner_image_path falls back to the first file in /opt if no
+      subject: get_inner_image_path falls back to the first file in /opt if no
         deviceType.json file is found.
-  date: '2018-02-28T12:28:46Z'
+  date: 2018-02-28T12:28:46Z
   version: 5.2.2
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #160'
+      body: "Connects-To: #160"
       footers:
         change-type: patch
       hash: a6816e33fca55cb4f16878085a8008f28c319fba
       subject: Get the inner image name from device_type.json
-  date: '2018-02-22T16:51:48Z'
+  date: 2018-02-22T16:51:48Z
   version: 5.2.1
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #157'
+      body: "Connects-To: #157"
       footers:
         change-type: minor
       hash: 3dcfd7b3568bb25bc66628e5d7dfb1e0bc816609
       subject: Preserve bootstrap code in MBR when resizing
-  date: '2018-02-06T14:51:39Z'
+  date: 2018-02-06T14:51:39Z
   version: 5.2.0
 - commits:
     - author: Alexis Svinartchouk
@@ -979,75 +1995,75 @@
         change-type: patch
       hash: 52b491fb70470cf5d7c7929ba33241dd6c86de7d
       subject: Bind mount /dev on linux hosts
-  date: '2018-01-12T10:58:26Z'
+  date: 2018-01-12T10:58:26Z
   version: 5.1.2
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #150'
+      body: "Connects-To: #150"
       footers:
         change-type: patch
       hash: 131bad095cfaf11c456c4424a05c279378464c41
       subject: Minor fixes in preload.py
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #150'
+      body: "Connects-To: #150"
       footers:
         change-type: patch
       hash: b43c197ae27129d17760215a09f6f1d176c8f908
       subject: Remove all references to --dont-detect-flasher-type-images
-  date: '2017-12-12T15:18:44Z'
+  date: 2017-12-12T15:18:44Z
   version: 5.1.1
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #148'
+      body: "Connects-To: #148"
       footers:
         change-type: minor
       hash: 18ddbdcfda45ea45866ed6d99b1ee8fd738f37f8
       subject: Preload images that use Balena instead of Docker
-  date: '2017-12-12T12:20:13Z'
+  date: 2017-12-12T12:20:13Z
   version: 5.1.0
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #146'
+      body: "Connects-To: #146"
       footers:
         change-type: patch
       hash: dc17ed23c5a5e2b970f175d28ddfd5c795fc015e
       subject: Wait for loop device to be detached before killing the container
-  date: '2017-11-17T18:12:16Z'
+  date: 2017-11-17T18:12:16Z
   version: 5.0.4
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #144'
+      body: "Connects-To: #144"
       footers:
         change-type: patch
       hash: 905fed49cd6524a117b9d0eafe2b45abdb33c5ef
       subject: Fix confusion between bytes and sectors on partition resize
-  date: '2017-11-16T22:07:56Z'
+  date: 2017-11-16T22:07:56Z
   version: 5.0.3
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #142'
+      body: "Connects-To: #142"
       footers:
         change-type: patch
       hash: f63834ca3224b2cf1ea9bdf2d4baf2538cc9e9ae
       subject: Fix filesystem expansion after resize
-  date: '2017-11-16T21:19:52Z'
+  date: 2017-11-16T21:19:52Z
   version: 5.0.2
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #140'
+      body: "Connects-To: #140"
       footers:
         change-type: patch
       hash: 8fb7928638593ebb0366cfe56d1e5f635307c61c
-      subject: 'Update README: docker-toolbox is not supported, aufs module is required.'
-  date: '2017-11-08T19:09:03Z'
+      subject: "Update README: docker-toolbox is not supported, aufs module is
+        required."
+  date: 2017-11-08T19:09:03Z
   version: 5.0.1
 - commits:
     - author: Alexis Svinartchouk
       body: >-
         * use partition labels instead of hardcoding partition numbers
 
-        * better flasher image detection, remove the no longer needed
-        --dont-detect-flasher-type-images option
+        * better flasher image detection, remove the no longer needed --dont-detect-flasher-type-images option
 
         * fix preloading resinOS 1.8 flasher images
 
@@ -1055,8 +2071,8 @@
       footers:
         change-type: major
       hash: 46dac406ef7fff54692d5ec57b78ea769c8cc90a
-      subject: 'Preload GPT disk images, remove --dont-detect-flasher-type-images option'
-  date: '2017-10-26T19:31:14Z'
+      subject: Preload GPT disk images, remove --dont-detect-flasher-type-images option
+  date: 2017-10-26T19:31:14Z
   version: 5.0.0
 - commits:
     - author: Alexis Svinartchouk
@@ -1068,91 +2084,84 @@
         change-type: patch
       hash: 6f73ee74531b7b5c83c87842adc0851f94139598
       subject: Don't set Preloader.imageRepo in setApplication.
-  date: '2017-10-25T10:08:20Z'
+  date: 2017-10-25T10:08:20Z
   version: 4.0.9
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 417735fa22267ee7acaffa119b145734ab304afb
       subject: Fix incompatibility with Docker 1.12.6 (api version 1.24)
-  date: '2017-10-24T20:15:31Z'
+  date: 2017-10-24T20:15:31Z
   version: 4.0.8
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #131'
+      body: "Connects-To: #131"
       footers:
         change-type: patch
       hash: a43b6cb33b5d8cff391dd5d2d248e5d3422e3e87
       subject: Fix the --dont-detect-flasher-type-images option.
-  date: '2017-10-24T10:21:46Z'
+  date: 2017-10-24T10:21:46Z
   version: 4.0.7
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #127'
+      body: "Connects-To: #127"
       footers:
         change-type: patch
       hash: 2e275c677ffddd82cdcf32a72e21c9f3e58af53e
-      subject: >-
-        Copy data between the MBR and the first partition when resizing a
+      subject: Copy data between the MBR and the first partition when resizing a
         preloader image.
-  date: '2017-10-20T11:27:56Z'
+  date: 2017-10-20T11:27:56Z
   version: 4.0.6
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #129'
+      body: "Connects-To: #129"
       footers:
         change-type: patch
       hash: 6dab5d3ef8834eb0a302d55bcce3ae2657e06665
       subject: Don't crash if data/docker/network/files/local-kv.db doesn't exist
-  date: '2017-10-20T09:17:33Z'
+  date: 2017-10-20T09:17:33Z
   version: 4.0.5
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #112'
+      body: "Connects-To: #112"
       footers:
         change-type: patch
       hash: 06b5663b498d80c5d42e2da75de8d97ce1beb3e6
       subject: Print a newline after each spinner
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #112'
+      body: "Connects-To: #112"
       footers:
         change-type: patch
       hash: e75e2931c71f4b46599cb71a2feaf8410833d2b5
-      subject: >-
-        Support preloading 2.6+ resinOS images when hostapps use aufs or
-        overlay2
+      subject: Support preloading 2.6+ resinOS images when hostapps use aufs or overlay2
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #112'
+      body: "Connects-To: #112"
       footers:
         change-type: patch
       hash: 4e8a23db1309262b703ff47808b79722f8b23965
       subject: Fix preloading edison images 2.6+ (root partition filename changed)
-  date: '2017-10-18T19:08:01Z'
+  date: 2017-10-18T19:08:01Z
   version: 4.0.4
 - commits:
     - author: Pablo Carranza Velez
-      body: >-
-        `fs.constants` is not present on node v4, so in that case we use fs.R_OK
-        and fs.W_OK directly.
+      body: "`fs.constants` is not present on node v4, so in that case we use fs.R_OK
+        and fs.W_OK directly."
       footers:
         change-type: patch
         signed-off-by: Pablo Carranza Velez <pablo@resin.io>
       hash: 3e970500eee1274e554a0afea1bb8a7e878df8df
-      subject: >-
-        Get R_OK and W_OK constants from wherever they're available, to keep
+      subject: Get R_OK and W_OK constants from wherever they're available, to keep
         supporting node v4 for the time being
-  date: '2017-10-16T10:56:58Z'
+  date: 2017-10-16T10:56:58Z
   version: 4.0.2
 - commits:
     - author: Alexis Svinartchouk
       body: >-
         Like in the devenv
 
-        All this would not be necessary if the request library was not
-        forwarding Authorization headers on 307 responses even if the Host is
-        different.
+        All this would not be necessary if the request library was not forwarding Authorization headers on 307 responses even if the Host is different.
 
         See https://github.com/request/request/issues/2455
 
@@ -1160,10 +2169,9 @@
       footers:
         change-type: patch
       hash: 11dfd5aade175a5088fe2759c7d6d561711fb6b8
-      subject: >-
-        Handle cases where we are not redirected when making a request to the
+      subject: Handle cases where we are not redirected when making a request to the
         registry.
-  date: '2017-10-13T16:05:46Z'
+  date: 2017-10-13T16:05:46Z
   version: 4.0.1
 - commits:
     - author: Alexis Svinartchouk
@@ -1176,60 +2184,59 @@
       hash: 75addc2a291674d92250da495cc56f3db167026a
       subject: Allow preloading of Edison zip archives.
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       hash: 013c1c712f1eed610b979e6bcad997da833ba625
       subject: use /tmp instead of default  on macos
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       hash: fe50b97d41b9b1ce832f0671a4092d91f2c58f8a
       subject: exit if the application has no successful builds
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       hash: 890d16c66b903f4380a3e314d9e476067c471779
       subject: fix error handling in bin/resin-preload
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       hash: 4241379dfede9c5bc477dc2348c7c7f6daa9285e
-      subject: 'remove --api-host option, use RESINRC_RESIN_URL instead'
-  date: '2017-10-13T10:58:24Z'
+      subject: remove --api-host option, use RESINRC_RESIN_URL instead
+  date: 2017-10-13T10:58:24Z
   version: 4.0.0
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #118'
+      body: "Connects-To: #118"
       footers:
         change-type: patch
       hash: b8b11b1bc29497900395b4e3062c517d2f16537d
-      subject: 'Don''t use Array.includes, it is not supported in node4.'
-  date: '2017-10-06T11:36:10Z'
+      subject: Don't use Array.includes, it is not supported in node4.
+  date: 2017-10-06T11:36:10Z
   version: 3.1.9
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #110'
+      body: "Connects-To: #110"
       footers:
         change-type: patch
       hash: 76378bf0d9df9fa3c20b6e25d7202d60041f7872
       subject: Use Docker bridged networking on platforms other than Linux.
-  date: '2017-09-28T10:14:58Z'
+  date: 2017-09-28T10:14:58Z
   version: 3.1.8
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #107'
+      body: "Connects-To: #107"
       footers:
         change-type: patch
       hash: ddaf92ead0c5de78941745b2940a280e2aea5014
       subject: Don't use docker's PortBindings as we run it with `--net=host`
-  date: '2017-09-05T09:11:35Z'
+  date: 2017-09-05T09:11:35Z
   version: 3.1.7
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #104'
+      body: "Connects-To: #104"
       footers:
         change-type: patch
       hash: 02bb36130ea7cd658fa3f4d53df187b1ca2345cc
-      subject: >-
-        Detect when the overlay module is not loaded and show an appropriate
+      subject: Detect when the overlay module is not loaded and show an appropriate
         error.
-  date: '2017-08-31T10:35:03Z'
+  date: 2017-08-31T10:35:03Z
   version: 3.1.6
 - commits:
     - author: Alexis Svinartchouk
@@ -1239,10 +2246,9 @@
       footers:
         change-type: patch
       hash: 6a2bab65bd1368234c4007eac9add9a8e561e293
-      subject: >-
-        The python script no longer pulls the build, instead it exposes dockerd
+      subject: The python script no longer pulls the build, instead it exposes dockerd
         to the js script.
-  date: '2017-08-30T17:26:43Z'
+  date: 2017-08-30T17:26:43Z
   version: 3.1.5
 - commits:
     - author: Alexis Svinartchouk
@@ -1256,46 +2262,45 @@
       footers:
         change-type: patch
       hash: 1ab35d93a188494d23f2101054b64b52e04e91c0
-      subject: >-
-        Use the docker storage driver from
+      subject: Use the docker storage driver from
         /<rootfs>/lib/systemd/system/docker.service ExecStart key.
-  date: '2017-08-25T12:55:56Z'
+  date: 2017-08-25T12:55:56Z
   version: 3.1.4
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 58c34e1faa49c8be99fbd15e6b9c82d5c682ab4d
       subject: Fix js style (standard js)
-  date: '2017-08-25T12:53:49Z'
+  date: 2017-08-25T12:53:49Z
   version: 3.1.3
 - commits:
     - author: Sven Schwermer
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 0d5344ebdb488244b2ddf66298de54bef6c21a9e
       subject: Add flag for ignoring mismatching device types
-  date: '2017-08-25T10:04:36Z'
+  date: 2017-08-25T10:04:36Z
   version: 3.1.2
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #88'
+      body: "Connects-To: #88"
       footers:
         change-type: minor
       hash: 6129bd943f1f5c9bb647bf5ffc91e6bb78873f36
       subject: Add progress bars and spinners.
-  date: '2017-08-22T16:32:19Z'
+  date: 2017-08-22T16:32:19Z
   version: 3.1.0
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects to #86'
+      body: "Connects to #86"
       footers:
         change-type: major
       hash: 97b6dade30ec09f102caff9636274112a749736f
       subject: Don't preload the same build twice.
-  date: '2017-08-21T17:05:48Z'
+  date: 2017-08-21T17:05:48Z
   version: 3.0.0
 - commits:
     - author: Alexis Svinartchouk
@@ -1306,45 +2311,40 @@
         change-type: patch
       hash: f1c89d23d7ca91f0678daa2c715ef2edd1e3a986
       subject: Don't call stdin.setRawMode if it doesn't exist.
-  date: '2017-08-21T12:27:36Z'
+  date: 2017-08-21T12:27:36Z
   version: 2.0.3
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-To: #90'
+      body: "Connects-To: #90"
       footers:
         change-type: patch
       hash: 922befe6eab3218e153c19120bc8e74aa499ea27
       subject: Use only lower case for the preloaded image repository.
-  date: '2017-08-18T17:10:35Z'
+  date: 2017-08-18T17:10:35Z
   version: 2.0.2
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects to #84'
+      body: "Connects to #84"
       footers:
         change-type: patch
       hash: 0c205facd18b7a1ad77940d9827eeefb8f22bbbc
       subject: Correctly set the resin api token.
-  date: '2017-08-16T15:26:25Z'
+  date: 2017-08-16T15:26:25Z
   version: 2.0.1
 - commits:
     - author: Alexis Svinartchouk
       body: >-
         * use dockerode instead of starting docker sub-processes;
 
-        * interactive menu for selecting the app and commit to preload (in
-        resin-cli);
+        * interactive menu for selecting the app and commit to preload (in resin-cli);
 
-        * ask user and disable automatic app updates if he chooses to preload a
-        commit that is not the latest;
+        * ask user and disable automatic app updates if he chooses to preload a commit that is not the latest;
 
-        * detect device-type from the image and allow preloading only apps that
-        have the same device type;
+        * detect device-type from the image and allow preloading only apps that have the same device type;
 
-        * pass the RESINRC_PROXY env var to the preload container as
-        HTTP(S)_PROXY;
+        * pass the RESINRC_PROXY env var to the preload container as HTTP(S)_PROXY;
 
-        * use 'delegated' mode for docker bind mounts instead of 'cached', it
-        should be faster on macOS;
+        * use 'delegated' mode for docker bind mounts instead of 'cached', it should be faster on macOS;
 
         * fix typos;
 
@@ -1360,74 +2360,72 @@
 
         * use a configured resin-sdk object for resin api connection options;
 
-        * download layer sizes in parallel + avoid downloading layer sizes more
-        than once => significant speed-up;
+        * download layer sizes in parallel + avoid downloading layer sizes more than once => significant speed-up;
 
-        * transfer appData from js to python inside Docker via an env var =>
-        python no longer needs to talk to the api, less requests.
+        * transfer appData from js to python inside Docker via an env var => python no longer needs to talk to the api, less requests.
 
         Connects to #71
       footers:
         change-type: major
       hash: 2724b711a8ed8283c790a53e94fbab0bed26ed94
       subject: Integrate with resin-cli
-  date: '2017-08-11T13:28:45Z'
+  date: 2017-08-11T13:28:45Z
   version: 2.0.0
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects to #82'
+      body: "Connects to #82"
       footers:
         change-type: patch
       hash: f02e488fd9b2beee00ca21c647b637d8a6d66885
       subject: Use --net=host for host's Docker.
-  date: '2017-08-09T10:15:22Z'
+  date: 2017-08-09T10:15:22Z
   version: 1.4.1
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects to #74'
+      body: "Connects to #74"
       footers:
         change-type: minor
       hash: 233651107731924c60ca4e2ae9d6faa64332460e
       subject: Allow relative paths for the --image parameter.
-  date: '2017-08-04T12:33:35Z'
+  date: 2017-08-04T12:33:35Z
   version: 1.4.0
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects to #79'
+      body: "Connects to #79"
       footers:
         change-type: patch
       hash: cf7504d5ef68bc01cb5761ce0f2c02caa8b7960a
       subject: Update the README about --dont-detect-flasher-type-images
-  date: '2017-08-04T10:16:30Z'
+  date: 2017-08-04T10:16:30Z
   version: 1.3.1
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects to #75'
+      body: "Connects to #75"
       footers:
         change-type: minor
       hash: c991f928b28443de2ec87b9539570fae0ee60d6a
       subject: Add a --dont-detect-flasher-type-images flag.
-  date: '2017-08-04T10:05:58Z'
+  date: 2017-08-04T10:05:58Z
   version: 1.3.0
 - commits:
     - author: Alexis Svinartchouk
-      body: 'Connects-to: #63'
+      body: "Connects-to: #63"
       footers:
         change-type: patch
       hash: 4bc43a15a81acc19584ef55e0f562505e9eeec5a
       subject: Add CHANGELOG to allow VersionBot commits.
-  date: '2017-07-27T17:01:38Z'
+  date: 2017-07-27T17:01:38Z
   version: 1.2.1
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       hash: 120b322a4b295e6411967e4b8fd5bb0008825dc1
       subject: Allow specifying an app commit to preload.
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       hash: 64b3ac295f12cc9ad0e9315e4b807efec7438b9c
       subject: Add a 'Contributing' section to the README.
-  date: '2017-07-25T18:42:11Z'
+  date: 2017-07-25T18:42:11Z
   version: 1.2.0
 - commits:
     - author: Alexis Svinartchouk
@@ -1439,24 +2437,23 @@
 
         * resize and preload into the inner image
 
-        * Use docker cached volumes if Docker API Version is >= 1.28 to speed up
-        preloading on macOS
+        * Use docker cached volumes if Docker API Version is >= 1.28 to speed up preloading on macOS
       hash: acfe0b26271e768d3a449ce42cff1f21a87866d9
-      subject: '* Support flasher type images'
+      subject: "* Support flasher type images"
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       hash: 273a2646759f61d7c771ca85298ff6d1dd6d9ff2
       subject: Switch preload script from bash to python3.
-  date: '2017-07-25T13:25:09Z'
+  date: 2017-07-25T13:25:09Z
   version: 1.1.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: fd2b0cd8d6855cd6dfcf496e82153ef8cf269e88
       subject: Fix build dir paths
-  date: '2020-08-04T14:34:09Z'
+  date: 2020-08-04T14:34:09Z
   version: 10.2.3
 - commits:
     - author: Pagan Gazzard
@@ -1465,65 +2462,63 @@
         change-type: patch
       hash: 1b6bf2e9d6eefe425280187483a6478f1b464a47
       subject: Update balena-sdk to 15.x
-  date: '2020-08-04T14:07:15Z'
+  date: 2020-08-04T14:07:15Z
   version: 10.2.2
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: af7f077d67c6a572a2b2b5d6cebf7fdc822901ae
       subject: Add type checking
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: fc217a3b7de757d51d55aa09445b09e62da1958d
       subject: Use @balena/lint for linting
-  date: '2020-08-04T11:46:29Z'
+  date: 2020-08-04T11:46:29Z
   version: 10.2.1
 - commits:
     - author: Paulo Castro
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 896d3df02a53908cd828c2ce2a4fdd7aebe693d9
       subject: Print full stderr in the event of failure executing dockerd
     - author: Paulo Castro
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: b663745864c140d18ec4e39d1299261d978048b2
       subject: Increase losetup retry delay and count and print hint message on error
     - author: Paulo Castro
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 20d20e2eaf7ba6c8ee6067269eb14b34d4e261cf
-      subject: >-
-        Add 'setAppIdAndCommit()' method to help decouple balena-cli and
+      subject: Add 'setAppIdAndCommit()' method to help decouple balena-cli and
         balena-preload
-  date: '2020-07-15T13:34:42Z'
+  date: 2020-07-15T13:34:42Z
   version: 10.2.0
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 2ac197ec06cf2db9c0e1a5988343356e7e1b15b8
-      subject: >-
-        Make sure --img argument is a file accessible for reading and writing
+      subject: Make sure --img argument is a file accessible for reading and writing
         before preloading.
     - author: Jonas Hermsmeier
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 3b9f6f59664aba978ba59ab45ce005a15c6082a8
-      subject: 'doc(README): Add splash image usage documentation'
+      subject: "doc(README): Add splash image usage documentation"
     - author: Jonas Hermsmeier
-      body: ''
+      body: ""
       hash: 25f28ffc0fa4c8d6f077fdae0fd68f12e15aebfc
-      subject: 'src/preload.sh: Double-quote vars to prevent globbing / word splitting'
+      subject: "src/preload.sh: Double-quote vars to prevent globbing / word splitting"
     - author: Jonas Hermsmeier
       body: |-
         As the uncompressed image layer size cannot be obtained through the
@@ -1540,7 +2535,7 @@
       footers:
         change-type: minor
       hash: 1c6ba470901511e31033ae5614763ad3aca2d45c
-      subject: 'src/preload.sh: Estimate container size by reading gzip sizes'
+      subject: "src/preload.sh: Estimate container size by reading gzip sizes"
     - author: Jonas Hermsmeier
       body: |-
         This enables e2fsck to automatically repair issues that can safely
@@ -1550,7 +2545,7 @@
         allow the preloader to continue, causing out-of-disk-space errors
         if subsequently, the filesystem could not be expanded.
       hash: 1e2a79125f78f716f2552a264813dee3ff026cc7
-      subject: 'src/preload.sh: Enable auto-repair for e2fsck'
+      subject: "src/preload.sh: Enable auto-repair for e2fsck"
     - author: Jonas Hermsmeier
       body: |-
         This fixes a condition checking for a legacy rce setup,
@@ -1558,7 +2553,7 @@
       footers:
         change-type: patch
       hash: 71a053b2e9ad07f0c0876484fd3265d4a1f83f1d
-      subject: 'src/preload.sh: Fix condition checking for /rce dir'
+      subject: "src/preload.sh: Fix condition checking for /rce dir"
     - author: Christian Csar
       body: |-
         Add commandline option --splash-image to support changing the boot
@@ -1573,7 +2568,7 @@
       footers:
         change-type: major
       hash: fef0426f097f87c806cd9baa61310a0fb8d59c7a
-      subject: 'src/preload.sh: Move to registry2'
+      subject: "src/preload.sh: Move to registry2"
     - author: Jonas Hermsmeier
       body: |-
         This uses the registry2 host in the imageId written into the `apps.json`
@@ -1581,15 +2576,14 @@
       footers:
         change-type: patch
       hash: d9813c8c2a8a8d00219ac64614fa5e1dae6aa2aa
-      subject: 'src/preload.sh: Use registry2 in imageId'
+      subject: "src/preload.sh: Use registry2 in imageId"
     - author: Pablo Carranza Velez
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Pablo Carranza Velez <pablo@resin.io>
       hash: 239093aed5dda63bf979a26c556fa69745b18f7f
-      subject: >-
-        Include app name in the generated apps.json to avoid an unnecessary
+      subject: Include app name in the generated apps.json to avoid an unnecessary
         restart
     - author: Jonas Hermsmeier
       body: |-
@@ -1597,66 +2591,66 @@
         enabling easier programmatic use, and reduces external dependencies to
         run on Windows.
       hash: f3f2828a6090400ad2de8d065c5f8e3dcca27adb
-      subject: 'chore(package): Create npm package'
+      subject: "chore(package): Create npm package"
     - author: Jonas Hermsmeier
-      body: ''
+      body: ""
       hash: bece378b2f9ebe5bace9e89d2d0c59b5722149bd
-      subject: 'doc(README): Use registry2, update known issues'
+      subject: "doc(README): Use registry2, update known issues"
     - author: Jonas Hermsmeier
-      body: ''
+      body: ""
       hash: 950399d51e29e5c4c814e630a9880885a15f2749
-      subject: 'fix(resin-preload): Fix check for missing required opts'
+      subject: "fix(resin-preload): Fix check for missing required opts"
     - author: Jonas Hermsmeier
-      body: ''
+      body: ""
       hash: 6845cb430f7aa7790645fb3457cc3550d3a24d06
-      subject: 'refactor(resin-preload): Dedupe child proc error handling'
+      subject: "refactor(resin-preload): Dedupe child proc error handling"
     - author: Jonas Hermsmeier
-      body: ''
+      body: ""
       hash: 48d960efeaac8f51b924065a78e9ff3ca3ed0930
-      subject: 'doc: Fix missing registry2 updates'
+      subject: "doc: Fix missing registry2 updates"
     - author: Jonas Hermsmeier
-      body: ''
+      body: ""
       hash: 61f3beeef0d29bb236de1a7ee1a501cccac401b2
-      subject: 'doc(README): Expand on what flasher images are'
+      subject: "doc(README): Expand on what flasher images are"
     - author: Jonas Hermsmeier
-      body: ''
+      body: ""
       hash: e830b3631ae4e45df1381897f76da30c6b702dc7
-      subject: 'feat: Backport splash image support'
-  date: '2017-07-07T15:08:50Z'
+      subject: "feat: Backport splash image support"
+  date: 2017-07-07T15:08:50Z
   version: 1.0.1
 - commits:
     - author: Alexis Svinartchouk
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: d3bdc31ad12ffbe64a4f5d83e432a3381ac501eb
       subject: Flake8 on src/preload.py
-  date: '2020-07-10T12:10:31Z'
+  date: 2020-07-10T12:10:31Z
   version: 10.1.1
 - commits:
     - author: Thodoris Greasidis
-      body: ''
+      body: ""
       footers:
         change-type: minor
         signed-off-by: Thodoris Greasidis <thodoris@balena.io>
       hash: e617e3cf5fc4308bb481fd5e0b025c6acaaf2f7c
       subject: Make the balena-sdk instance an optional parameter
     - author: Thodoris Greasidis
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Thodoris Greasidis <thodoris@balena.io>
       hash: 8eafdaf6c1b30818fabc0259d1c5585684e60e59
       subject: Add balena-sdk as a peer dependency since DI is also supported
-  date: '2020-07-09T16:09:40Z'
+  date: 2020-07-09T16:09:40Z
   version: 10.1.0
 - commits:
     - author: Thodoris Greasidis
-      body: ''
+      body: ""
       footers:
         change-type: major
         signed-off-by: Thodoris Greasidis <thodoris@balena.io>
       hash: 3a6104887a7058ee5ca72175efd615f73b82e472
       subject: Update to balena-sdk 14.x
-  date: '2020-07-01T21:11:57Z'
+  date: 2020-07-01T21:11:57Z
   version: 10.0.0
