@@ -51,7 +51,12 @@ CONFIG_PARTITIONS = [
     "flash-boot",  # flasher images
 ]
 
-SUPERVISOR_REPOSITORY_RE = "^((balena|resin|balenaplayground)/)?(armel|rpi|armv7hf|aarch64|i386|amd64|i386-nlp)-supervisor$"
+# command:
+#   balena images --all --format '{{.Repository}} {{.Tag}}'
+# matches:
+#   balena_supervisor v12.11.38
+#   balena/aarch64-supervisor v11.14.0
+SUPERVISOR_REPOSITORY_RE = "^(((balena|resin|balenaplayground)/)?(armel|rpi|armv7hf|aarch64|i386|amd64|i386-nlp)-supervisor|balena_supervisor)$"
 
 # 'sh' module '_truncate_exc' option:
 # http://amoffat.github.io/sh/sections/special_arguments.html#truncate-exc
