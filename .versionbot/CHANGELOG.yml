@@ -1,4 +1,20 @@
 - commits:
+    - subject: Update supervisor image regex to include tagged images
+      hash: b1e291198125783410581442bc8adf4cee41a73d
+      body: |
+        Starting in balenaOS v2.93.0 the supervisor images are tagged
+        as balena_supervisor after being pulled from the balena registry.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 12.0.1
+  title: "'Update supervisor image regex to include tagged images'"
+  date: 2022-05-10T15:07:37.661Z
+- commits:
     - subject: Improve types
       hash: fdebfb95ef6f7087c22e77ccedeb418de7655e87
       body: ""
