@@ -523,6 +523,17 @@ export class Preloader extends EventEmitter {
 		this.emit('progress', { name, percentage });
 	}
 
+	// Return the version of the target state endpoint used by the supervisor
+	_getStateVersion() {
+		if (this._supervisorLT7()) {
+			return 1;
+		} else if (this._supervisorLT13()) {
+			return 2;
+		} else {
+			return 3;
+		}
+	}
+
 	async _getState() {
 		const uuid = this.balena.models.device.generateUniqueKey();
 		const deviceInfo = await this.balena.models.device.register(
@@ -536,12 +547,23 @@ export class Preloader extends EventEmitter {
 				should_be_running__release: this._getRelease().id,
 			},
 		});
+
+		const version = this._getStateVersion();
 		const { body: state } = await this.balena.request.send({
 			headers: { 'User-Agent': SUPERVISOR_USER_AGENT },
 			// @ts-expect-error
 			baseUrl: this.balena.pine.API_URL,
-			url: `device/v${this._supervisorLT7() ? 1 : 2}/${uuid}/state`,
+			url: `device/v${version}/${uuid}/state`,
 		});
+
+		if (version === 3) {
+			// State is keyed by device uuid in target state v3.
+			// use .local to avoid having to reference by uuid elsewhere on this
+			// module
+			state.local = state[uuid];
+			delete state[uuid];
+		}
+
 		this.state = state;
 		await this.balena.models.device.remove(uuid);
 	}
@@ -577,6 +599,27 @@ export class Preloader extends EventEmitter {
 		return release;
 	}
 
+	_getServicesFromApps(apps) {
+		const stateVersion = this._getStateVersion();
+		// Use the version of the target state endpoint to know
+		// how to read the apps object
+		switch (stateVersion) {
+			case 1:
+				// Pre-multicontainer: there is only one image: use the only image from the state endpoint.
+				const [appV1] = _.values(apps);
+				return [{ image: appV1.image }];
+			case 2:
+				// Multicontainer: we need to match is_stored_at__image_location with service.image from the state v2 endpoint.
+				const [appV2] = _.values(apps);
+				return appV2.services;
+			case 3:
+				// v3 target state has a releases property which contains the services
+				const [appV3] = _.values(apps).filter((a) => a.id === this.appId);
+				const [release] = _.values(appV3?.releases ?? {});
+				return release?.services ?? {};
+		}
+	}
+
 	_getImages(): Image[] {
 		// This method lists the images that need to be preloaded.
 		// The is_stored_at__image_location attribute must match the image attribute of the app or app service in the state endpoint.
@@ -587,25 +630,23 @@ export class Preloader extends EventEmitter {
 					ci.image[0].is_stored_at__image_location.toLowerCase(),
 			});
 		});
-		// App from the state endpoint (v1 or v2 depending on the supervisor version).
-		const app = _.values(this.state.local.apps)[0];
-		if (this._supervisorLT7()) {
-			// Pre-multicontainer: there is only one image: use the only image from the state endpoint.
-			images[0].is_stored_at__image_location = app.image.toLowerCase();
-		} else {
-			// Multicontainer: we need to match is_stored_at__image_location with service.image from the state v2 endpoint.
-			const servicesImages = _.map(app.services, (service) => {
+
+		// Multicontainer: we need to match is_stored_at__image_location with service.image from the state v2 endpoint.
+		const servicesImages = _.map(
+			this._getServicesFromApps(this.state.local.apps),
+			(service) => {
 				return service.image.toLowerCase();
-			});
-			_.each(images, (image) => {
-				image.is_stored_at__image_location = _.find(
-					servicesImages,
-					(serviceImage) => {
-						return serviceImage.startsWith(image.is_stored_at__image_location);
-					},
-				);
-			});
-		}
+			},
+		);
+		_.each(images, (image) => {
+			image.is_stored_at__image_location = _.find(
+				servicesImages,
+				(serviceImage) => {
+					return serviceImage.startsWith(image.is_stored_at__image_location);
+				},
+			);
+		});
+
 		return images;
 	}
 
@@ -811,6 +852,19 @@ export class Preloader extends EventEmitter {
 		} catch (e) {
 			// Suppose the supervisor version is >= 7.0.0 when it is not valid semver.
 			return false;
+		}
+	}
+
+	_supervisorLT13() {
+		try {
+			return compareVersions(this.supervisorVersion!, '13.0.0') === -1;
+		} catch (e) {
+			// This module requires the supervisor image to be tagged.
+			// The OS stopped tagging supervisor images at some point, and only
+			// restarted on v2.89.13. This means there is a range of OS versions for which
+			// supervisorVersion will be `null`.
+			// If null, assume the version is below 13
+			return true;
 		}
 	}
 
