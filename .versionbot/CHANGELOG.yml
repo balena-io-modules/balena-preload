@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add support for preloading v3 target state format
+      hash: 02d2264acd2e5ca01bb907d24426c4a3c919839d
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: pipex
+      nested: []
+  version: 12.1.0
+  title: "'Add support for preloading v3 target state format'"
+  date: 2022-05-26T15:06:24.214Z
+- commits:
     - subject: Update supervisor image regex to include tagged images
       hash: b1e291198125783410581442bc8adf4cee41a73d
       body: |
