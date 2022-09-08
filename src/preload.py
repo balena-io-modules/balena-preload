@@ -975,6 +975,8 @@ if __name__ == "__main__":
         try:
             data = json.loads(line)
             method = methods[data["command"]]
+            log.info("Running '%s'", method.__name__)
+            log.debug("with kwargs: '%s'", data.get("parameters", {}))
             result = method(**data.get("parameters", {}))
             response = {
                 "result": result,

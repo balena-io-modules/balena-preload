@@ -1038,6 +1038,7 @@ export class Preloader extends EventEmitter {
 				stdout: true,
 				stderr: true,
 				stdin: true,
+				hijack: true
 			});
 			this.stdin = stream;
 			this.docker.modem.demuxStream(stream, this.stdout, this.stderr);
