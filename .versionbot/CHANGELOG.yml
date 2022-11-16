@@ -1,4 +1,16 @@
 - commits:
+    - subject: move to flowzone set npm engine to 12 remove resin-ci
+      hash: d2a410a23984098aa667c00475ac608f9ed22cfc
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Edwin Joassart
+      nested: []
+  version: 12.1.1
+  title: ""
+  date: 2022-11-16T20:05:53.610Z
+- commits:
     - subject: Add support for preloading v3 target state format
       hash: 02d2264acd2e5ca01bb907d24426c4a3c919839d
       body: ""
@@ -881,8 +893,7 @@
                     - subject: Allow more lenient gzip decompression
                       hash: 9c7bc3051b279c9d09ec501a78dbe9f506d65650
                       body: >
-                        Be more lenient with decoding compressed responses,
-                        since (very rarely)
+                        Be more lenient with decoding compressed responses, since (very rarely)
 
                         servers send slightly invalid gzip responses that are still accepted
 
@@ -1550,8 +1561,7 @@
         - commits:
             - author: Paulo Castro
               body: >-
-                The change type is considered 'major' because, by default,
-                errors are
+                The change type is considered 'major' because, by default, errors are
 
                 now thrown for relatively common occurrences such as authentication
 
@@ -2281,8 +2291,8 @@
 - commits:
     - author: Alexis Svinartchouk
       body: >-
-        With this change we no longer need to extract the resinOS version and
-        make decisions based on it.
+        With this change we no longer need to extract the resinOS version and make
+        decisions based on it.
 
         overlay2 storage driver works (nvidia jetson devices for example)
 
