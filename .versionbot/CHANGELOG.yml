@@ -1,4 +1,16 @@
 - commits:
+    - subject: fix stdin with docker 20.10.17
+      hash: e5e4c37fb39e8f8b4cd433b5130217967da0bd68
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Edwin Joassart
+      nested: []
+  version: 12.2.0
+  title: ""
+  date: 2022-12-12T12:00:08.572Z
+- commits:
     - subject: move to flowzone set npm engine to 12 remove resin-ci
       hash: d2a410a23984098aa667c00475ac608f9ed22cfc
       body: ""
