@@ -1034,12 +1034,12 @@ export class Preloader extends EventEmitter {
 
 			this._prepareErrorHandler();
 			const stream = await this.container.attach({
-        stream: true,
-        stdout: true,
-        stderr: true,
-        stdin: true,
-        hijack: true,
-      })
+				stream: true,
+				stdout: true,
+				stderr: true,
+				stdin: true,
+				hijack: true,
+			})
 			this.stdin = stream;
 			this.docker.modem.demuxStream(stream, this.stdout, this.stderr);
 
