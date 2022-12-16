@@ -1,7 +1,8 @@
 {
 	"compilerOptions": {
+		"typeRoots": ["typings", "node_modules/@types"],
 		"module": "commonjs",
-		"target": "es2018",
+		"target": "es2019",
 		"outDir": "build",
 		"strict": true,
 		"noImplicitAny": false,
@@ -13,7 +14,9 @@
 		"skipLibCheck": true,
 		"preserveSymlinks": true,
 		"allowJs": true,
-		"checkJs": true
+		"checkJs": true,
+		"allowSyntheticDefaultImports": true,
+		"declaration": true,
 	},
 	"include": [
 		"./lib/**/*",

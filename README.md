@@ -3,9 +3,16 @@
 [![npm license](https://img.shields.io/npm/l/balena-preload.svg?style=flat-square)](https://npmjs.com/package/balena-preload)
 [![npm downloads](https://img.shields.io/npm/dm/balena-preload.svg?style=flat-square)](https://npmjs.com/package/balena-preload)
 
-Script for preloading balena OS images (`.img`) with a user application container.
+Scripts for preloading balena OS images (`.img`) with a user application container.
 
 Using this will allow images with supervisor version above 1.0.0 to run the user application without connectivity, and without the need to download the container.
+
+## Transition warning
+This library contains two versions of the preloading scripts : 
+- balena-cli version (legacy), requires a docker-engine and use a combination of python and typescript scripts
+- .etch version (upcomming), which works inline and is used in balena-img for producing .etch preloaded images
+
+This readme informations only applies for the legacy balena-cli version, please refer to the [/lib/dotEtchPreload/readme.md] for the .etch version notes.
 
 ## Warning
 

@@ -14,7 +14,7 @@
     "docker",
     "container"
   ],
-  "main": "build/preload.js",
+  "main": "build/index.js",
   "files": [
     "build/",
     "src/preload.py",
@@ -22,7 +22,9 @@
     "requirements.txt"
   ],
   "dependencies": {
+    "@types/gunzip-maybe": "^1.4.0",
     "archiver": "^3.1.1",
+    "axios": "^1.2.1",
     "balena-sdk": "^16.0.0",
     "bluebird": "^3.7.2",
     "compare-versions": "^3.6.0",
@@ -30,17 +32,19 @@
     "dockerode": "^3.3.0",
     "get-folder-size": "^2.0.1",
     "get-port": "^3.2.0",
+    "gunzip-maybe": "^1.4.2",
     "lodash": "^4.17.21",
     "node-cleanup": "^2.1.2",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "resin-cli-visuals": "^1.8.0",
     "tar-fs": "^2.1.1",
+    "tar-stream": "^3.0.0",
     "tmp-promise": "^3.0.2",
     "unzipper": "^0.8.14"
   },
   "devDependencies": {
-    "@balena/lint": "^6.1.1",
+    "@balena/lint": "^6.2.1",
     "@types/archiver": "^5.1.1",
     "@types/bluebird": "^3.5.36",
     "@types/dockerode": "^3.2.7",
