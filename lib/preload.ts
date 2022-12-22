@@ -6,21 +6,11 @@ import * as path from 'path';
 import * as streamModule from 'stream';
 import * as Bluebird from 'bluebird';
 import * as tarfs from 'tar-fs';
-import {
-	promises as fs,
-	constants,
-	createReadStream,
-	createWriteStream,
-} from 'fs';
+import { promises as fs, constants } from 'fs';
 import * as getPort from 'get-port';
 import * as os from 'os';
-import * as tmp from 'tmp-promise';
-import * as unzipper from 'unzipper';
-import * as archiver from 'archiver';
 import * as compareVersions from 'compare-versions';
 import * as request from 'request-promise';
-import { promisify } from 'util';
-import getFolderSize = require('get-folder-size');
 import type {
 	Application,
 	BalenaSDK,
@@ -29,9 +19,6 @@ import type {
 	PineFilter,
 	Release,
 } from 'balena-sdk';
-import { DirOptions } from 'tmp';
-const getFolderSizeAsync: (arg1: string) => Promise<number> =
-	promisify(getFolderSize);
 
 const preload = module.exports;
 
@@ -50,39 +37,8 @@ const OVERLAY_MODULE_MESSAGE =
 	'You need to load the "overlay" module to be able to preload this image: run "sudo modprobe overlay".';
 const DOCKERD_USES_OVERLAY = '--storage-driver=overlay2';
 
-const PARTITION_NAMES = ['resin-boot', 'resin-rootA', 'resin-data'];
 const SUPERVISOR_USER_AGENT =
 	'Supervisor/v6.6.0 (Linux; Resin OS 2.12.3; prod)';
-
-const FLASH_EDISON_FILENAME = 'FlashEdison.json';
-const EDISON_PARTITION_FILE_KEYS = {
-	'resin-boot': 'boot_file',
-	'resin-rootA': 'rootfs_file',
-	'resin-data': 'resin-data_file',
-};
-
-async function getEdisonPartitions(
-	edisonFolder,
-): Promise<{ [name: string]: { file: string; image: string } }> {
-	// The replace is needed because this file contains new lines in strings, which is not valid JSON.
-	const data = JSON.parse(
-		(
-			await fs.readFile(path.join(edisonFolder, FLASH_EDISON_FILENAME), 'utf8')
-		).replace(/\n/g, ''),
-	);
-	const parameters = data.flash.parameters;
-	const result = {};
-	PARTITION_NAMES.forEach((name) => {
-		result[name] = {
-			file: path.join(
-				edisonFolder,
-				parameters[EDISON_PARTITION_FILE_KEYS[name]].value,
-			),
-			image: `/img/${name}`,
-		};
-	});
-	return result;
-}
 
 class BufferBackedWritableStream extends streamModule.Writable {
 	chunks: Buffer[] = [];
@@ -115,35 +71,6 @@ function setBindMount(
 		);
 	}
 }
-
-const zipContainsFiles = (archive, files) => {
-	// FIXME: read from the zip directory instead of reading the whole file
-	// This is broken in unzipper for now: an invalid zip file will throw an
-	// uncaught error event.
-	const filesCopy = files.slice();
-	return new Promise((resolve, reject) => {
-		createReadStream(archive)
-			.on('error', reject)
-			.pipe(unzipper.Parse())
-			.on('error', reject)
-			.on('entry', function (entry) {
-				_.pull(filesCopy, entry.path);
-				entry.autodrain();
-			})
-			.on('finish', () => {
-				resolve(filesCopy.length === 0);
-			});
-	});
-};
-
-const isEdisonZipArchive = async (file) => {
-	try {
-		await zipContainsFiles(file, [FLASH_EDISON_FILENAME]);
-		return true;
-	} catch {
-		return false;
-	}
-};
 
 type Layer = {
 	digest: any;
@@ -178,7 +105,6 @@ const createContainer = async (
 	splashImage: string,
 	dockerPort: number,
 	proxy: string,
-	edisonFolder: string,
 ) => {
 	const mounts: Array<[string, string]> = [];
 	const version = await docker.version();
@@ -198,16 +124,8 @@ const createContainer = async (
 		`DOCKER_TMPDIR=${DOCKER_TMPDIR}`,
 	];
 
-	if (edisonFolder) {
-		const partitions = await getEdisonPartitions(edisonFolder);
-		env.push(`PARTITIONS=${JSON.stringify(partitions)}`);
-		PARTITION_NAMES.forEach((name) => {
-			const part = partitions[name];
-			mounts.push([part.file, part.image]);
-		});
-	} else {
-		mounts.push([image, DISK_IMAGE_PATH_IN_DOCKER]);
-	}
+	mounts.push([image, DISK_IMAGE_PATH_IN_DOCKER]);
+
 	const containerOptions: Docker.ContainerCreateOptions = {
 		Image: DOCKER_IMAGE_TAG,
 		name: preload.CONTAINER_NAME,
@@ -276,10 +194,8 @@ export class Preloader extends EventEmitter {
 	stdout = new streamModule.PassThrough();
 	stderr = new streamModule.PassThrough();
 	bufferedStderr = new BufferBackedWritableStream();
-	edisonFolder;
 	dockerPort;
 	container;
-	tmpCleanup;
 	state; // device state from the api
 	freeSpace: number | undefined; // space available on the image data partition (in bytes)
 	preloadedBuilds: string[] | undefined; // list of preloaded Docker images in the disk image
@@ -384,48 +300,6 @@ export class Preloader extends EventEmitter {
 					$select: 'slug',
 				},
 			},
-		});
-	}
-
-	async _unzipFiles(archive, folder) {
-		// archive is the path to a zip file
-		const name = 'Unzipping Edison zip archive';
-		let position = 0;
-		this._progress(name, 0);
-		const stat = await fs.stat(archive);
-		return createReadStream(archive)
-			.on('data', (buf) => {
-				position += buf.length;
-				this._progress(name, (position / stat.size) * 100);
-			})
-			.pipe(unzipper.Extract({ path: folder }))
-			.promise();
-	}
-
-	async _zipFolder(folder, destination) {
-		const name = 'Zipping back files into Edison zip archive';
-		let position = 0;
-		this._progress(name, 0);
-		const size = await getFolderSizeAsync(folder);
-		await new Bluebird((resolve, reject) => {
-			const archive = archiver('zip', { zlib: { level: 9 } });
-			archive.on('warning', console.warn);
-			archive.on('error', reject);
-			archive.on('entry', (entry) => {
-				if (entry !== undefined && entry.stats !== undefined) {
-					position += entry.stats.size;
-					this._progress(name, (position / size) * 100);
-				}
-			});
-			archive.directory(folder, false);
-			archive.finalize();
-			const output = createWriteStream(destination);
-			output.on('error', reject);
-			output.on('close', () => {
-				this._progress(name, 100);
-				resolve();
-			});
-			archive.pipe(output);
 		});
 	}
 
@@ -984,24 +858,6 @@ export class Preloader extends EventEmitter {
 			);
 
 			this.dockerPort = port;
-			// Check if the image is a regular disk image or an Edison zip archive
-			const isEdison = await this._runWithSpinner(
-				'Checking if the image is an edison zip archive',
-				() => isEdisonZipArchive(this.image),
-			);
-			// If the image is an Edison zip archive extract it to a temporary folder.
-			if (isEdison) {
-				const tmpDirOptions: DirOptions = { unsafeCleanup: true };
-				if (os.platform() === 'darwin') {
-					// Docker on mac can not access /var/folders/... by default which is where $TMPDIR is on macos.
-					// https://docs.docker.com/docker-for-mac/osxfs/#namespaces
-					tmpDirOptions.dir = '/tmp';
-				}
-				const { path: folder, cleanup } = await tmp.dir(tmpDirOptions);
-				this.edisonFolder = folder;
-				this.tmpCleanup = cleanup;
-				await this._unzipFiles(this.image, folder);
-			}
 			// Create the docker preloader container
 			const container = await this._runWithSpinner(
 				'Creating preloader container',
@@ -1012,7 +868,6 @@ export class Preloader extends EventEmitter {
 						this.splashImage,
 						this.dockerPort,
 						this.proxy,
-						this.edisonFolder,
 					),
 			);
 			this.container = container;
@@ -1053,15 +908,12 @@ export class Preloader extends EventEmitter {
 
 	cleanup() {
 		// Returns Promise
-		// Deletes the container and the temporary edison folder if it was created
+		// Deletes the container
 		return Bluebird.resolve(
 			this._runWithSpinner('Cleaning up temporary files', async () => {
 				if (this.container) {
 					await Promise.all([this.kill(), this.container.wait()]);
 					await this.container.remove();
-				}
-				if (this.tmpCleanup) {
-					return await this.tmpCleanup();
 				}
 			}),
 		);
@@ -1210,10 +1062,6 @@ export class Preloader extends EventEmitter {
 				this.stdout.once('error', reject);
 				this.stdout.once('data', resolve);
 			});
-
-			if (this.edisonFolder) {
-				await this._zipFolder(this.edisonFolder, this.image);
-			}
 		});
 	}
 
