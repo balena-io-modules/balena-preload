@@ -1,4 +1,14 @@
 - commits:
+    - subject: "major: removes Edison DT code"
+      hash: aee1a63f5d586be8c8c46d2b45d3219dfb300a1d
+      body: ""
+      footer: {}
+      author: JOASSART Edwin
+      nested: []
+  version: 13.0.0
+  title: ""
+  date: 2022-12-22T13:16:12.004Z
+- commits:
     - subject: "minor: build for every major node version >=12"
       hash: ec4b7dd6064d2719d4f1753f5c4ecf57a6c20196
       body: ""
