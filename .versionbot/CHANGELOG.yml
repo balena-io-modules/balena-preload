@@ -1,4 +1,14 @@
 - commits:
+    - subject: "minor: add .etch streamed preload functions"
+      hash: 637402e77afc2f99a03b6b78759152df47498136
+      body: ""
+      footer: {}
+      author: Edwin Joassart
+      nested: []
+  version: 13.1.0
+  title: ""
+  date: 2022-12-26T16:08:26.988Z
+- commits:
     - subject: "major: removes Edison DT code"
       hash: aee1a63f5d586be8c8c46d2b45d3219dfb300a1d
       body: ""
