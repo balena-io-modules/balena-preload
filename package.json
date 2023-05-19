@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "author": "Balena Ltd (https://balena.io)",
   "engines": {
-    "node": ">=12"
+    "node": ">=16"
   },
   "keywords": [
     "balena",
