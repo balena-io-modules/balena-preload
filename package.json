@@ -24,7 +24,7 @@
   ],
   "dependencies": {
     "archiver": "^3.1.1",
-    "balena-sdk": "^16.0.0",
+    "balena-sdk": "^17.0.0",
     "bluebird": "^3.7.2",
     "compare-versions": "^3.6.0",
     "docker-progress": "^5.0.0",
