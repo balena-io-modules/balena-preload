@@ -4,6 +4,8 @@
   "description": "Preload balena OS images with a user application container",
   "license": "Apache-2.0",
   "author": "Balena Ltd (https://balena.io)",
+  "main": "build/preload.js",
+  "types": "build/preload.d.ts",
   "engines": {
     "node": ">=16"
   },
@@ -14,7 +16,6 @@
     "docker",
     "container"
   ],
-  "main": "build/preload.js",
   "files": [
     "build/",
     "src/preload.py",
