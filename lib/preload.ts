@@ -20,8 +20,6 @@ import type {
 	Release,
 } from 'balena-sdk';
 
-const preload = module.exports;
-
 const { R_OK, W_OK } = constants;
 
 const DOCKER_TMPDIR = '/docker_tmpdir';
@@ -99,6 +97,29 @@ interface ImageInfo {
 	balena_os_version: string;
 }
 
+/** @const {String} Container name */
+export const CONTAINER_NAME = 'balena-image-preloader';
+
+export const applicationExpandOptions = {
+	owns__release: {
+		$select: ['id', 'commit', 'end_timestamp', 'composition'],
+		$expand: {
+			contains__image: {
+				$select: ['image'],
+				$expand: {
+					image: {
+						$select: ['image_size', 'is_stored_at__image_location'],
+					},
+				},
+			},
+		},
+		$filter: {
+			status: 'success',
+		},
+		$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
+	},
+};
+
 const createContainer = async (
 	docker: Docker,
 	image: string,
@@ -128,7 +149,7 @@ const createContainer = async (
 
 	const containerOptions: Docker.ContainerCreateOptions = {
 		Image: DOCKER_IMAGE_TAG,
-		name: preload.CONTAINER_NAME,
+		name: CONTAINER_NAME,
 		AttachStdout: true,
 		AttachStderr: true,
 		OpenStdin: true,
@@ -1082,28 +1103,3 @@ export class Preloader extends EventEmitter {
 		return Bluebird.resolve(this._fetchApplication());
 	}
 }
-
-preload.Preloader = Preloader;
-
-/** @const {String} Container name */
-preload.CONTAINER_NAME = 'balena-image-preloader';
-
-preload.applicationExpandOptions = {
-	owns__release: {
-		$select: ['id', 'commit', 'end_timestamp', 'composition'],
-		$expand: {
-			contains__image: {
-				$select: ['image'],
-				$expand: {
-					image: {
-						$select: ['image_size', 'is_stored_at__image_location'],
-					},
-				},
-			},
-		},
-		$filter: {
-			status: 'success',
-		},
-		$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
-	},
-};
