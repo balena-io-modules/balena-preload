@@ -4,8 +4,10 @@
   "description": "Preload balena OS images with a user application container",
   "license": "Apache-2.0",
   "author": "Balena Ltd (https://balena.io)",
+  "main": "build/preload.js",
+  "types": "build/preload.d.ts",
   "engines": {
-    "node": ">=12"
+    "node": ">=16"
   },
   "keywords": [
     "balena",
@@ -14,7 +16,6 @@
     "docker",
     "container"
   ],
-  "main": "build/preload.js",
   "files": [
     "build/",
     "src/preload.py",
@@ -23,7 +24,7 @@
   ],
   "dependencies": {
     "archiver": "^3.1.1",
-    "balena-sdk": "^16.0.0",
+    "balena-sdk": "^17.0.0",
     "bluebird": "^3.7.2",
     "compare-versions": "^3.6.0",
     "docker-progress": "^5.0.0",
@@ -40,17 +41,17 @@
     "unzipper": "^0.8.14"
   },
   "devDependencies": {
-    "@balena/lint": "^6.1.1",
+    "@balena/lint": "^6.2.2",
     "@types/archiver": "^5.1.1",
     "@types/bluebird": "^3.5.36",
     "@types/dockerode": "^3.2.7",
     "@types/get-folder-size": "^2.0.0",
-    "@types/node": "^10.17.60",
+    "@types/node": "^14.18.47",
     "@types/request-promise": "^4.1.48",
     "@types/tar-fs": "^2.0.1",
     "@types/unzipper": "^0.8.4",
     "catch-uncommitted": "^2.0.0",
-    "typescript": "^4.5.5"
+    "typescript": "^5.0.4"
   },
   "homepage": "https://github.com/balena-io/balena-preload",
   "repository": {
