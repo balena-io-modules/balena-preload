@@ -1,4 +1,65 @@
 - commits:
+    - subject: Improve typings & source type safety
+      hash: 98a0b5174457239ee2b0b3270d4089ceb5c6878d
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Update dev dependencies
+      hash: 94773c38f7d4bcb83c9573e82fab6562d86b11c7
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Update to balena-sdk 17.0.0
+      hash: d6a4fd04c6c1b9169aaa3d0aeeb94b7fd72c417d
+      body: |
+        Update to balena-sdk from 16.8.0 to 17.0.0
+      footer:
+        Change-type: major
+        change-type: major
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Emit type declaration files
+      hash: 9c3a23146af6fb688331b962f94cf6cf01942734
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Switch to es6 module exports
+      hash: 7e7cd01a9f6fa959e5ae867615f627ab018f2945
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Require es2019 capable runtime
+      hash: 932dc7b4f75ee528fe7ceb632a7a443c90a58076
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Drop support for Node.js v12 & v14
+      hash: 02088fbb87d36cc674ae425e7fdc8defa1334cf3
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Thodoris Greasidis
+      nested: []
+  version: 14.0.0
+  title: ""
+  date: 2023-05-23T10:00:54.755Z
+- commits:
     - subject: "major: removes Edison DT code"
       hash: aee1a63f5d586be8c8c46d2b45d3219dfb300a1d
       body: ""
@@ -925,7 +986,8 @@
                     - subject: Allow more lenient gzip decompression
                       hash: 9c7bc3051b279c9d09ec501a78dbe9f506d65650
                       body: >
-                        Be more lenient with decoding compressed responses, since (very rarely)
+                        Be more lenient with decoding compressed responses,
+                        since (very rarely)
 
                         servers send slightly invalid gzip responses that are still accepted
 
@@ -1593,7 +1655,8 @@
         - commits:
             - author: Paulo Castro
               body: >-
-                The change type is considered 'major' because, by default, errors are
+                The change type is considered 'major' because, by default,
+                errors are
 
                 now thrown for relatively common occurrences such as authentication
 
@@ -2323,8 +2386,8 @@
 - commits:
     - author: Alexis Svinartchouk
       body: >-
-        With this change we no longer need to extract the resinOS version and make
-        decisions based on it.
+        With this change we no longer need to extract the resinOS version and
+        make decisions based on it.
 
         overlay2 storage driver works (nvidia jetson devices for example)
 
