@@ -16,6 +16,7 @@ import type {
 	BalenaSDK,
 	DeviceType,
 	PineDeferred,
+	PineExpand,
 	PineFilter,
 	Release,
 } from 'balena-sdk';
@@ -118,12 +119,12 @@ export const applicationExpandOptions = {
 		},
 		$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
 	},
-};
+} satisfies PineExpand<Application>;
 
 const createContainer = async (
 	docker: Docker,
 	image: string,
-	splashImage: string,
+	splashImage: string | undefined,
 	dockerPort: number,
 	proxy: string,
 ) => {
@@ -195,20 +196,6 @@ const isReadWriteAccessibleFile = async (image) => {
 	}
 };
 
-export type PreloaderOptions = {
-	balena;
-	docker;
-	appId;
-	commit;
-	image;
-	splashImage;
-	proxy;
-	dontCheckArch;
-	pinDevice;
-	certificates;
-	additionalSpace;
-};
-
 export class Preloader extends EventEmitter {
 	application;
 	stdin;
@@ -225,43 +212,26 @@ export class Preloader extends EventEmitter {
 	config: ImageInfo['config'] | undefined; // config.json data from the disk image
 	deviceTypes: DeviceType[] | undefined;
 	balena: BalenaSDK;
-	docker;
-	appId;
-	commit;
-	image;
-	splashImage;
-	proxy;
-	dontCheckArch;
-	pinDevice = false;
-	certificates: string[];
-	additionalSpace;
 
 	constructor(
-		balena,
-		docker,
-		appId,
-		commit,
-		image,
-		splashImage,
-		proxy,
-		dontCheckArch,
-		pinDevice = false,
-		certificates: string[] = [],
-		additionalSpace = null,
+		balena: BalenaSDK | undefined,
+		public docker: Docker,
+		public appId: number | string | undefined,
+		public commit: string | undefined,
+		public image: string,
+		public splashImage: string | undefined,
+		public proxy: any,
+		public dontCheckArch: boolean,
+		public pinDevice = false,
+		public certificates: string[] = [],
+		public additionalSpace: number | null = null,
 	) {
 		super();
-
-		this.balena = balena ?? require('balena-sdk').fromSharedOptions();
-		this.docker = docker;
-		this.appId = appId;
-		this.commit = commit;
-		this.image = image;
-		this.splashImage = splashImage;
-		this.proxy = proxy;
-		this.dontCheckArch = dontCheckArch;
-		this.pinDevice = pinDevice;
-		this.certificates = certificates;
-		this.additionalSpace = additionalSpace;
+		this.balena =
+			balena ??
+			(
+				require('balena-sdk') as typeof import('balena-sdk')
+			).fromSharedOptions();
 		this.stderr.pipe(this.bufferedStderr); // TODO: split stderr and build output ?
 	}
 
@@ -431,6 +401,11 @@ export class Preloader extends EventEmitter {
 
 	async _getState() {
 		const uuid = this.balena.models.device.generateUniqueKey();
+		if (!this.appId) {
+			throw new Error(
+				'Could not fetch the target state because of missing application info',
+			);
+		}
 		const deviceInfo = await this.balena.models.device.register(
 			this.appId,
 			uuid,
@@ -785,63 +760,58 @@ export class Preloader extends EventEmitter {
 	}
 
 	async _fetchApplication() {
-		if (this.application || !this.appId) {
+		const { appId } = this;
+		if (this.application || !appId) {
 			return;
 		}
-		return this._runWithSpinner(
-			`Fetching application ${this.appId}`,
-			async () => {
-				const releaseFilter: PineFilter<Release> = {
-					status: 'success',
-				};
-				if (this.commit === 'latest') {
-					const { should_be_running__release } =
-						await this.balena.models.application.get(this.appId, {
-							$select: 'should_be_running__release',
-						});
-					// TODO: Add a check to error if the application is not tracking any release
-					releaseFilter.id =
-						(should_be_running__release as PineDeferred | null)!.__id;
-				} else if (this.commit != null) {
-					releaseFilter.commit = { $startswith: this.commit };
-				}
+		return this._runWithSpinner(`Fetching application ${appId}`, async () => {
+			const releaseFilter: PineFilter<Release> = {
+				status: 'success',
+			};
+			if (this.commit === 'latest') {
+				const { should_be_running__release } =
+					await this.balena.models.application.get(appId, {
+						$select: 'should_be_running__release',
+					});
+				// TODO: Add a check to error if the application is not tracking any release
+				releaseFilter.id =
+					(should_be_running__release as PineDeferred | null)!.__id;
+			} else if (this.commit != null) {
+				releaseFilter.commit = { $startswith: this.commit };
+			}
 
-				const application = await this.balena.models.application.get(
-					this.appId,
-					{
+			const application = await this.balena.models.application.get(appId, {
+				$expand: {
+					should_be_running__release: {
+						$select: 'commit',
+					},
+					is_for__device_type: {
+						$select: 'slug',
 						$expand: {
-							should_be_running__release: {
-								$select: 'commit',
-							},
-							is_for__device_type: {
+							is_of__cpu_architecture: {
 								$select: 'slug',
-								$expand: {
-									is_of__cpu_architecture: {
-										$select: 'slug',
-									},
-								},
-							},
-							owns__release: {
-								$select: ['id', 'commit', 'end_timestamp', 'composition'],
-								$expand: {
-									contains__image: {
-										$select: ['image'],
-										$expand: {
-											image: {
-												$select: ['image_size', 'is_stored_at__image_location'],
-											},
-										},
-									},
-								},
-								$filter: releaseFilter,
-								$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
 							},
 						},
 					},
-				);
-				this.setApplication(application);
-			},
-		);
+					owns__release: {
+						$select: ['id', 'commit', 'end_timestamp', 'composition'],
+						$expand: {
+							contains__image: {
+								$select: ['image'],
+								$expand: {
+									image: {
+										$select: ['image_size', 'is_stored_at__image_location'],
+									},
+								},
+							},
+						},
+						$filter: releaseFilter,
+						$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
+					},
+				},
+			});
+			this.setApplication(application);
+		});
 	}
 
 	async _checkImage(image) {
@@ -1092,12 +1062,12 @@ export class Preloader extends EventEmitter {
 	}
 
 	/**
-	 * @param {string | number} appId
+	 * @param {string | number} appIdOrSlug
 	 * @param {string} commit
 	 * @returns {Promise<void>}
 	 */
-	setAppIdAndCommit(appId, commit) {
-		this.appId = appId;
+	setAppIdAndCommit(appIdOrSlug: string | number, commit: string) {
+		this.appId = appIdOrSlug;
 		this.commit = commit;
 		this.application = null;
 		return Bluebird.resolve(this._fetchApplication());
