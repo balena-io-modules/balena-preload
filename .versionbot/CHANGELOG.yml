@@ -1,4 +1,16 @@
 - commits:
+    - subject: Use SDK getSupervisorTargetStateForApp when getting supervisor state
+      hash: 2e25beb4bc924b4f6c0008bc1f6570e8e07bc41d
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Otávio Jacobi
+      nested: []
+  version: 14.0.1
+  title: ""
+  date: 2023-08-02T12:13:51.590Z
+- commits:
     - subject: Improve typings & source type safety
       hash: 98a0b5174457239ee2b0b3270d4089ceb5c6878d
       body: ""
