@@ -39,6 +39,9 @@ const DOCKERD_USES_OVERLAY = '--storage-driver=overlay2';
 const SUPERVISOR_USER_AGENT =
 	'Supervisor/v6.6.0 (Linux; Resin OS 2.12.3; prod)';
 
+const MISSING_APP_INFO_ERROR_MSG =
+	'Could not fetch the target state because of missing application info';
+
 class BufferBackedWritableStream extends streamModule.Writable {
 	chunks: Buffer[] = [];
 
@@ -399,13 +402,13 @@ export class Preloader extends EventEmitter {
 		}
 	}
 
-	async _getState() {
-		const uuid = this.balena.models.device.generateUniqueKey();
+	async _getStateWithRegistration(stateVersion: number) {
 		if (!this.appId) {
-			throw new Error(
-				'Could not fetch the target state because of missing application info',
-			);
+			throw new Error(MISSING_APP_INFO_ERROR_MSG);
 		}
+
+		const uuid = this.balena.models.device.generateUniqueKey();
+
 		const deviceInfo = await this.balena.models.device.register(
 			this.appId,
 			uuid,
@@ -418,24 +421,47 @@ export class Preloader extends EventEmitter {
 			},
 		});
 
-		const version = this._getStateVersion();
 		const { body: state } = await this.balena.request.send({
 			headers: { 'User-Agent': SUPERVISOR_USER_AGENT },
 			// @ts-expect-error
 			baseUrl: this.balena.pine.API_URL,
-			url: `device/v${version}/${uuid}/state`,
+			url: `device/v${stateVersion}/${uuid}/state`,
 		});
+		this.state = state;
+		await this.balena.models.device.remove(uuid);
+	}
 
-		if (version === 3) {
-			// State is keyed by device uuid in target state v3.
+	async _getStateFromTargetEndpoint(stateVersion: number) {
+		if (!this.appId) {
+			throw new Error(MISSING_APP_INFO_ERROR_MSG);
+		}
+
+		const [{ uuid: appUuid }, state] = await Promise.all([
+			this.balena.models.application.get(this.appId, {
+				$select: 'uuid',
+			}),
+			this.balena.models.device.getSupervisorTargetStateForApp(this.appId),
+		]);
+
+		if (stateVersion === 3) {
+			// State is keyed by application uuid in target state v3.
 			// use .local to avoid having to reference by uuid elsewhere on this
 			// module
-			state.local = state[uuid];
-			delete state[uuid];
+			state.local = state[appUuid];
+			delete state[appUuid];
 		}
 
 		this.state = state;
-		await this.balena.models.device.remove(uuid);
+	}
+
+	async _getState() {
+		const stateVersion = this._getStateVersion();
+
+		if (stateVersion < 3) {
+			await this._getStateWithRegistration(stateVersion);
+		} else {
+			await this._getStateFromTargetEndpoint(stateVersion);
+		}
 	}
 
 	async _getImageInfo() {
