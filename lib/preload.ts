@@ -436,11 +436,15 @@ export class Preloader extends EventEmitter {
 			throw new Error(MISSING_APP_INFO_ERROR_MSG);
 		}
 
+		const release = this._getRelease();
 		const [{ uuid: appUuid }, state] = await Promise.all([
 			this.balena.models.application.get(this.appId, {
 				$select: 'uuid',
 			}),
-			this.balena.models.device.getSupervisorTargetStateForApp(this.appId),
+			this.balena.models.device.getSupervisorTargetStateForApp(
+				this.appId,
+				release.commit,
+			),
 		]);
 
 		if (stateVersion === 3) {
