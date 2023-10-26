@@ -7,7 +7,7 @@
   "main": "build/preload.js",
   "types": "build/preload.d.ts",
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "keywords": [
     "balena",
