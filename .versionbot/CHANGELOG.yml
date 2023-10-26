@@ -1,4 +1,16 @@
 - commits:
+    - subject: Drop support for Node.js v16
+      hash: ec2dd2b5be4ff921017e072d65d8aada31fc5caa
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Otávio Jacobi
+      nested: []
+  version: 15.0.0
+  title: ""
+  date: 2023-10-26T16:35:55.840Z
+- commits:
     - subject: Fix preload with commit hash
       hash: 6c9da970c63b67a8469843c2c4f940dee4f832ec
       body: ""

@@ -1,6 +1,6 @@
 {
   "name": "balena-preload",
-  "version": "14.0.3",
+  "version": "15.0.0",
   "description": "Preload balena OS images with a user application container",
   "license": "Apache-2.0",
   "author": "Balena Ltd (https://balena.io)",
@@ -68,6 +68,6 @@
     "prepare": "tsc"
   },
   "versionist": {
-    "publishedAt": "2023-09-25T10:49:11.519Z"
+    "publishedAt": "2023-10-26T16:35:56.296Z"
   }
 }
