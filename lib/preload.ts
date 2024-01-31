@@ -189,7 +189,7 @@ const createContainer = async (
 const isReadWriteAccessibleFile = async (image) => {
 	try {
 		const [, stats] = await Promise.all([
-			// tslint:disable-next-line:no-bitwise
+			// eslint-disable-next-line no-bitwise
 			fs.access(image, R_OK | W_OK),
 			fs.stat(image),
 		]);
@@ -232,9 +232,8 @@ export class Preloader extends EventEmitter {
 		super();
 		this.balena =
 			balena ??
-			(
-				require('balena-sdk') as typeof import('balena-sdk')
-			).fromSharedOptions();
+			(require('balena-sdk') as typeof import('balena-sdk')) // eslint-disable-line @typescript-eslint/no-var-requires
+				.fromSharedOptions();
 		this.stderr.pipe(this.bufferedStderr); // TODO: split stderr and build output ?
 	}
 
@@ -423,7 +422,7 @@ export class Preloader extends EventEmitter {
 
 		const { body: state } = await this.balena.request.send({
 			headers: { 'User-Agent': SUPERVISOR_USER_AGENT },
-			// @ts-expect-error
+			// @ts-expect-error reason unknown
 			baseUrl: this.balena.pine.API_URL,
 			url: `device/v${stateVersion}/${uuid}/state`,
 		});
@@ -504,19 +503,22 @@ export class Preloader extends EventEmitter {
 		// Use the version of the target state endpoint to know
 		// how to read the apps object
 		switch (stateVersion) {
-			case 1:
+			case 1: {
 				// Pre-multicontainer: there is only one image: use the only image from the state endpoint.
 				const [appV1] = _.values(apps);
 				return [{ image: appV1.image }];
-			case 2:
+			}
+			case 2: {
 				// Multicontainer: we need to match is_stored_at__image_location with service.image from the state v2 endpoint.
 				const [appV2] = _.values(apps);
 				return appV2.services;
-			case 3:
+			}
+			case 3: {
 				// v3 target state has a releases property which contains the services
 				const [appV3] = _.values(apps).filter((a) => a.id === this.appId);
 				const [release] = _.values(appV3?.releases ?? {});
 				return release?.services ?? {};
+			}
 		}
 	}
 
@@ -771,7 +773,7 @@ export class Preloader extends EventEmitter {
 	_getRegistryToken(images) {
 		return Bluebird.resolve(
 			this.balena.request.send({
-				// @ts-expect-error
+				// @ts-expect-error reason unknwon
 				baseUrl: this.balena.pine.API_URL,
 				url: '/auth/v1/token',
 				qs: {

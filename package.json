@@ -41,7 +41,7 @@
     "unzipper": "^0.8.14"
   },
   "devDependencies": {
-    "@balena/lint": "^6.2.2",
+    "@balena/lint": "^7.2.6",
     "@types/archiver": "^5.1.1",
     "@types/bluebird": "^3.5.36",
     "@types/dockerode": "^3.2.7",
