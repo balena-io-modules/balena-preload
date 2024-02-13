@@ -1,4 +1,18 @@
 - commits:
+    - subject: Update to eslint based linter
+      hash: 047edfe685c73bddbcf3551a34e7a83ecae341e1
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Ken Bannister <kb2ma@runbox.com>
+        signed-off-by: Ken Bannister <kb2ma@runbox.com>
+      author: Ken Bannister
+      nested: []
+  version: 15.0.2
+  title: ""
+  date: 2024-02-13T13:26:32.851Z
+- commits:
     - subject: Update balena-sdk to 19.0.1
       hash: 469e95af6c11541a994cd60ec6189dea30568332
       body: Update balena-sdk from 18.0.0 to 19.0.1
