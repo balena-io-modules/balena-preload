@@ -1,4 +1,16 @@
 - commits:
+    - subject: Remove unused dependencies
+      hash: 429315f21df769a3408610cdcacfa3a02ac3edc1
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Otavio Jacobi
+      nested: []
+  version: 15.0.5
+  title: ""
+  date: 2024-04-09T15:24:21.255Z
+- commits:
     - subject: Remove unused resin-cli-visuals dependency
       hash: 20bd6818f90141ac80d888a338b6326eea528ec0
       body: ""
