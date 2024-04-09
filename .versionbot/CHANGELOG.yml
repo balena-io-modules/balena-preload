@@ -1,4 +1,16 @@
 - commits:
+    - subject: Remove unused resin-cli-visuals dependency
+      hash: 20bd6818f90141ac80d888a338b6326eea528ec0
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Otavio Jacobi
+      nested: []
+  version: 15.0.4
+  title: ""
+  date: 2024-04-09T12:05:25.401Z
+- commits:
     - subject: Update resin-cli-visuals to v2
       hash: 0064ac206ffb8e7db103e11806c4f2ee53b67649
       body: ""
