@@ -1,4 +1,16 @@
 - commits:
+    - subject: Update resin-cli-visuals to v2
+      hash: 0064ac206ffb8e7db103e11806c4f2ee53b67649
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+  version: 15.0.3
+  title: ""
+  date: 2024-04-09T11:50:15.626Z
+- commits:
     - subject: Update to eslint based linter
       hash: 047edfe685c73bddbcf3551a34e7a83ecae341e1
       body: ""
@@ -320,9 +332,11 @@
                 Bumps [lint-staged](https://github.com/okonet/lint-staged) from
                 13.3.0 to 14.0.0.
 
-                - [Release notes](https://github.com/okonet/lint-staged/releases)
+                - [Release
+                notes](https://github.com/okonet/lint-staged/releases)
 
-                - [Commits](https://github.com/okonet/lint-staged/compare/v13.3.0...v14.0.0)
+                -
+                [Commits](https://github.com/okonet/lint-staged/compare/v13.3.0...v14.0.0)
 
 
                 ---
@@ -1159,7 +1173,8 @@
                         Be more lenient with decoding compressed responses,
                         since (very rarely)
 
-                        servers send slightly invalid gzip responses that are still accepted
+                        servers send slightly invalid gzip responses that are
+                        still accepted
 
                         by common browsers.
 
@@ -2694,7 +2709,8 @@
                         Be more lenient with decoding compressed responses,
                         since (very rarely)
 
-                        servers send slightly invalid gzip responses that are still accepted
+                        servers send slightly invalid gzip responses that are
+                        still accepted
 
                         by common browsers.
 
@@ -3363,9 +3379,11 @@
                 The change type is considered 'major' because, by default,
                 errors are
 
-                now thrown for relatively common occurrences such as authentication
+                now thrown for relatively common occurrences such as
+                authentication
 
-                failures when pulling from private registries, and library users may
+                failures when pulling from private registries, and library users
+                may
 
                 have to adapt.
               footers:
@@ -3781,7 +3799,8 @@
 
         * resize disk image only if it lacks space
 
-        * preload multicontainer apps if the ismage supervisor version is >= 7.0.0
+        * preload multicontainer apps if the ismage supervisor version is >=
+        7.0.0
 
         * simplify api
 
@@ -3901,7 +3920,8 @@
       body: >-
         * use partition labels instead of hardcoding partition numbers
 
-        * better flasher image detection, remove the no longer needed --dont-detect-flasher-type-images option
+        * better flasher image detection, remove the no longer needed
+        --dont-detect-flasher-type-images option
 
         * fix preloading resinOS 1.8 flasher images
 
@@ -3999,7 +4019,9 @@
       body: >-
         Like in the devenv
 
-        All this would not be necessary if the request library was not forwarding Authorization headers on 307 responses even if the Host is different.
+        All this would not be necessary if the request library was not
+        forwarding Authorization headers on 307 responses even if the Host is
+        different.
 
         See https://github.com/request/request/issues/2455
 
@@ -4174,15 +4196,20 @@
       body: >-
         * use dockerode instead of starting docker sub-processes;
 
-        * interactive menu for selecting the app and commit to preload (in resin-cli);
+        * interactive menu for selecting the app and commit to preload (in
+        resin-cli);
 
-        * ask user and disable automatic app updates if he chooses to preload a commit that is not the latest;
+        * ask user and disable automatic app updates if he chooses to preload a
+        commit that is not the latest;
 
-        * detect device-type from the image and allow preloading only apps that have the same device type;
+        * detect device-type from the image and allow preloading only apps that
+        have the same device type;
 
-        * pass the RESINRC_PROXY env var to the preload container as HTTP(S)_PROXY;
+        * pass the RESINRC_PROXY env var to the preload container as
+        HTTP(S)_PROXY;
 
-        * use 'delegated' mode for docker bind mounts instead of 'cached', it should be faster on macOS;
+        * use 'delegated' mode for docker bind mounts instead of 'cached', it
+        should be faster on macOS;
 
         * fix typos;
 
@@ -4198,9 +4225,11 @@
 
         * use a configured resin-sdk object for resin api connection options;
 
-        * download layer sizes in parallel + avoid downloading layer sizes more than once => significant speed-up;
+        * download layer sizes in parallel + avoid downloading layer sizes more
+        than once => significant speed-up;
 
-        * transfer appData from js to python inside Docker via an env var => python no longer needs to talk to the api, less requests.
+        * transfer appData from js to python inside Docker via an env var =>
+        python no longer needs to talk to the api, less requests.
 
         Connects to #71
       footers:
@@ -4275,7 +4304,8 @@
 
         * resize and preload into the inner image
 
-        * Use docker cached volumes if Docker API Version is >= 1.28 to speed up preloading on macOS
+        * Use docker cached volumes if Docker API Version is >= 1.28 to speed up
+        preloading on macOS
       hash: acfe0b26271e768d3a449ce42cff1f21a87866d9
       subject: "* Support flasher type images"
     - author: Alexis Svinartchouk
