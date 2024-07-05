@@ -10,7 +10,6 @@ import { promises as fs, constants } from 'fs';
 import * as getPort from 'get-port';
 import * as os from 'os';
 import * as compareVersions from 'compare-versions';
-import * as request from 'request-promise';
 import type {
 	Application,
 	BalenaSDK,
@@ -564,25 +563,27 @@ export class Preloader extends EventEmitter {
 	}
 
 	async registry(
-		registryUrl,
-		endpoint,
-		registryToken,
-		headers,
-		decodeJson,
-		followRedirect,
-		encoding?,
+		registryUrl: string,
+		endpoint: string,
+		registryToken: string,
+		headers: Record<string, string>,
+		decodeJson: boolean,
+		followRedirect: boolean,
 	) {
 		headers = { ...headers };
 		headers['Authorization'] = `Bearer ${registryToken}`;
-		return await request({
-			url: `https://${registryUrl}${endpoint}`,
-			headers,
-			json: decodeJson,
-			simple: false,
-			resolveWithFullResponse: true,
-			followRedirect,
-			encoding,
+
+		const response = await fetch(`https://${registryUrl}${endpoint}`, {
+			method: 'GET',
+			headers: headers,
+			redirect: followRedirect ? 'follow' : 'manual',
 		});
+
+		return {
+			statusCode: response.status,
+			headers: response.headers,
+			body: decodeJson ? await response.json() : await response.arrayBuffer(),
+		};
 	}
 
 	async _getLayerSize(token, registryUrl, layerUrl) {
@@ -593,31 +594,34 @@ export class Preloader extends EventEmitter {
 		// request(...) will re-use the same headers if it gets redirected.
 		// We don't want to send the registry token to s3 so we ask it to not follow
 		// redirects and issue the second request manually.
-		let response = await this.registry(
+		const response = await this.registry(
 			registryUrl,
 			layerUrl,
 			token,
 			headers,
 			false,
 			false,
-			null,
 		);
+		let responseBody: ArrayBuffer;
 		if (response.statusCode === 206) {
 			// no redirect, like in the devenv
+			responseBody = response.body;
 		} else if ([301, 307].includes(response.statusCode)) {
 			// redirect, like on production or staging
-			response = await request({
-				uri: response.headers.location,
+			const redirectedUrl = response.headers.get('location');
+			if (redirectedUrl == null) {
+				throw new Error('No location header in redirect response');
+			}
+			const redirectResponse = await fetch(redirectedUrl, {
 				headers,
-				resolveWithFullResponse: true,
-				encoding: null,
 			});
+			responseBody = await redirectResponse.arrayBuffer();
 		} else {
 			throw new Error(
 				'Unexpected status code from the registry: ' + response.statusCode,
 			);
 		}
-		return response.body.readUIntLE(0, 4);
+		return Buffer.from(responseBody).readUIntLE(0, 4);
 	}
 
 	_registryUrl(imageLocation) {
