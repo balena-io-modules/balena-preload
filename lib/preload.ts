@@ -10,7 +10,6 @@ import { promises as fs, constants } from 'fs';
 import * as getPort from 'get-port';
 import * as os from 'os';
 import * as compareVersions from 'compare-versions';
-import * as request from 'request-promise';
 import type {
 	Application,
 	BalenaSDK,
@@ -564,60 +563,73 @@ export class Preloader extends EventEmitter {
 	}
 
 	async registry(
-		registryUrl,
-		endpoint,
-		registryToken,
-		headers,
-		decodeJson,
-		followRedirect,
-		encoding?,
+		registryUrl: string,
+		endpoint: string,
+		registryToken: string,
+		headers: Record<string, string>,
+		decodeJson: boolean,
+		followRedirect: boolean,
 	) {
-		headers = { ...headers };
-		headers['Authorization'] = `Bearer ${registryToken}`;
-		return await request({
+		return await this.balena.request.send({
 			url: `https://${registryUrl}${endpoint}`,
-			headers,
+			headers: {
+				...headers,
+				Authorization: `Bearer ${registryToken}`,
+			},
 			json: decodeJson,
-			simple: false,
-			resolveWithFullResponse: true,
+			responseFormat: decodeJson ? 'json' : 'blob',
 			followRedirect,
-			encoding,
+			// We don't want to send the token that the SDK has been authenticated with
+			// the API to the registry
+			sendToken: false,
+			refreshToken: false,
 		});
 	}
 
-	async _getLayerSize(token, registryUrl, layerUrl) {
+	async _getLayerSize(registryToken, registryUrl, layerUrl) {
 		// This gets an approximation of the layer size because:
 		// * it is the size of the tar file, not the size of the contents of the tar file (the tar file is slightly larger);
 		// * the gzip footer only gives the size % 32 so it will be incorrect for layers larger than 4GiB
-		const headers = { Range: 'bytes=-4' };
-		// request(...) will re-use the same headers if it gets redirected.
-		// We don't want to send the registry token to s3 so we ask it to not follow
-		// redirects and issue the second request manually.
+		const headers = {
+			Range: 'bytes=-4',
+		};
+
 		let response = await this.registry(
 			registryUrl,
 			layerUrl,
-			token,
+			registryToken,
 			headers,
 			false,
+			// We want to avoid re-using the same headers if there is a get redirect,
 			false,
-			null,
 		);
+
 		if (response.statusCode === 206) {
 			// no redirect, like in the devenv
 		} else if ([301, 307].includes(response.statusCode)) {
 			// redirect, like on production or staging
-			response = await request({
-				uri: response.headers.location,
+			const redirectUrl = response.headers.get('location');
+			if (redirectUrl == null) {
+				throw new Error(
+					'Response status code indicated a redirect but no redirect location was found in the response headers',
+				);
+			}
+			response = await this.balena.request.send<Buffer>({
+				url: redirectUrl,
 				headers,
-				resolveWithFullResponse: true,
-				encoding: null,
+				responseFormat: 'blob',
+				// We don't want to send the token that the SDK has been authenticated with
+				// the API to the registry
+				sendToken: false,
+				refreshToken: false,
 			});
 		} else {
 			throw new Error(
 				'Unexpected status code from the registry: ' + response.statusCode,
 			);
 		}
-		return response.body.readUIntLE(0, 4);
+		const body = await (response.body as Blob).arrayBuffer();
+		return Buffer.from(body).readUIntLE(0, 4);
 	}
 
 	_registryUrl(imageLocation) {
