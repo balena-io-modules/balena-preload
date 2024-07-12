@@ -10,7 +10,6 @@ import { promises as fs, constants } from 'fs';
 import * as getPort from 'get-port';
 import * as os from 'os';
 import * as compareVersions from 'compare-versions';
-import * as request from 'request-promise';
 import type {
 	Application,
 	BalenaSDK,
@@ -563,61 +562,87 @@ export class Preloader extends EventEmitter {
 		return Array.from(toPreload);
 	}
 
-	async registry(
-		registryUrl,
-		endpoint,
-		registryToken,
-		headers,
-		decodeJson,
-		followRedirect,
-		encoding?,
-	) {
-		headers = { ...headers };
-		headers['Authorization'] = `Bearer ${registryToken}`;
-		return await request({
-			url: `https://${registryUrl}${endpoint}`,
-			headers,
-			json: decodeJson,
-			simple: false,
-			resolveWithFullResponse: true,
+	async registryRequest<RF extends 'json' | 'blob'>(
+		url:
+			| {
+					registryUrl: string;
+					layerUrl: string;
+			  }
+			| string,
+		registryToken: string | null,
+		headers: Record<string, string>,
+		responseFormat: RF,
+		followRedirect: boolean,
+	): ReturnType<
+		typeof this.balena.request.send<
+			RF extends 'blob'
+				? Blob
+				: RF extends 'json'
+					? Record<string, unknown>
+					: never
+		>
+	> {
+		if (typeof url === 'object') {
+			url = `https://${url.registryUrl}${url.layerUrl}`;
+		}
+		return await this.balena.request.send({
+			url,
+			headers: {
+				...headers,
+				...(registryToken != null && {
+					Authorization: `Bearer ${registryToken}`,
+				}),
+			},
+			responseFormat,
 			followRedirect,
-			encoding,
+			// We don't want to send the token that the SDK has been authenticated with
+			// the API to the registry
+			sendToken: false,
+			refreshToken: false,
 		});
 	}
 
-	async _getLayerSize(token, registryUrl, layerUrl) {
+	async _getLayerSize(registryToken, registryUrl, layerUrl) {
 		// This gets an approximation of the layer size because:
 		// * it is the size of the tar file, not the size of the contents of the tar file (the tar file is slightly larger);
 		// * the gzip footer only gives the size % 32 so it will be incorrect for layers larger than 4GiB
-		const headers = { Range: 'bytes=-4' };
-		// request(...) will re-use the same headers if it gets redirected.
-		// We don't want to send the registry token to s3 so we ask it to not follow
-		// redirects and issue the second request manually.
-		let response = await this.registry(
-			registryUrl,
-			layerUrl,
-			token,
+		const headers = {
+			Range: 'bytes=-4',
+		};
+
+		let response = await this.registryRequest(
+			{ registryUrl, layerUrl },
+			registryToken,
 			headers,
+			'blob',
+			// We want to avoid re-using the same headers if there is a get redirect,
 			false,
-			false,
-			null,
 		);
+
 		if (response.statusCode === 206) {
 			// no redirect, like in the devenv
 		} else if ([301, 307].includes(response.statusCode)) {
 			// redirect, like on production or staging
-			response = await request({
-				uri: response.headers.location,
+			const redirectUrl = response.headers.get('location');
+			if (redirectUrl == null) {
+				throw new Error(
+					'Response status code indicated a redirect but no redirect location was found in the response headers',
+				);
+			}
+			response = await this.registryRequest(
+				redirectUrl,
+				null,
 				headers,
-				resolveWithFullResponse: true,
-				encoding: null,
-			});
+				'blob',
+				true,
+			);
 		} else {
 			throw new Error(
 				'Unexpected status code from the registry: ' + response.statusCode,
 			);
 		}
-		return response.body.readUIntLE(0, 4);
+		const body = await response.body.arrayBuffer();
+		return Buffer.from(body).readUIntLE(0, 4);
 	}
 
 	_registryUrl(imageLocation) {
@@ -653,15 +678,17 @@ export class Preloader extends EventEmitter {
 		return await Bluebird.map(
 			imagesLocations,
 			async (imageLocation: string) => {
-				const { body: manifest } = await this.registry(
-					this._registryUrl(imageLocation),
-					this._imageManifestUrl(imageLocation),
+				const { body } = await this.registryRequest(
+					{
+						registryUrl: this._registryUrl(imageLocation),
+						layerUrl: this._imageManifestUrl(imageLocation),
+					},
 					registryToken,
 					{},
-					true,
+					'json',
 					true,
 				);
-				return { manifest, imageLocation };
+				return { manifest: body as Manifest['manifest'], imageLocation };
 			},
 			{ concurrency: CONCURRENT_REQUESTS_TO_REGISTRY },
 		);
