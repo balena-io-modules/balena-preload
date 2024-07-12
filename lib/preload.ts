@@ -562,22 +562,29 @@ export class Preloader extends EventEmitter {
 		return Array.from(toPreload);
 	}
 
-	async registry(
+	async registryRequest<RF extends 'json' | 'blob'>(
 		registryUrl: string,
 		endpoint: string,
-		registryToken: string,
+		registryToken: string | null,
 		headers: Record<string, string>,
-		decodeJson: boolean,
+		responseFormat: RF,
 		followRedirect: boolean,
-	) {
+	): ReturnType<
+		typeof this.balena.request.send<
+			RF extends 'blob'
+				? Blob
+				: RF extends 'json'
+					? Record<string, unknown>
+					: never
+		>
+	> {
 		return await this.balena.request.send({
 			url: `https://${registryUrl}${endpoint}`,
 			headers: {
 				...headers,
 				Authorization: `Bearer ${registryToken}`,
 			},
-			json: decodeJson,
-			responseFormat: decodeJson ? 'json' : 'blob',
+			responseFormat,
 			followRedirect,
 			// We don't want to send the token that the SDK has been authenticated with
 			// the API to the registry
@@ -594,12 +601,12 @@ export class Preloader extends EventEmitter {
 			Range: 'bytes=-4',
 		};
 
-		let response = await this.registry(
+		let response = await this.registryRequest(
 			registryUrl,
 			layerUrl,
 			registryToken,
 			headers,
-			false,
+			'blob',
 			// We want to avoid re-using the same headers if there is a get redirect,
 			false,
 		);
@@ -614,7 +621,7 @@ export class Preloader extends EventEmitter {
 					'Response status code indicated a redirect but no redirect location was found in the response headers',
 				);
 			}
-			response = await this.balena.request.send<Buffer>({
+			response = await this.balena.request.send<Blob>({
 				url: redirectUrl,
 				headers,
 				responseFormat: 'blob',
@@ -628,7 +635,7 @@ export class Preloader extends EventEmitter {
 				'Unexpected status code from the registry: ' + response.statusCode,
 			);
 		}
-		const body = await (response.body as Blob).arrayBuffer();
+		const body = await response.body.arrayBuffer();
 		return Buffer.from(body).readUIntLE(0, 4);
 	}
 
@@ -665,15 +672,15 @@ export class Preloader extends EventEmitter {
 		return await Bluebird.map(
 			imagesLocations,
 			async (imageLocation: string) => {
-				const { body: manifest } = await this.registry(
+				const { body } = await this.registryRequest(
 					this._registryUrl(imageLocation),
 					this._imageManifestUrl(imageLocation),
 					registryToken,
 					{},
-					true,
+					'json',
 					true,
 				);
-				return { manifest, imageLocation };
+				return { manifest: body as Manifest['manifest'], imageLocation };
 			},
 			{ concurrency: CONCURRENT_REQUESTS_TO_REGISTRY },
 		);
