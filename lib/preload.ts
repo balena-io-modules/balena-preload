@@ -563,8 +563,12 @@ export class Preloader extends EventEmitter {
 	}
 
 	async registryRequest<RF extends 'json' | 'blob'>(
-		registryUrl: string,
-		endpoint: string,
+		url:
+			| {
+					registryUrl: string;
+					layerUrl: string;
+			  }
+			| string,
 		registryToken: string | null,
 		headers: Record<string, string>,
 		responseFormat: RF,
@@ -578,11 +582,16 @@ export class Preloader extends EventEmitter {
 					: never
 		>
 	> {
+		if (typeof url === 'object') {
+			url = `https://${url.registryUrl}${url.layerUrl}`;
+		}
 		return await this.balena.request.send({
-			url: `https://${registryUrl}${endpoint}`,
+			url,
 			headers: {
 				...headers,
-				Authorization: `Bearer ${registryToken}`,
+				...(registryToken != null && {
+					Authorization: `Bearer ${registryToken}`,
+				}),
 			},
 			responseFormat,
 			followRedirect,
@@ -602,8 +611,7 @@ export class Preloader extends EventEmitter {
 		};
 
 		let response = await this.registryRequest(
-			registryUrl,
-			layerUrl,
+			{ registryUrl, layerUrl },
 			registryToken,
 			headers,
 			'blob',
@@ -621,15 +629,13 @@ export class Preloader extends EventEmitter {
 					'Response status code indicated a redirect but no redirect location was found in the response headers',
 				);
 			}
-			response = await this.balena.request.send<Blob>({
-				url: redirectUrl,
+			response = await this.registryRequest(
+				redirectUrl,
+				null,
 				headers,
-				responseFormat: 'blob',
-				// We don't want to send the token that the SDK has been authenticated with
-				// the API to the registry
-				sendToken: false,
-				refreshToken: false,
-			});
+				'blob',
+				true,
+			);
 		} else {
 			throw new Error(
 				'Unexpected status code from the registry: ' + response.statusCode,
@@ -673,8 +679,10 @@ export class Preloader extends EventEmitter {
 			imagesLocations,
 			async (imageLocation: string) => {
 				const { body } = await this.registryRequest(
-					this._registryUrl(imageLocation),
-					this._imageManifestUrl(imageLocation),
+					{
+						registryUrl: this._registryUrl(imageLocation),
+						layerUrl: this._imageManifestUrl(imageLocation),
+					},
 					registryToken,
 					{},
 					'json',
