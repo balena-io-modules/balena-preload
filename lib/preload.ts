@@ -87,7 +87,7 @@ type Manifest = {
 
 type Image = {
 	is_stored_at__image_location: string;
-	image_size: number;
+	image_size: string;
 };
 
 interface ImageInfo {
@@ -415,7 +415,7 @@ export class Preloader extends EventEmitter {
 			resource: 'device',
 			id: deviceInfo.id,
 			body: {
-				should_be_running__release: this._getRelease().id,
+				is_pinned_on__release: this._getRelease().id,
 			},
 		});
 
@@ -745,9 +745,9 @@ export class Preloader extends EventEmitter {
 				manifest.layers,
 				(layer: Layer) => layersSizes.get(layer.digest).size,
 			);
-			if (apiSize !== undefined && apiSize > size) {
+			if (apiSize != null && parseInt(apiSize, 10) > size) {
 				// This means that at least one of the image layers is larger than 4GiB
-				extra += apiSize - size;
+				extra += parseInt(apiSize, 10) - size;
 				// Extra may be too large if several images share one or more layers larger than 4GiB.
 				// Maybe we could try to be smarter and mark layers that are smaller than 4GiB as safe (when apiSize <= size).
 				// If an "unsafe" layer is used in several images, we would add the extra space only once.
@@ -760,7 +760,7 @@ export class Preloader extends EventEmitter {
 		const images = this._getImagesToPreload();
 		if (images.length === 1) {
 			// Only one image: we know its size from the api, no need to fetch the layers sizes.
-			return images[0].image_size;
+			return parseInt(images[0].image_size, 10);
 		}
 		// More than one image: sum the sizes of all unique layers of all images to get the application size.
 		// If we summed the size of each image it would be incorrect as images may share some layers.
