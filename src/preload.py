@@ -518,7 +518,7 @@ def expand_filesystem(partition):
 
 
 def expand_file(path, additional_bytes):
-    with open(path, "a") as f:
+    with open(path, "a+") as f:
         size = f.tell()
         f.truncate(size + additional_bytes)
 
