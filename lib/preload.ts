@@ -250,7 +250,7 @@ export class Preloader extends EventEmitter {
 	stderr = new streamModule.PassThrough();
 	bufferedStderr = new BufferBackedWritableStream();
 	dockerPort;
-	container;
+	container: Awaited<ReturnType<typeof createContainer>> | undefined;
 	state; // device state from the api
 	freeSpace: number | undefined; // space available on the image data partition (in bytes)
 	preloadedBuilds: string[] | undefined; // list of preloaded Docker images in the disk image
@@ -340,7 +340,7 @@ export class Preloader extends EventEmitter {
 		});
 	}
 
-	async _runWithSpinner(name, fn) {
+	async _runWithSpinner<T>(name: string, fn: () => T | Promise<T>): Promise<T> {
 		this._startSpinner(name);
 		try {
 			return await fn();
@@ -719,10 +719,13 @@ export class Preloader extends EventEmitter {
 		)}/blobs/${layerDigest}`;
 	}
 
-	async _getApplicationImagesManifests(imagesLocations, registryToken) {
+	async _getApplicationImagesManifests(
+		imagesLocations: string[],
+		registryToken: string,
+	) {
 		return await limitedMap(
 			imagesLocations,
-			async (imageLocation: string) => {
+			async (imageLocation) => {
 				const { body } = await this.registryRequest(
 					{
 						registryUrl: this._registryUrl(imageLocation),
@@ -739,7 +742,7 @@ export class Preloader extends EventEmitter {
 		);
 	}
 
-	async _getLayersSizes(manifests: Manifest[], registryToken) {
+	async _getLayersSizes(manifests: Manifest[], registryToken: string) {
 		const digests = new Set();
 		const layersSizes = new Map();
 		const sizeRequests: Array<{ imageLocation: string; layer: Layer }> = [];
@@ -859,7 +862,7 @@ export class Preloader extends EventEmitter {
 		if (this.application || !appId) {
 			return;
 		}
-		return this._runWithSpinner(`Fetching application ${appId}`, async () => {
+		await this._runWithSpinner(`Fetching application ${appId}`, async () => {
 			const releaseFilter: PineFilter<Release> = {
 				status: 'success',
 			};
@@ -909,14 +912,14 @@ export class Preloader extends EventEmitter {
 		});
 	}
 
-	async _checkImage(image) {
+	async _checkImage(image: string) {
 		const ok = await isReadWriteAccessibleFile(image);
 		if (!ok) {
 			console.warn('The image must be a read/write accessible file');
 		}
 	}
 
-	_pluralize(count, thing) {
+	_pluralize(count: number, thing: string) {
 		return `${count} ${thing}${count !== 1 ? 's' : ''}`;
 	}
 
@@ -958,7 +961,7 @@ export class Preloader extends EventEmitter {
 		);
 		this.container = container;
 		await this._runWithSpinner('Starting preloader container', () =>
-			this.container.start(),
+			container.start(),
 		);
 
 		for (const certificate of this.certificates) {
@@ -1011,7 +1014,7 @@ export class Preloader extends EventEmitter {
 
 	_ensureCanPreload() {
 		// Throws a BalenaError if preloading is not possible
-		let msg;
+		let msg: string | undefined;
 
 		// No releases
 		if (this.application.owns__release.length === 0) {
@@ -1163,6 +1166,6 @@ export class Preloader extends EventEmitter {
 		this.appId = appIdOrSlug;
 		this.commit = commit;
 		this.application = null;
-		return await this._fetchApplication();
+		await this._fetchApplication();
 	}
 }
