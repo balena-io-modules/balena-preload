@@ -4,7 +4,6 @@ import * as dockerProgress from 'docker-progress';
 import * as Docker from 'dockerode';
 import * as path from 'path';
 import * as streamModule from 'stream';
-import * as Bluebird from 'bluebird';
 import * as tarfs from 'tar-fs';
 import { promises as fs, constants } from 'fs';
 import * as getPort from 'get-port';
@@ -28,6 +27,52 @@ const DISK_IMAGE_PATH_IN_DOCKER = '/img/balena.img';
 const SPLASH_IMAGE_PATH_IN_DOCKER = '/img/balena-logo.png';
 const DOCKER_STEP_RE = /Step (\d+)\/(\d+)/;
 const CONCURRENT_REQUESTS_TO_REGISTRY = 10;
+
+const limitedMap = <T, U>(
+	arr: T[],
+	fn: (currentValue: T, index: number, array: T[]) => Promise<U>,
+	{
+		concurrency = CONCURRENT_REQUESTS_TO_REGISTRY,
+	}: {
+		concurrency?: number;
+	} = {},
+): Promise<U[]> => {
+	if (concurrency >= arr.length) {
+		return Promise.all(arr.map(fn));
+	}
+	return new Promise<U[]>((resolve, reject) => {
+		const result: U[] = new Array(arr.length);
+		let inFlight = 0;
+		let idx = 0;
+		const runNext = async () => {
+			// Store the idx to use for this call before incrementing the main counter
+			const i = idx;
+			idx++;
+			if (i >= arr.length) {
+				return;
+			}
+			try {
+				inFlight++;
+				result[i] = await fn(arr[i], i, arr);
+				void runNext();
+			} catch (err) {
+				// Stop any further iterations
+				idx = arr.length;
+				// Clear the results so far for gc
+				result.length = 0;
+				reject(err);
+			} finally {
+				inFlight--;
+				if (inFlight === 0) {
+					resolve(result);
+				}
+			}
+		};
+		while (inFlight < concurrency) {
+			void runNext();
+		}
+	});
+};
 
 const GRAPHDRIVER_ERROR =
 	'Error starting daemon: error initializing graphdriver: driver not supported';
@@ -205,7 +250,7 @@ export class Preloader extends EventEmitter {
 	stderr = new streamModule.PassThrough();
 	bufferedStderr = new BufferBackedWritableStream();
 	dockerPort;
-	container;
+	container: Awaited<ReturnType<typeof createContainer>> | undefined;
 	state; // device state from the api
 	freeSpace: number | undefined; // space available on the image data partition (in bytes)
 	preloadedBuilds: string[] | undefined; // list of preloaded Docker images in the disk image
@@ -251,7 +296,7 @@ export class Preloader extends EventEmitter {
 		const build = await this.docker.buildImage(tarStream, {
 			t: DOCKER_IMAGE_TAG,
 		});
-		await new Bluebird((resolve, reject) => {
+		await new Promise<void>((resolve, reject) => {
 			this.docker.modem.followProgress(
 				build,
 				(error, output) => {
@@ -295,7 +340,7 @@ export class Preloader extends EventEmitter {
 		});
 	}
 
-	async _runWithSpinner(name, fn) {
+	async _runWithSpinner<T>(name: string, fn: () => T | Promise<T>): Promise<T> {
 		this._startSpinner(name);
 		try {
 			return await fn();
@@ -337,7 +382,7 @@ export class Preloader extends EventEmitter {
 	 * error message including the message provided in the `error` field.
 	 */
 	_runCommand(command: string, parameters: { [name: string]: any }) {
-		return new Bluebird((resolve, reject) => {
+		return new Promise((resolve, reject) => {
 			const cmd = JSON.stringify({ command, parameters }) + '\n';
 			this.stdout.once('error', reject);
 			this.stdout.once('data', (data) => {
@@ -674,10 +719,13 @@ export class Preloader extends EventEmitter {
 		)}/blobs/${layerDigest}`;
 	}
 
-	async _getApplicationImagesManifests(imagesLocations, registryToken) {
-		return await Bluebird.map(
+	async _getApplicationImagesManifests(
+		imagesLocations: string[],
+		registryToken: string,
+	) {
+		return await limitedMap(
 			imagesLocations,
-			async (imageLocation: string) => {
+			async (imageLocation) => {
 				const { body } = await this.registryRequest(
 					{
 						registryUrl: this._registryUrl(imageLocation),
@@ -694,7 +742,7 @@ export class Preloader extends EventEmitter {
 		);
 	}
 
-	async _getLayersSizes(manifests: Manifest[], registryToken) {
+	async _getLayersSizes(manifests: Manifest[], registryToken: string) {
 		const digests = new Set();
 		const layersSizes = new Map();
 		const sizeRequests: Array<{ imageLocation: string; layer: Layer }> = [];
@@ -706,15 +754,9 @@ export class Preloader extends EventEmitter {
 				}
 			}
 		}
-		await Bluebird.map(
+		await limitedMap(
 			sizeRequests,
-			async ({
-				imageLocation,
-				layer,
-			}: {
-				imageLocation: string;
-				layer: Layer;
-			}) => {
+			async ({ imageLocation, layer }) => {
 				const size = await this._getLayerSize(
 					registryToken,
 					this._registryUrl(imageLocation),
@@ -797,25 +839,22 @@ export class Preloader extends EventEmitter {
 		}
 	}
 
-	_getRegistryToken(images) {
-		return Bluebird.resolve(
-			this.balena.request.send({
-				// @ts-expect-error reason unknwon
-				baseUrl: this.balena.pine.API_URL,
-				url: '/auth/v1/token',
-				qs: {
-					service: this._registryUrl(images[0]),
-					scope: images.map(
-						(imageRepository) =>
-							`repository:${imageRepository.substr(
-								imageRepository.search('/') + 1,
-							)}:pull`,
-					),
-				},
-			}),
-		)
-			.get('body')
-			.get('token');
+	async _getRegistryToken(images: string[]) {
+		const { body } = await this.balena.request.send({
+			// @ts-expect-error reason unknwon
+			baseUrl: this.balena.pine.API_URL,
+			url: '/auth/v1/token',
+			qs: {
+				service: this._registryUrl(images[0]),
+				scope: images.map(
+					(imageRepository) =>
+						`repository:${imageRepository.substr(
+							imageRepository.search('/') + 1,
+						)}:pull`,
+				),
+			},
+		});
+		return body.token as string;
 	}
 
 	async _fetchApplication() {
@@ -823,7 +862,7 @@ export class Preloader extends EventEmitter {
 		if (this.application || !appId) {
 			return;
 		}
-		return this._runWithSpinner(`Fetching application ${appId}`, async () => {
+		await this._runWithSpinner(`Fetching application ${appId}`, async () => {
 			const releaseFilter: PineFilter<Release> = {
 				status: 'success',
 			};
@@ -873,14 +912,14 @@ export class Preloader extends EventEmitter {
 		});
 	}
 
-	async _checkImage(image) {
+	async _checkImage(image: string) {
 		const ok = await isReadWriteAccessibleFile(image);
 		if (!ok) {
 			console.warn('The image must be a read/write accessible file');
 		}
 	}
 
-	_pluralize(count, thing) {
+	_pluralize(count: number, thing: string) {
 		return `${count} ${thing}${count !== 1 ? 's' : ''}`;
 	}
 
@@ -894,92 +933,88 @@ export class Preloader extends EventEmitter {
 		return deviceType.is_of__cpu_architecture[0].slug;
 	}
 
-	prepare() {
-		return Bluebird.resolve(this._build()).then(async () => {
-			// Check that the image is a writable file
-			await this._runWithSpinner(
-				'Checking that the image is a writable file',
-				() => this._checkImage(this.image),
+	async prepare() {
+		await this._build();
+		// Check that the image is a writable file
+		await this._runWithSpinner(
+			'Checking that the image is a writable file',
+			() => this._checkImage(this.image),
+		);
+
+		// Get a free tcp port and balena sdk settings
+		const port = await this._runWithSpinner('Finding a free tcp port', () =>
+			getPort(),
+		);
+
+		this.dockerPort = port;
+		// Create the docker preloader container
+		const container = await this._runWithSpinner(
+			'Creating preloader container',
+			() =>
+				createContainer(
+					this.docker,
+					this.image,
+					this.splashImage,
+					this.dockerPort,
+					this.proxy,
+				),
+		);
+		this.container = container;
+		await this._runWithSpinner('Starting preloader container', () =>
+			container.start(),
+		);
+
+		for (const certificate of this.certificates) {
+			await this.container.putArchive(
+				tarfs.pack(path.dirname(certificate), {
+					entries: [path.basename(certificate)],
+				}),
+				{
+					path: '/usr/local/share/ca-certificates/',
+					noOverwriteDirNonDir: true,
+				},
 			);
+		}
 
-			// Get a free tcp port and balena sdk settings
-			const port = await this._runWithSpinner('Finding a free tcp port', () =>
-				getPort(),
-			);
+		this._prepareErrorHandler();
+		const stream = await this.container.attach({
+			stream: true,
+			stdout: true,
+			stderr: true,
+			stdin: true,
+			hijack: true,
+		});
+		this.stdin = stream;
+		this.docker.modem.demuxStream(stream, this.stdout, this.stderr);
 
-			this.dockerPort = port;
-			// Create the docker preloader container
-			const container = await this._runWithSpinner(
-				'Creating preloader container',
-				() =>
-					createContainer(
-						this.docker,
-						this.image,
-						this.splashImage,
-						this.dockerPort,
-						this.proxy,
-					),
-			);
-			this.container = container;
-			await this._runWithSpinner('Starting preloader container', () =>
-				this.container.start(),
-			);
+		await Promise.all([
+			this._getImageInfo(),
+			this._fetchDeviceTypes(),
+			this._fetchApplication(),
+		]);
+	}
 
-			await Bluebird.each(this.certificates, (certificate) => {
-				return this.container.putArchive(
-					tarfs.pack(path.dirname(certificate), {
-						entries: [path.basename(certificate)],
-					}),
-					{
-						path: '/usr/local/share/ca-certificates/',
-						noOverwriteDirNonDir: true,
-					},
-				);
-			});
-
-			this._prepareErrorHandler();
-			const stream = await this.container.attach({
-				stream: true,
-				stdout: true,
-				stderr: true,
-				stdin: true,
-				hijack: true,
-			});
-			this.stdin = stream;
-			this.docker.modem.demuxStream(stream, this.stdout, this.stderr);
-
-			await Promise.all([
-				this._getImageInfo(),
-				this._fetchDeviceTypes(),
-				this._fetchApplication(),
-			]);
+	async cleanup() {
+		// Returns Promise
+		// Deletes the container
+		await this._runWithSpinner('Cleaning up temporary files', async () => {
+			if (this.container) {
+				await Promise.all([this.kill(), this.container.wait()]);
+				await this.container.remove();
+			}
 		});
 	}
 
-	cleanup() {
-		// Returns Promise
-		// Deletes the container
-		return Bluebird.resolve(
-			this._runWithSpinner('Cleaning up temporary files', async () => {
-				if (this.container) {
-					await Promise.all([this.kill(), this.container.wait()]);
-					await this.container.remove();
-				}
-			}),
-		);
-	}
-
-	kill() {
+	async kill() {
 		// returns Promise
 		if (this.container) {
 			return this.container.kill().catch(() => undefined);
 		}
-		return Bluebird.resolve();
 	}
 
 	_ensureCanPreload() {
 		// Throws a BalenaError if preloading is not possible
-		let msg;
+		let msg: string | undefined;
 
 		// No releases
 		if (this.application.owns__release.length === 0) {
@@ -1056,62 +1091,64 @@ export class Preloader extends EventEmitter {
 		return '/splash/resin-logo.png';
 	}
 
-	preload() {
-		return Bluebird.resolve(this._getState()).then(async () => {
-			this._ensureCanPreload();
-			const additionalBytes = await this._runWithSpinner(
-				'Estimating required additional space',
-				() => this._getRequiredAdditionalSpace(),
-			);
-			const images = _.map(
-				this._getImagesToPreload(),
-				'is_stored_at__image_location',
-			);
-			// Wait for dockerd to start
-			await this._runWithSpinner(
-				'Resizing partitions and waiting for dockerd to start',
-				() =>
-					this._runCommand('preload', {
-						app_data: this._getAppData(),
-						additional_bytes: additionalBytes,
-						splash_image_path: this._getSplashImagePath(),
-					}),
-			);
-			const registryToken = await this._getRegistryToken(images);
+	async preload() {
+		await this._getState();
 
-			const opts = { authconfig: { registrytoken: registryToken } };
-			// Docker connection
-			// We use localhost on windows because of this bug in node < 8.10.0:
-			// https://github.com/nodejs/node/issues/14900
-			const innerDocker = new Docker({
-				host: os.platform() === 'win32' ? 'localhost' : '0.0.0.0',
-				port: this.dockerPort,
-			});
-			const innerDockerProgress = new dockerProgress.DockerProgress({
-				docker: innerDocker,
-			});
-			const pullingProgressName = `Pulling ${this._pluralize(
-				images.length,
-				'image',
-			)}`;
-			// Emit progress events while pulling
-			const onProgressHandlers = innerDockerProgress.aggregateProgress(
-				images.length,
-				(e) => {
-					this._progress(pullingProgressName, e.percentage);
-				},
-			);
-			await Bluebird.map(images, (image, index) => {
-				return innerDockerProgress.pull(image, onProgressHandlers[index], opts);
-			});
+		this._ensureCanPreload();
+		const additionalBytes = await this._runWithSpinner(
+			'Estimating required additional space',
+			() => this._getRequiredAdditionalSpace(),
+		);
+		const images = _.map(
+			this._getImagesToPreload(),
+			'is_stored_at__image_location',
+		);
+		// Wait for dockerd to start
+		await this._runWithSpinner(
+			'Resizing partitions and waiting for dockerd to start',
+			() =>
+				this._runCommand('preload', {
+					app_data: this._getAppData(),
+					additional_bytes: additionalBytes,
+					splash_image_path: this._getSplashImagePath(),
+				}),
+		);
+		const registryToken = await this._getRegistryToken(images);
 
-			// Signal that we're done to the Python script.
-			this.stdin.write('\n');
-			// Wait for the script to unmount the data partition
-			await new Bluebird((resolve, reject) => {
-				this.stdout.once('error', reject);
-				this.stdout.once('data', resolve);
-			});
+		const opts = { authconfig: { registrytoken: registryToken } };
+		// Docker connection
+		// We use localhost on windows because of this bug in node < 8.10.0:
+		// https://github.com/nodejs/node/issues/14900
+		const innerDocker = new Docker({
+			host: os.platform() === 'win32' ? 'localhost' : '0.0.0.0',
+			port: this.dockerPort,
+		});
+		const innerDockerProgress = new dockerProgress.DockerProgress({
+			docker: innerDocker,
+		});
+		const pullingProgressName = `Pulling ${this._pluralize(
+			images.length,
+			'image',
+		)}`;
+		// Emit progress events while pulling
+		const onProgressHandlers = innerDockerProgress.aggregateProgress(
+			images.length,
+			(e) => {
+				this._progress(pullingProgressName, e.percentage);
+			},
+		);
+		await Promise.all(
+			images.map(async (image, index) => {
+				await innerDockerProgress.pull(image, onProgressHandlers[index], opts);
+			}),
+		);
+
+		// Signal that we're done to the Python script.
+		this.stdin.write('\n');
+		// Wait for the script to unmount the data partition
+		await new Promise((resolve, reject) => {
+			this.stdout.once('error', reject);
+			this.stdout.once('data', resolve);
 		});
 	}
 
@@ -1125,10 +1162,10 @@ export class Preloader extends EventEmitter {
 	 * @param {string} commit
 	 * @returns {Promise<void>}
 	 */
-	setAppIdAndCommit(appIdOrSlug: string | number, commit: string) {
+	async setAppIdAndCommit(appIdOrSlug: string | number, commit: string) {
 		this.appId = appIdOrSlug;
 		this.commit = commit;
 		this.application = null;
-		return Bluebird.resolve(this._fetchApplication());
+		await this._fetchApplication();
 	}
 }
