@@ -1,4 +1,32 @@
 - commits:
+    - subject: Replace use of `contains__image` with `release_image`
+      hash: 639fbf09a63414eeceaa3e678a79c31ebb9fa285
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: myarmolinsky
+      nested: []
+    - subject: Update minimum required node version to 20.12.0
+      hash: 0110c380b87c6a493b9cd722e2cf7644a596b15d
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: myarmolinsky
+      nested: []
+    - subject: Update `balena-sdk` to v21.2.0
+      hash: 2c9723027dfa8c74150edf57b9651390bcd2e7cb
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: myarmolinsky
+      nested: []
+  version: 18.0.0
+  title: ""
+  date: 2025-03-04T15:50:32.764Z
+- commits:
     - subject: Improve typings
       hash: 67f0f3e9e3b4b37fbaeef2843dc4171a7d661c41
       body: ""
@@ -1078,21 +1106,13 @@
         - commits:
             - subject: "patch: bump lint-staged from 13.3.0 to 14.0.0"
               hash: 59d0bcd099a4fba24ad2c8c9b51c0603241440ee
-              body: >
-                Bumps [lint-staged](https://github.com/okonet/lint-staged) from
-                13.3.0 to 14.0.0.
-
-                - [Release
-                notes](https://github.com/okonet/lint-staged/releases)
-
-                -
-                [Commits](https://github.com/okonet/lint-staged/compare/v13.3.0...v14.0.0)
-
+              body: |
+                Bumps [lint-staged](https://github.com/okonet/lint-staged) from 13.3.0 to 14.0.0.
+                - [Release notes](https://github.com/okonet/lint-staged/releases)
+                - [Commits](https://github.com/okonet/lint-staged/compare/v13.3.0...v14.0.0)
 
                 ---
-
                 updated-dependencies:
-
                 - dependency-name: lint-staged
                   dependency-type: direct:development
                   update-type: version-update:semver-major
