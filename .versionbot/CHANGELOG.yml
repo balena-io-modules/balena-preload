@@ -1,4 +1,16 @@
 - commits:
+    - subject: "HOTFIX: Fix balena-sdk major bump"
+      hash: 03f57f55472f147388756855b0a8fb423fd94d2b
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: myarmolinsky
+      nested: []
+  version: 18.0.1
+  title: ""
+  date: 2025-03-04T18:41:24.755Z
+- commits:
     - subject: Replace use of `contains__image` with `release_image`
       hash: 639fbf09a63414eeceaa3e678a79c31ebb9fa285
       body: ""
