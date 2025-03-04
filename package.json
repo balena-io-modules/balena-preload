@@ -7,7 +7,7 @@
   "main": "build/preload.js",
   "types": "build/preload.d.ts",
   "engines": {
-    "node": ">=18"
+    "node": "^20.12.0 || >=22.0.0"
   },
   "keywords": [
     "balena",
@@ -35,7 +35,7 @@
   "devDependencies": {
     "@balena/lint": "^7.2.6",
     "@types/dockerode": "^3.3.23",
-    "@types/node": "^18.0.0",
+    "@types/node": "^20.17.22",
     "@types/request-promise": "^4.1.48",
     "@types/tar-fs": "^2.0.1",
     "catch-uncommitted": "^2.0.0",

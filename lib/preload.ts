@@ -152,7 +152,7 @@ export const applicationExpandOptions = {
 	owns__release: {
 		$select: ['id', 'commit', 'end_timestamp', 'composition'],
 		$expand: {
-			contains__image: {
+			release_image: {
 				$select: ['image'],
 				$expand: {
 					image: {
@@ -570,10 +570,10 @@ export class Preloader extends EventEmitter {
 		// This method lists the images that need to be preloaded.
 		// The is_stored_at__image_location attribute must match the image attribute of the app or app service in the state endpoint.
 		// List images from the release.
-		const images = this._getRelease().contains__image.map((ci) => {
-			return _.merge({}, ci.image[0], {
+		const images = this._getRelease().release_image.map((ri) => {
+			return _.merge({}, ri.image[0], {
 				is_stored_at__image_location:
-					ci.image[0].is_stored_at__image_location.toLowerCase(),
+					ri.image[0].is_stored_at__image_location.toLowerCase(),
 			});
 		});
 
@@ -894,7 +894,7 @@ export class Preloader extends EventEmitter {
 					owns__release: {
 						$select: ['id', 'commit', 'end_timestamp', 'composition'],
 						$expand: {
-							contains__image: {
+							release_image: {
 								$select: ['image'],
 								$expand: {
 									image: {
