@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update alpine Docker tag to v3.21
+      hash: 61081cd3caab334a91a09822144fe4a5be3a47ca
+      body: |
+        Update alpine from 3.12 to 3.21
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: balena-renovate[bot]
+      nested: []
+  version: 18.0.2
+  title: ""
+  date: 2025-03-19T15:55:26.306Z
+- commits:
     - subject: "HOTFIX: Fix balena-sdk major bump"
       hash: 03f57f55472f147388756855b0a8fb423fd94d2b
       body: ""
