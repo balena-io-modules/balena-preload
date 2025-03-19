@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update dependency sh to v1.14.3
+      hash: a1ad075baee7833286d10466683e0ccba6d4a6a1
+      body: |
+        Update sh from 1.12.14 to 1.14.3
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: balena-renovate[bot]
+      nested: []
+  version: 18.0.3
+  title: ""
+  date: 2025-03-19T16:54:44.864Z
+- commits:
     - subject: Update alpine Docker tag to v3.21
       hash: 61081cd3caab334a91a09822144fe4a5be3a47ca
       body: |
