@@ -10,7 +10,7 @@ RUN apk add --no-cache curl py3-pip parted btrfs-progs util-linux sfdisk file co
 
 COPY requirements.txt ./
 
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
 
 COPY src/ ./
 
