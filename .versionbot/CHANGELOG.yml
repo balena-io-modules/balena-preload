@@ -1,4 +1,16 @@
 - commits:
+    - subject: Fix balena-preload pip deps
+      hash: edd39729cfdc630c95ee4b5c1dffdba3b459224d
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Otavio Jacobi
+      nested: []
+  version: 18.0.4
+  title: ""
+  date: 2025-05-21T14:25:07.587Z
+- commits:
     - subject: Update dependency sh to v1.14.3
       hash: a1ad075baee7833286d10466683e0ccba6d4a6a1
       body: |
