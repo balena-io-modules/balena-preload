@@ -1,4 +1,418 @@
 - commits:
+    - subject: Bump balena-sdk to v22.0.0
+      hash: 89546d800e46bb26d4237b1da5b297d49b072c5c
+      body: |
+        Update balena-sdk from 21.2.1 to 22.0.0
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Otavio Jacobi
+      nested:
+        - commits:
+            - subject: Change device_history methods with separate options
+              hash: 45b130c0278e348f45bed4b964615536bdfca91e
+              body: ""
+              footer:
+                Change-type: major
+                change-type: major
+              author: Otavio Jacobi
+              nested: []
+            - subject: Make function calls strongly typed with mergePineOptions
+              hash: 8a00c046791fc1a5a1b82b314d2b5899940f3574
+              body: ""
+              footer:
+                Change-type: major
+                change-type: major
+              author: Otavio Jacobi
+              nested: []
+            - subject: Bump pinejs-client-js to v8.3.0
+              hash: 49a2eb007d7884dc21a6e6b4ac4fbf09b526a30b
+              body: >
+                Update pinejs-client-js from 7.0.0 to 8.3.0
+
+
+                This is a fairly extensive change for all the SDK typings.
+
+                As a general rule, it is now using the incoming types from
+                balena-api rather than manually mantaing its own.
+
+
+                These types are in geral less strict than the previous types,
+                however, are in nature shared between server and client
+                components, and thus any improvement applies to the entire
+                stack.
+
+
+                The bigger changes are:
+                 - The resource typings (e.g. Application) now are presented as `Application['Read']` & `Application['Write']`
+                 - The pinejs-client-js typings are all directly exposed inside the `BalenaSDK.Pine.*` scope
+                 - PineTypedResult should be replaced with Pine.OptionsToResponse interface
+                Several other small changes apply, specially the ones from
+                pinejs-client-core (most noticeable drop of $filter with the
+                format of {a: b: c} for navigation resources and preferences for
+                object format for $orderby)
+              footer:
+                Change-type: major
+                change-type: major
+              author: Otavio Jacobi
+              nested: []
+            - subject: Drop WebResourceFile helper
+              hash: c909412dcd33a7e37668633f014bd6f331e39a67
+              body: |
+                File WebAPI is stable since node20 and should be used instead.
+              footer:
+                Change-type: major
+                change-type: major
+              author: Otavio Jacobi
+              nested: []
+          version: balena-sdk-22.0.0
+          title: ""
+          date: 2025-08-06T20:36:51.630Z
+        - commits:
+            - subject: "tests: Reduce the size of the api key names used in tests"
+              hash: 9cb4cf0ce344cf2fa2fc95626b7b875a624bcff3
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                See: https://balena.fibery.io/Work/Project/API-Limit-the-size-of-JSON-fields-1723
+                see: https://balena.fibery.io/Work/Project/API-Limit-the-size-of-JSON-fields-1723
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.7.4
+          title: ""
+          date: 2025-07-25T09:33:35.515Z
+        - commits:
+            - subject: Narrow down the fullUuid type assertion
+              hash: 394624e70c430622722be8c319869eabd9c27a6f
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Otavio Jacobi
+              nested: []
+          version: balena-sdk-21.7.3
+          title: ""
+          date: 2025-07-05T19:13:03.868Z
+        - commits:
+            - subject: Migrate all `$orderby` from string form to object form
+              hash: ea4e4a3883d08201cc948db6a3aa330b88353f5e
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Otavio Jacobi
+              nested: []
+          version: balena-sdk-21.7.2
+          title: ""
+          date: 2025-07-04T07:25:46.603Z
+        - commits:
+            - subject: "application-membership: Replace nested $filter with explicit $any on
+                create"
+              hash: 768529673b9c49bd2ec715609195a08ff238a6e9
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Otavio Jacobi
+              nested: []
+          version: balena-sdk-21.7.1
+          title: ""
+          date: 2025-06-30T11:20:56.993Z
+        - commits:
+            - subject: "ApplicationMembershipRoles: Add `safe_developer` and `safe_operator`
+                roles"
+              hash: 72d7c2c3377d58714da9915324d74c3c89cd23ec
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+              author: Matthew Yarmolinsky
+              nested: []
+          version: balena-sdk-21.7.0
+          title: ""
+          date: 2025-06-19T11:22:21.774Z
+        - commits:
+            - subject: Run CI on supported node version (20)
+              hash: 9ec6303fb92bac45be5debf89b29c3f9fa6531f0
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Otavio Jacobi
+              nested: []
+          version: balena-sdk-21.6.1
+          title: ""
+          date: 2025-06-16T12:52:07.749Z
+        - commits:
+            - subject: Replace BillingAccountInfo with extended AccountInfo
+              hash: 186d4030beb38727c3c6482b3e96066a67fe4d2f
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+              author: Andrea Rosci
+              nested: []
+          version: balena-sdk-21.6.0
+          title: ""
+          date: 2025-06-05T09:11:22.099Z
+        - commits:
+            - subject: "tests: Skip the org logo tests temporarily"
+              hash: 2c110d827afba12b3c3a5b86d6188d65198e154f
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "Log tests: Increase timeout between logs in setup"
+              hash: b0cf350b507c68196a6f23535d5aa620e6f93a84
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: joshbwlng
+              nested: []
+            - subject: "tests: Only retry ratelimited requests with retry delay < 1m"
+              hash: c558ac9298ca7010381fe1de5eff62dc83065c3f
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Thodoris Greasidis
+              nested: []
+            - subject: Extend the retryRateLimitedRequests sdk option to also accept a
+                function
+              hash: a7050bc007248ec12a0bfebb0d7edb90c04c0b68
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.5.0
+          title: ""
+          date: 2025-06-05T08:15:32.339Z
+        - commits:
+            - subject: Update dependency lint-staged to v16
+              hash: 9ea3d70aa3e82c2cd26b287cb2200912ed188ad5
+              body: |
+                Update lint-staged from 15.5.2 to 16.0.0
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: balena-renovate[bot]
+              nested: []
+          version: balena-sdk-21.4.7
+          title: ""
+          date: 2025-05-29T18:49:38.826Z
+        - commits:
+            - subject: "tests/os.download(): Add test for the emitted stream progress events"
+              hash: d0d57498e729b9641af29e3d03f2eb1f77263271
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                See: https://balena.fibery.io/Work/Project/Reduce-the-polyfills-that-the-SDK-uses-1568
+                see: https://balena.fibery.io/Work/Project/Reduce-the-polyfills-that-the-SDK-uses-1568
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.4.6
+          title: ""
+          date: 2025-05-28T14:50:55.165Z
+        - commits:
+            - subject: Fix log tests race condition
+              hash: 2a3228d4366406ec2c01a57fc004abe5041a6c7d
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Thodoris Greasidis
+              nested: []
+            - subject: Simplify the log tests
+              hash: f200a44e782e7e24be72c7079cf2117634626a89
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.4.5
+          title: ""
+          date: 2025-05-28T14:12:43.988Z
+        - commits:
+            - subject: Update balena-request to use native fetch for non-streaming requests
+              hash: 57ebcd13262ef982e4db8f0976da7e2c389e3577
+              body: ""
+              footer:
+                Depends-on: https://github.com/balena-io-modules/balena-request/pull/185
+                depends-on: https://github.com/balena-io-modules/balena-request/pull/185
+                Change-type: patch
+                change-type: patch
+                See: https://balena.fibery.io/Work/Project/Reduce-the-polyfills-that-the-SDK-uses-1568
+                see: https://balena.fibery.io/Work/Project/Reduce-the-polyfills-that-the-SDK-uses-1568
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.4.4
+          title: ""
+          date: 2025-05-26T17:18:44.089Z
+        - commits:
+            - subject: "tests: Use a realistic length for the image content_hash"
+              hash: 90ad6a0f33801c94a52ceb18ed16e42a4315cfe0
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.4.3
+          title: ""
+          date: 2025-05-22T07:56:35.834Z
+        - commits:
+            - subject: "logs.history(): Add examples about using the start parameter"
+              hash: e9a9f1c4dc6c1d7aea4356fb640d076875adf781
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.4.2
+          title: ""
+          date: 2025-05-20T13:11:13.765Z
+        - commits:
+            - subject: "tests/logs: Re-use the same test device across all test cases"
+              hash: 817047a3d504fc8f2cb62f949dba993c75fed293
+              body: |
+                Reduces the runtime of the logs tests from 2m
+                to 1m.
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.4.1
+          title: ""
+          date: 2025-05-15T13:15:31.631Z
+        - commits:
+            - subject: "logs: Add support for a start parameter when reading logs"
+              hash: ee4aec1eb083a3bb9b89693abd163cc6b3d1ab8c
+              body: |
+                The new parameter requires open-balena-api
+                v34.5.0.
+              footer:
+                Depends-on: https://github.com/balena-io/open-balena-api/pull/1957
+                depends-on: https://github.com/balena-io/open-balena-api/pull/1957
+                Change-type: minor
+                change-type: minor
+                See: https://balena.fibery.io/Work/Project/Device-logs-Allow-specifying-a-start-date-when-fetching-logs-1164
+                see: https://balena.fibery.io/Work/Project/Device-logs-Allow-specifying-a-start-date-when-fetching-logs-1164
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.4.0
+          title: ""
+          date: 2025-05-14T20:16:06.344Z
+        - commits:
+            - subject: "os: Improve the checks against empty string release tag values"
+              hash: f313d75178de0fa98cf76bf1690f6d6fa2908220
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.3.5
+          title: ""
+          date: 2025-05-06T16:34:41.723Z
+        - commits:
+            - subject: "os.getMaxSatisfyingVersion: Deprecate the 'default' versionRange
+                value"
+              hash: 517e74d0ec7cca88a555cbe28234237f95b4b098
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Thodoris Greasidis
+              nested: []
+            - subject: "os.getMaxSatisfyingVersion: Fix the docs referencing the old
+                recommended & default behavior"
+              hash: 14e7813d2a3f9c2d13563837351fae267c1882fd
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                See: https://github.com/balena-io/balena-sdk/commit/e766bc92f4879756a9988bd1d8ed06788546e310?diff=split
+                see: https://github.com/balena-io/balena-sdk/commit/e766bc92f4879756a9988bd1d8ed06788546e310?diff=split
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.3.4
+          title: ""
+          date: 2025-05-05T17:13:06.123Z
+        - commits:
+            - subject: Remove unnecessary null checks
+              hash: 4dafe329b4c07f76470f767e82bf6975cdf4eaea
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.3.3
+          title: ""
+          date: 2025-05-05T12:54:15.267Z
+        - commits:
+            - subject: Remove chai-as-promised from tests
+              hash: b3348cdcfc404bf651750ecf28595714d8122847
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Thodoris Greasidis
+              nested: []
+          version: balena-sdk-21.3.2
+          title: ""
+          date: 2025-04-15T00:48:22.205Z
+        - commits:
+            - subject: Update dependency balena-semver to v3
+              hash: 113c8f1f9c355d22159050a6f69a91475def193b
+              body: |
+                Update balena-semver from 2.3.5 to 3.0.3
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: balena-renovate[bot]
+              nested: []
+          version: balena-sdk-21.3.1
+          title: ""
+          date: 2025-04-10T15:45:44.494Z
+        - commits:
+            - subject: "device: add `changed_api_heartbeat_state_on__date` to typings"
+              hash: bfa52cf58c7d06859a1b5c6f62ff7c71324d3d20
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+              author: Otavio Jacobi
+              nested: []
+          version: balena-sdk-21.3.0
+          title: ""
+          date: 2025-03-26T19:54:35.558Z
+        - commits:
+            - subject: fix  linting
+              hash: 13320aad81ba3dfc4950b9960f015b058222c4be
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Otavio Jacobi
+              nested: []
+          version: balena-sdk-21.2.2
+          title: ""
+          date: 2025-03-26T18:55:53.610Z
+  version: 18.0.5
+  title: ""
+  date: 2025-08-07T16:47:58.618Z
+- commits:
     - subject: Fix balena-preload pip deps
       hash: edd39729cfdc630c95ee4b5c1dffdba3b459224d
       body: ""
