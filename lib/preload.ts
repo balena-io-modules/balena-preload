@@ -13,9 +13,8 @@ import type {
 	Application,
 	BalenaSDK,
 	DeviceType,
+	Pine,
 	PineDeferred,
-	PineExpand,
-	PineFilter,
 	Release,
 } from 'balena-sdk';
 
@@ -153,7 +152,7 @@ export const applicationExpandOptions = {
 		$select: ['id', 'commit', 'end_timestamp', 'composition'],
 		$expand: {
 			release_image: {
-				$select: ['image'],
+				$select: ['id'],
 				$expand: {
 					image: {
 						$select: ['image_size', 'is_stored_at__image_location'],
@@ -166,7 +165,7 @@ export const applicationExpandOptions = {
 		},
 		$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
 	},
-} satisfies PineExpand<Application>;
+} as const;
 
 const createContainer = async (
 	docker: Docker,
@@ -243,6 +242,48 @@ const isReadWriteAccessibleFile = async (image) => {
 	}
 };
 
+const deviceTypeQuery = {
+	$select: 'slug',
+	$expand: {
+		is_of__cpu_architecture: {
+			$select: 'slug',
+		},
+	},
+} as const;
+
+const getApplicationQuery = (releaseFilter: Pine.Filter<Release['Read']>) => {
+	return {
+		$expand: {
+			should_be_running__release: {
+				$select: 'commit',
+			},
+			is_for__device_type: {
+				$select: 'slug',
+				$expand: {
+					is_of__cpu_architecture: {
+						$select: 'slug',
+					},
+				},
+			},
+			owns__release: {
+				$select: ['id', 'commit', 'end_timestamp', 'composition'],
+				$expand: {
+					release_image: {
+						$select: ['id'],
+						$expand: {
+							image: {
+								$select: ['image_size', 'is_stored_at__image_location'],
+							},
+						},
+					},
+				},
+				$filter: releaseFilter,
+				$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
+			},
+		},
+	} as const;
+};
+
 export class Preloader extends EventEmitter {
 	application;
 	stdin;
@@ -257,7 +298,13 @@ export class Preloader extends EventEmitter {
 	supervisorVersion: string | undefined; // disk image supervisor version
 	balenaOSVersion: string | undefined; // OS version from the image's "/etc/issue" file
 	config: ImageInfo['config'] | undefined; // config.json data from the disk image
-	deviceTypes: DeviceType[] | undefined;
+	deviceTypes:
+		| Pine.OptionsToResponse<
+				DeviceType['Read'],
+				typeof deviceTypeQuery,
+				undefined
+		  >
+		| undefined;
 	balena: BalenaSDK;
 
 	constructor(
@@ -330,14 +377,8 @@ export class Preloader extends EventEmitter {
 	}
 
 	async _fetchDeviceTypes() {
-		this.deviceTypes = await this.balena.models.deviceType.getAll({
-			$select: 'slug',
-			$expand: {
-				is_of__cpu_architecture: {
-					$select: 'slug',
-				},
-			},
-		});
+		this.deviceTypes =
+			await this.balena.models.deviceType.getAll(deviceTypeQuery);
 	}
 
 	async _runWithSpinner<T>(name: string, fn: () => T | Promise<T>): Promise<T> {
@@ -863,7 +904,7 @@ export class Preloader extends EventEmitter {
 			return;
 		}
 		await this._runWithSpinner(`Fetching application ${appId}`, async () => {
-			const releaseFilter: PineFilter<Release> = {
+			const releaseFilter: Pine.Filter<Release['Read']> = {
 				status: 'success',
 			};
 			if (this.commit === 'latest') {
@@ -878,36 +919,10 @@ export class Preloader extends EventEmitter {
 				releaseFilter.commit = { $startswith: this.commit };
 			}
 
-			const application = await this.balena.models.application.get(appId, {
-				$expand: {
-					should_be_running__release: {
-						$select: 'commit',
-					},
-					is_for__device_type: {
-						$select: 'slug',
-						$expand: {
-							is_of__cpu_architecture: {
-								$select: 'slug',
-							},
-						},
-					},
-					owns__release: {
-						$select: ['id', 'commit', 'end_timestamp', 'composition'],
-						$expand: {
-							release_image: {
-								$select: ['image'],
-								$expand: {
-									image: {
-										$select: ['image_size', 'is_stored_at__image_location'],
-									},
-								},
-							},
-						},
-						$filter: releaseFilter,
-						$orderby: [{ end_timestamp: 'desc' }, { id: 'desc' }],
-					},
-				},
-			});
+			const application = await this.balena.models.application.get(
+				appId,
+				getApplicationQuery(releaseFilter),
+			);
 			this.setApplication(application);
 		});
 	}
@@ -1152,7 +1167,15 @@ export class Preloader extends EventEmitter {
 		});
 	}
 
-	setApplication(application: Application) {
+	setApplication(
+		application: NonNullable<
+			Pine.OptionsToResponse<
+				Application['Read'],
+				ReturnType<typeof getApplicationQuery>,
+				number
+			>
+		>,
+	) {
 		this.appId = application.id;
 		this.application = application;
 	}
