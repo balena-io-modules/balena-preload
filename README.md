@@ -38,6 +38,7 @@ $ npm install --global balena-preload
 <!-- MarkdownTOC -->
 
 - [Requirements](#requirements)
+- [How apps.json is Generated](#how-appsjson-is-generated)
 - [Known Issues](#known-issues)
     - [Speed Issues For Flasher Images on macOS](#speed-issues-for-flasher-images-on-macos)
     - [Version Compatibility](#version-compatibility)
@@ -50,6 +51,64 @@ $ npm install --global balena-preload
 - [Node](https://nodejs.org)
 - [Docker](https://www.docker.com) tested on 1.12.6 and up but 17.04 or up is recommended especially on macOS, [docker-toolbox](https://www.docker.com/products/docker-toolbox) is not supported.
 Older versions of balena-preload do support docker-toolbox, see [Version Compatibility](#version-compatibility) below.
+
+## How apps.json is Generated
+
+The `apps.json` file is a critical component of the preloading process. It tells the balenaOS supervisor which application containers to run on first boot, enabling devices to operate without initial cloud connectivity.
+
+### Generation Process
+
+1. **Fetch Device State**: The TypeScript code in `preload.ts` fetches the target device state from the Balena API using the `_getState()` method. This state contains information about which application release and services should run on the device.
+
+2. **Transform to Supervisor Format**: The `_getAppData()` method transforms the API state into the format expected by the supervisor. The format varies by supervisor version:
+   
+   - **Supervisor < 7.0.0 (Target State v1)**: Returns an array of app objects, each with `appId`, `env` (environment variables), `imageId`, and other metadata. This is for single-container applications.
+   
+   - **Supervisor >= 7.0.0 (Target State v2/v3)**: Returns an object with `apps` and `pinDevice` properties, supporting multicontainer applications with multiple services per app. The `pinDevice` option can pin the device to a specific release.
+
+3. **Write to Disk Image**: The transformed app data is passed to the Python script (`preload.py`) running in a Docker container. The Python script:
+   - Mounts the balenaOS image's data partition
+   - Writes the app data as JSON to `/data/apps.json` using the `write_apps_json()` function
+   - Ensures the file is formatted with proper indentation and sorted keys
+
+4. **Supervisor Reads on Boot**: When the device boots for the first time, the supervisor reads `/data/apps.json` to know which containers to start, eliminating the need to fetch this information from the cloud.
+
+### Example Structure
+
+For supervisor >= 7.0.0, the `apps.json` might look like:
+
+```json
+{
+  "apps": {
+    "1234567": {
+      "releaseId": 987654,
+      "services": {
+        "main": {
+          "image": "registry2.balena-cloud.com/v2/abc123...",
+          "environment": {
+            "VAR1": "value1"
+          }
+        }
+      }
+    }
+  },
+  "pinDevice": false
+}
+```
+
+For supervisor < 7.0.0, it's a simpler array format:
+
+```json
+[
+  {
+    "appId": "1234567",
+    "imageId": "registry2.balena-cloud.com/v2/abc123...",
+    "env": {
+      "VAR1": "value1"
+    }
+  }
+]
+```
 
 ### Issues
 

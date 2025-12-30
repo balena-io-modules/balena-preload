@@ -617,7 +617,22 @@ def write_resin_device_pinning(app_data, output):
 
 
 def write_apps_json(data, output):
-    """Writes data dict to output as json"""
+    """Writes application data to apps.json on the disk image.
+
+    This function writes the apps.json file to the data partition of the
+    balenaOS image. The apps.json file contains the application
+    configuration that the supervisor reads on first boot to determine
+    which containers to run.
+
+    The structure of the data varies by supervisor version:
+    - Supervisor < 7.0.0: Array of app objects with appId, env, imageId
+    - Supervisor >= 7.0.0: Object with 'apps' and 'pinDevice' properties
+
+    Args:
+        data: Application data dict/list from TypeScript preload.ts module
+        output: Full path where apps.json should be written
+                (e.g., /mnt/data/apps.json)
+    """
     with open(output, "w") as f:
         json.dump(data, f, indent=4, sort_keys=True)
 

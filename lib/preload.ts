@@ -1066,6 +1066,30 @@ export class Preloader extends EventEmitter {
 		}
 	}
 
+	/**
+	 * Generate the application data structure that will be written to apps.json on the disk image.
+	 *
+	 * This method transforms the device state (fetched from the Balena API) into the format
+	 * expected by the supervisor running on the device. The format varies depending on the
+	 * supervisor version:
+	 *
+	 * For supervisor < 7.0.0 (target state v1):
+	 *   - Returns an array of app objects
+	 *   - Each app has: appId, env (environment variables), imageId, and other metadata
+	 *   - Single-container format (pre-multicontainer support)
+	 *
+	 * For supervisor >= 7.0.0 (target state v2/v3):
+	 *   - Returns an object with 'apps' and 'pinDevice' properties
+	 *   - Supports multicontainer applications with multiple services
+	 *   - Can pin device to a specific release if pinDevice is true
+	 *
+	 * The returned data structure is passed to the Python preload script, which writes it
+	 * to /data/apps.json on the disk image's data partition. The supervisor reads this file
+	 * on first boot to know which application containers to run.
+	 *
+	 * @returns {Array|Object} App data structure formatted for the target supervisor version
+	 * @throws {BalenaError} If pinDevice is true but supervisor version < 7.0.0
+	 */
 	_getAppData() {
 		if (this._supervisorLT7()) {
 			if (this.pinDevice === true) {
@@ -1106,6 +1130,25 @@ export class Preloader extends EventEmitter {
 		return '/splash/resin-logo.png';
 	}
 
+	/**
+	 * Preload application containers onto a balenaOS disk image.
+	 *
+	 * This method orchestrates the entire preloading process:
+	 * 1. Fetches the device target state from the Balena API (_getState)
+	 * 2. Validates that preloading is possible (_ensureCanPreload)
+	 * 3. Calculates required disk space for the application containers
+	 * 4. Generates apps.json content via _getAppData()
+	 * 5. Sends preload command to Python script with app_data parameter
+	 * 6. Python script writes apps.json to /data/apps.json on the image
+	 * 7. Python script starts dockerd and pulls the application images
+	 * 8. Application containers are stored in the image's data partition
+	 *
+	 * The apps.json file is critical for the supervisor on first boot - it tells the
+	 * supervisor which application and services to start without needing to contact
+	 * the Balena API. This enables offline operation of preloaded devices.
+	 *
+	 * @returns {Promise<void>}
+	 */
 	async preload() {
 		await this._getState();
 
@@ -1119,6 +1162,7 @@ export class Preloader extends EventEmitter {
 			'is_stored_at__image_location',
 		);
 		// Wait for dockerd to start
+		// The 'preload' command writes apps.json to the disk image and starts dockerd
 		await this._runWithSpinner(
 			'Resizing partitions and waiting for dockerd to start',
 			() =>
