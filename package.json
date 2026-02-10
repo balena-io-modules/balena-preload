@@ -7,7 +7,7 @@
   "main": "build/preload.js",
   "types": "build/preload.d.ts",
   "engines": {
-    "node": "^20.12.0 || >=22.0.0"
+    "node": "^22.18.0 || >= 24.0.0"
   },
   "keywords": [
     "balena",
