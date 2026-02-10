@@ -7,7 +7,7 @@
   "main": "build/preload.js",
   "types": "build/preload.d.ts",
   "engines": {
-    "node": "^20.12.0 || >=22.0.0"
+    "node": "^22.18.0 || >= 24.0.0"
   },
   "keywords": [
     "balena",
@@ -23,7 +23,7 @@
     "requirements.txt"
   ],
   "dependencies": {
-    "balena-sdk": "^22.0.0",
+    "balena-sdk": "^23.0.0",
     "compare-versions": "^3.6.0",
     "docker-progress": "^5.0.0",
     "dockerode": "^4.0.2",
