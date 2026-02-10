@@ -33,7 +33,7 @@
     "tar-fs": "^2.1.1"
   },
   "devDependencies": {
-    "@balena/lint": "^7.2.6",
+    "@balena/lint": "^8.0.0",
     "@types/dockerode": "^3.3.23",
     "@types/node": "^20.17.22",
     "@types/request-promise": "^4.1.48",
