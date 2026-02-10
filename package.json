@@ -23,7 +23,7 @@
     "requirements.txt"
   ],
   "dependencies": {
-    "balena-sdk": "^22.0.0",
+    "balena-sdk": "^23.0.0",
     "compare-versions": "^3.6.0",
     "docker-progress": "^5.0.0",
     "dockerode": "^4.0.2",
