@@ -1,4 +1,18 @@
 - commits:
+    - subject: "Add id-token: write permission for NPM OIDC publishing"
+      hash: b32b86fca1b26ef97106800f760df8fb7e259ffc
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 19.0.1
+  title: ""
+  date: 2026-02-19T14:38:45.502Z
+- commits:
     - subject: Update balena-sdk to 23.0.0
       hash: c75eec79633cf4826e2cdb7b525a8128ea4cc067
       body: |
