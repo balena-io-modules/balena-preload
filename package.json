@@ -41,13 +41,13 @@
     "catch-uncommitted": "^2.0.0",
     "typescript": "^5.6.2"
   },
-  "homepage": "https://github.com/balena-io/balena-preload",
+  "homepage": "https://github.com/balena-io-modules/balena-preload",
   "repository": {
     "type": "git",
-    "url": "https://github.com/balena-io/balena-preload.git"
+    "url": "https://github.com/balena-io-modules/balena-preload.git"
   },
   "bugs": {
-    "url": "https://github.com/balena-io/balena-preload/issues"
+    "url": "https://github.com/balena-io-modules/balena-preload/issues"
   },
   "scripts": {
     "lint": "balena-lint --fix lib",
