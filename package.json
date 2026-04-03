@@ -5,6 +5,7 @@
   "license": "Apache-2.0",
   "author": "Balena Ltd (https://balena.io)",
   "main": "build/preload.js",
+  "type": "module",
   "types": "build/preload.d.ts",
   "engines": {
     "node": "^24.11.0"
