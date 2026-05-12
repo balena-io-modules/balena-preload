@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update alpine Docker tag to v3.23
+      hash: 360b2a547d2cefdda50ebf7b7bfe85b29d931354
+      body: |
+        Update alpine from 3.21 to 3.23
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: balena-renovate[bot]
+      nested: []
+  version: 19.0.2
+  title: ""
+  date: 2026-05-12T17:38:22.013Z
+- commits:
     - subject: "Add id-token: write permission for NPM OIDC publishing"
       hash: b32b86fca1b26ef97106800f760df8fb7e259ffc
       body: ""
