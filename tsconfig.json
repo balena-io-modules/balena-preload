@@ -1,20 +1,17 @@
 {
 	"compilerOptions": {
-		"module": "commonjs",
+		"module": "node16",
 		"declaration": true,
 		"target": "es2019",
+		"rootDir": "./lib",
 		"outDir": "build",
-		"strict": true,
 		"noImplicitAny": false,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
-		"preserveConstEnums": true,
 		"removeComments": true,
 		"sourceMap": true,
 		"skipLibCheck": true,
-		"preserveSymlinks": true,
-		"allowJs": true,
-		"checkJs": true
+		"preserveSymlinks": true
 	},
 	"include": [
 		"./lib/**/*",

@@ -1,14 +1,14 @@
-import * as _ from 'lodash';
-import * as EventEmitter from 'events';
-import * as dockerProgress from 'docker-progress';
-import * as Docker from 'dockerode';
-import * as path from 'path';
-import * as streamModule from 'stream';
-import * as tarfs from 'tar-fs';
+import _ from 'lodash';
+import EventEmitter from 'events';
+import dockerProgress from 'docker-progress';
+import Docker from 'dockerode';
+import path from 'path';
+import streamModule from 'stream';
+import tarfs from 'tar-fs';
 import { promises as fs, constants } from 'fs';
-import * as getPort from 'get-port';
-import * as os from 'os';
-import * as compareVersions from 'compare-versions';
+import getPort from 'get-port';
+import os from 'os';
+import compareVersions from 'compare-versions';
 import type {
 	Application,
 	BalenaSDK,
