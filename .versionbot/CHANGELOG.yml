@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update dependency compare-versions to v4
+      hash: 137d57f8da8a387f102ae3c7153b08007437d559
+      body: |
+        Update compare-versions from 3.6.0 to 4.1.4
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: balena-renovate[bot]
+      nested: []
+  version: 19.0.3
+  title: ""
+  date: 2026-06-10T01:20:41.316Z
+- commits:
     - subject: Update alpine Docker tag to v3.23
       hash: 360b2a547d2cefdda50ebf7b7bfe85b29d931354
       body: |
