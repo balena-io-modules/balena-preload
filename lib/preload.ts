@@ -773,7 +773,13 @@ export class Preloader extends EventEmitter {
 						layerUrl: this._imageManifestUrl(imageLocation),
 					},
 					registryToken,
-					{},
+					{
+						// Without this the registry answers 404 MANIFEST_UNKNOWN for OCI manifests
+						Accept: [
+							'application/vnd.oci.image.manifest.v1+json',
+							'application/vnd.docker.distribution.manifest.v2+json',
+						].join(', '),
+					},
 					'json',
 					true,
 				);
