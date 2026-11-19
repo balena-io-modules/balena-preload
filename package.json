@@ -26,7 +26,7 @@
     "balena-sdk": "^23.0.0",
     "compare-versions": "^4.0.0",
     "docker-progress": "^5.0.0",
-    "dockerode": "^4.0.2",
+    "dockerode": "^5.0.0",
     "get-port": "^3.2.0",
     "lodash": "^4.17.21",
     "node-cleanup": "^2.1.2",
