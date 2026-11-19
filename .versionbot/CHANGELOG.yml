@@ -1,4 +1,22 @@
 - commits:
+    - subject: Accept OCI manifests when estimating application size
+      hash: b709e18bf211e8dcf258516678da37a06e479342
+      body: |
+        Without an Accept header the registry only serves Docker v2 manifests
+        and answers 404 MANIFEST_UNKNOWN for images stored as OCI manifests,
+        which made preloading multi-service releases containing such images
+        fail.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: guille-vega <guillermo.vega@balena.io>
+        signed-off-by: guille-vega <guillermo.vega@balena.io>
+      author: guille-vega
+      nested: []
+  version: 19.0.6
+  title: ""
+  date: 2026-11-19T14:05:08.964Z
+- commits:
     - subject: Update alpine:3.24 Docker digest to a2d49ea
       hash: d3e2be5abe462cd6abe8c27a33ecef427c9a246b
       body: |
